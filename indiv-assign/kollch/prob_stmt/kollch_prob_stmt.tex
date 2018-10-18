@@ -1,0 +1,34 @@
+\documentclass[10pt,letterpaper,draftclsnofoot,onecolumn]{IEEEtran}
+\usepackage[margin=0.75in]{geometry}
+
+\begin{document}
+\author{Charles Koll}
+\title{Problem Statement}
+\IEEEspecialpapernotice{CS 461, Fall 2018}
+\maketitle
+
+\begin{abstract}
+	New technologies using connectivity (IoT) and autonomy of vehicles are being introduced into the market. Current transportation network models only involve human-operated vehicles. There is a need to develop models that can accurately represent modern transportation networks as they have more autonomous and more connected vehicles.
+
+	The pupose of this project is to determine various transportation congestion models when comparing differing levels of market penetration of connected autonomous vehicles (CAVs). It consists of building a basic simulation framework using Python and several models representing the actions of CAVs on a transportation network. After developing the models, a research paper will be written detailing the results found. Real-life testing may also occur to support experimental results found on the framework and provide additional information for the paper.
+\end{abstract}
+
+\pagebreak
+
+\section{Problem}
+	With the increase of research in autonomous vehicles, organizations are looking at introducing new technologies using these concepts. Much research has been done with regards to developing models representing human-driven vehicles, but new autonomous vehicle technologies will cause these models to be considerably less accurate. A new set of models is needed to not only more closely represent vehicular traffic on existing infrastructure, but also to determine sets of guidelines to impose on vehicle manufacturers to produce safer traveling.
+
+	New technologies produced include autonomy as well as connectivity. Autonomy is used to have vehicles operate themselves without the use of human actions. Connectivity is a various set of ways for vehicles to communicate their actions to others. An example of this would be turn signals. The turn signal signifies to other vehicles what the following action will be and allow them to plan their following actions accordingly. The turn signal is a human-actionable connective technology, but with respect to autonomous vehicles there could be signals that could be sent by wireless telecommunications or other means.
+
+	The introduction of these technologies is a slow progression, so at any point of time there could be a certain market penetration of autonomous vehicles. The same can be said for connected vehicles. These two technologies are disjoint, so there can be vehicles that have neither, one, or both of them. These can be labeled as HV (human-operated vehicle), CHV (connected human-operated vehicle), AV (autonomous vehicle), and CAV (connected autonomous vehicle). These labels are not discrete labels; for example, a given vehicle may be more connected than another, but still have the same labeling.
+\section{Proposed Solution}
+	A possible solution is to develop a series of models to represent how multiple vehicles with independent goals travel on a transportation network infrastructure when optimizing routes and avoiding collisions. This can be done by first building a basic simulation framework in Python, then running various models against the framework to empirically rank the model efficiency. The more efficient models can then be used to determine solutions to minimize network congestion and vehicle time in the network.
+
+	The basic simulation framework will be in Python because it is object-oriented, has been used by the client before, and its programs can be built to the exact needs of the future models. Speed of the program will not be a problem because even if it took twice as long as a different language, the relative amount of time difference would be fairly small compared to the time difference between various algorithms used.
+
+	The models will entail detailing general vehicular actions such as following length and stopping time for various market penetrations of HV, CHV, AV, and CAV vehicles. They will also test these statistics against multiple levels of network congestion and differing network layouts. A research paper may be developed displaying the results found from testing these models on the basic simulation framework. Furthermore, real-life testing may be performed using scale models to confirm test results.
+\section{Performance Metrics}
+	Some performance metrics to be used will include completion of the basic simulation framework and documentation of possible models to be run inside the framework. The basic simulation framework must be able to represent vehicles of various types (CAV, HV, etc.) and have certain basic rules in place that enforce physics in the real world (for example, it is impossible for vehicles to pass through each other or instantly go from a stopped position to their final speed).
+
+	A fully written research paper can also be used as a metric of completion. When the paper is completed, that shows that the basic simulation framework had enough features to be able to test the given models, it shows that some models were developed and tested, and it shows that the information was collected and documented.
+\end{document}
