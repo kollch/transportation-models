@@ -1,0 +1,33 @@
+\documentclass[draftclsnofoot,onecolumn]{IEEEtran}
+\usepackage[margin=0.75in]{geometry}
+
+\title{Autonomous vehicle routing in congested transportation network}
+\author{Liang Du }
+\IEEEspecialpapernotice{CS 461 Fall 2018}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract}
+Autonomous vehicle routing in congested transportation network project is using some intelligent algorithm to find the shortest path through the transportation for autonomous vehicle. The main intelligent agents used here is Q-learning. This reinforcement learning algorithm is applied to the multiagent system with different market penetration of autonomous vehicle agents. We also need to collect many data in order to constantly updated our algorithm. And we will provide some method for building the infrastructure for autonomous vehicle so that reducing traffic congestion situation.
+
+\pagebreak
+
+\section{Description}
+With the autonomous vehicle development, there are many problems appeared in using autonomous vehicle in real life. The reasons for using autonomous vehicle are improving traffic performance in terms of safety or saving people driving time. The concept of autonomous vehicle has already been proposed for many years. However, high cost of production and lack of technical support, autonomous vehicle cannot produce in large-scale. Nevertheless, in recent years, autonomous vehicle idea become realization. For example, google car. But based on Bagloee said in 2016, “the existing literature does not document the approaches by which AVs find and determine their routes in the road networks.” Real-time traffic information was known as an effective method to tell driver about travelling time and current transportation situation. Therefore, one of important problem for autonomous vehicle is how to use the infrastructure to “communicate” with autonomous vehicle and let the autonomous vehicle to judge which path is the optimal to achieve its destination. What’s more, another problem in our project that we need to solved is how to update or develop current infrastructure so that the infrastructure can “tell” autonomous vehicle current road situation. So, we need to provide method to improve and develop the infrastructure. 
+In fact, people use human vehicle which is driven by human, and assuming people will only use autonomous vehicle in future. So, it exists a transition period which is some people use human vehicle and some people use autonomous vehicle. Our project also needs to deal with the of transportation network of transition period so that autonomous vehicle can recognize human vehicle and other autonomous vehicle.
+The most important problem in our project is provide effective technical method for autonomous vehicle to let it learns, search and find the optimal path, in this chosen path also need to consider whether this autonomous vehicle will influence routing in other transportation network. In general, this project is not only developed autonomous vehicle, but is to develop and provide method to build the transportation network model, which is aim to all autonomous vehicles.
+
+\section{Solution}
+Connected between autonomous vehicle system and autonomous vehicle, autonomous vehicle and the infrastructure is a big idea for building the transportation network. Because transportation network would be affected by the specific routing and scheduling algorithms developed for both individual autonomous vehicles and for vehicle fleets. One of specific behavior to Connected between autonomous vehicle system and autonomous vehicle, autonomous vehicle and the infrastructure is developed an intelligent routing way, which allows autonomous vehicle can communicate with each other so that those autonomous vehicles can make online routing decision in real time. After building the routing way, we need to collect data to calculate how much rate of autonomous vehicle select the optimal path and how many autonomous vehicle cause traffic problems and how many doesn’t. One of the effective ways to collect data is simulating the transportation network. 
+Base on the problem which needed us to provide effective method for autonomous vehicle to let it learns, search and find the optimal path. One of feasible solution is let autonomous vehicle records all of path it passed through and using Q learning method to decide algorithm to make the autonomous vehicle “self-learning” in order to choose an optimal path. In this solution, autonomous vehicle also needs to collect transportation network for comparing. 
+In the transition period which is from human vehicle period to autonomous vehicle period, we also need a transportation network which can let autonomous vehicle to recognize human vehicle. For building this transportation network, autonomous vehicle needs to learn and recognize human vehicle and autonomous vehicle, this technology also can be true base on some machine learning algorithm.
+
+\section{Performance metrics}
+When I finished this project, I will know how autonomous vehicle work and “communication” either between human vehicle and autonomous vehicle transportation network, or autonomous vehicle and autonomous vehicle transportation network. Also, I will build a simulation about autonomous vehicle routing transportation network with my group members. In the simulation transportation network, autonomous vehicle will greatly reduce travelling time on the way, and it also will reduce congested in traffic compare to human vehicle.
+
+\end{document}
