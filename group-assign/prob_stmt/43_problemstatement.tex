@@ -1,42 +1,151 @@
-\documentclass[10pt,letterpaper,draftclsnofoot,onecolumn]{IEEEtran}
-\usepackage[margin=0.75in]{geometry}
+\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
 
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in}
+
+% 1. Fill in these details
+\def \CapstoneTeamName{Transportation Modeling}
+\def \CapstoneTeamNumber{43}
+\def \GroupMemberOne{Eytan Brodsky}
+\def \GroupMemberTwo{Liang Du}
+\def \GroupMemberThree{Samantha Estrada}
+\def \GroupMemberFour{Shengjun Gu}
+\def \GroupMemberFive{Charles Koll}
+\def \CapstoneProjectName{Autonomous vehicle routing in congested transportation network.}
+\def \CapstoneSponsorCompany{Oregon State University}
+\def \CapstoneSponsorPerson{Haizhong Wang}
+
+% 2. Uncomment the appropriate line below so that the document type works
+\def \DocType{Problem Statement}
+
+\newcommand{\NameSigPair}[1]{\par
+\makebox[2.75in][r]{#1} \hfil 	\makebox[3.25in]{\makebox[2.25in]{\hrulefill} \hfill		\makebox[.75in]{\hrulefill}}
+\par\vspace{-12pt} \textit{\tiny\noindent
+\makebox[2.75in]{} \hfil		\makebox[3.25in]{\makebox[2.25in][r]{Signature} \hfill	\makebox[.75in][r]{Date}}}}
+% 3. If the document is not to be signed, uncomment the RENEWcommand below
+%\renewcommand{\NameSigPair}[1]{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
-\author{Team 43 (Eytan Brodsky, Liang Du, Samantha Estrada, Shengjun Gu, Charles Koll)}
-\title{Problem Statement}
+\begin{titlepage}
+    \pagenumbering{gobble}
+    \begin{singlespace}
+        %\includegraphics[height=4cm]{coe_v_spot1}
+        \hfill
+        % 4. If you have a logo, use this includegraphics command to put it on the coversheet.
+        %\includegraphics[height=4cm]{CompanyLogo}
+        \par\vspace{.2in}
+        \centering
+        \scshape{
+            \huge CS Capstone \DocType \par
+            {\large\today}\par
+            \vspace{.5in}
+            \textbf{\Huge\CapstoneProjectName}\par
+            \vfill
+            {\large Prepared for}\par
+            \Huge \CapstoneSponsorCompany\par
+            \vspace{5pt}
+            {\Large\NameSigPair{\CapstoneSponsorPerson}\par}
+            {\large Prepared by }\par
+            Group\CapstoneTeamNumber\par
+            % 5. comment out the line below this one if you do not wish to name your team
+            \CapstoneTeamName\par
+            \vspace{5pt}
+            {\Large
+                \NameSigPair{\GroupMemberOne}\par
+                \NameSigPair{\GroupMemberTwo}\par
+                \NameSigPair{\GroupMemberThree}\par
+            }
+            \vspace{20pt}
+        }
+        \begin{abstract}
+        % 6. Fill in your abstract
+            This project offers a practical solution to the inclusion of autonomous vehicles into transportation network models and discusses how they will not only create optimal paths but coexist with human driven vehicles.
+            By pairing connected autonomous vehicles (CAVs) with a Q-learning algorithm, vehicle autonomy and the overall infrastructure of transportation may be restructured positively to include multiple intelligent agents.
+            Additionally, this project will explore the impact of CAVs relative to transportation congestion, using a Python based framework and vehicle models to create data on how CAVs behave on a transportation network.
+            This project will define the problem that autonomous vehicles present in the infrastructure we have already built and live in, as well as consider how navigation among other intelligent vehicles will be handled.
+        \end{abstract}
+    \end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+% 7. uncomment this (if applicable). Consider adding a page break.
+%\listoffigures
+%\listoftables
+\clearpage
 
-\IEEEspecialpapernotice{CS 461, Fall 2018}
-\maketitle
-
-\begin{abstract}
-This project offers a practical solution to the inclusion of autonomous vehicles into transportation network models and discusses how they will not only create optimal paths but coexist with human driven vehicles. By pairing connected autonomous vehicles (CAVs) with a Q-learning algorithm, vehicle autonomy and the overall infrastructure of transportation may be restructured positively to include multiple intelligent agents. Additionally, this project will explore the impact of CAVs relative to transportation congestion, using a Python based framework and vehicle models to create data on how CAVs behave on a transportation network. This project will define the problem that autonomous vehicles present in the infrastructure we have already built and live in, as well as consider how navigation among other intelligent vehicles will be handled.
-\end{abstract}
-
-\pagebreak
-
+% 8. now you write!
 \section{Problem}
-The concept of driverless vehicles has been around for decades. However, high costs and a lack of proper technology has hindered its large-scale production. Even so, there has been a rise in development and research into autonomous vehicles. With this increase of research in autonomous vehicles, many new concepts are being incorporated into new technology. Much research has been done with regards to developing models representing human-driven vehicles, but new autonomous vehicle technologies will cause these models to be considerably less accurate. A new set of models is needed to not only more closely represent vehicular traffic on existing infrastructure, but also to determine sets of guidelines to impose on vehicle manufacturers to produce safer traveling. These guidelines can impact how network infrastructure is built as well. Traffic intersections could have improved algorithms for light-changing based on how autonomous vehicles interact.
+The concept of driverless vehicles has been around for decades.
+However, high costs and a lack of proper technology has hindered its large-scale production.
+Even so, there has been a rise in development and research into autonomous vehicles.
+With this increase of research in autonomous vehicles, many new concepts are being incorporated into new technology.
+Much research has been done with regards to developing models representing human-driven vehicles, but new autonomous vehicle technologies will cause these models to be considerably less accurate.
+A new set of models is needed to not only more closely represent vehicular traffic on existing infrastructure, but also to determine sets of guidelines to impose on vehicle manufacturers to produce safer traveling.
+These guidelines can impact how network infrastructure is built as well.
+Traffic intersections could have improved algorithms for light-changing based on how autonomous vehicles interact.
 
-New technologies produced include autonomy as well as connectivity. Autonomy is used to have vehicles operate themselves without the use of human actions. These vehicles could potentially improve traffic performance in terms of safety, mobility, and environmental impact. Connectivity is a various set of ways for vehicles to communicate their actions to others. An example of this would be turn signals. The turn signal signifies to other vehicles what the following action will be and allows them to plan their following actions accordingly. The turn signal is a human-actionable connective technology, but with respect to autonomous vehicles there could be signals that would be sent by wireless telecommunications or other means. These signals would not just have to be sent to other autonomous vehicles either; the network infrastructure could benefit from communicating with vehicles as well.
+New technologies produced include autonomy as well as connectivity.
+Autonomy is used to have vehicles operate themselves without the use of human actions.
+These vehicles could potentially improve traffic performance in terms of safety, mobility, and environmental impact.
+Connectivity is a various set of ways for vehicles to communicate their actions to others.
+An example of this would be turn signals.
+The turn signal signifies to other vehicles what the following action will be and allows them to plan their following actions accordingly.
+The turn signal is a human-actionable connective technology, but with respect to autonomous vehicles there could be signals that would be sent by wireless telecommunications or other means.
+These signals would not just have to be sent to other autonomous vehicles either; the network infrastructure could benefit from communicating with vehicles as well.
 
-The introduction of these technologies is a slow progression, so at any point of time there could be a certain market penetration of autonomous vehicles. The same can be said for connected vehicles. These two technologies are disjoint, so there can be vehicles that have none, one, or both of them. These can be labeled as HV (human-operated vehicle), CHV (connected human-operated vehicle), AV (autonomous vehicle), and CAV (connected autonomous vehicle). These labels are not discrete labels; for example, a given vehicle may be more connected than another, but still have the same labeling.
+The introduction of these technologies is a slow progression, so at any point of time there could be a certain market penetration of autonomous vehicles.
+The same can be said for connected vehicles.
+These two technologies are disjoint, so there can be vehicles that have none, one, or both of them.
+These can be labeled as HV (human-operated vehicle), CHV (connected human-operated vehicle), AV (autonomous vehicle), and CAV (connected autonomous vehicle).
+These labels are not discrete labels; for example, a given vehicle may be more connected than another, but still have the same labeling.
 \section{Proposed Solution}
-The combination of connected and Autonomous Vehicles (CAV) systems with vehicle-to-vehicle (V2V) and vehicle-to-infrastructure (V2I) information exchange could have profound effects on multiple aspects of the current transport landscape, such as requirements and behaviors. The significance of traffic and environmental concerns have led to considerable attention by the academic and industry sectors. The actual performance at the network level will respond to these new changes and will be significantly affected by specific routes and scheduling algorithms developed for individual autonomous driving vehicles and vehicle fleets. We plan to develop a coordinated routing mechanism that allows intelligent vehicles to communicate with each other so that they can make online routing decisions in real time. This strategy may help to avoid possible traffic jams to some extent. In the transition period which is from human vehicle period to autonomous vehicle period, we also need a transportation network which can let autonomous vehicle to recognize human vehicle. For building this transportation network, autonomous vehicles need to learn and recognize human vehicle and autonomous vehicles; this technology can also be based on some machine learning algorithm.
+The combination of connected and Autonomous Vehicles (CAV) systems with vehicle-to-vehicle (V2V) and vehicle-to-infrastructure (V2I) information exchange could have profound effects on multiple aspects of the current transport landscape, such as requirements and behaviors.
+The significance of traffic and environmental concerns have led to considerable attention by the academic and industry sectors.
+The actual performance at the network level will respond to these new changes and will be significantly affected by specific routes and scheduling algorithms developed for individual autonomous driving vehicles and vehicle fleets.
+We plan to develop a coordinated routing mechanism that allows intelligent vehicles to communicate with each other so that they can make online routing decisions in real time.
+This strategy may help to avoid possible traffic jams to some extent.
+In the transition period which is from human vehicle period to autonomous vehicle period, we also need a transportation network which can let autonomous vehicle to recognize human vehicle.
+For building this transportation network, autonomous vehicles need to learn and recognize human vehicle and autonomous vehicles; this technology can also be based on some machine learning algorithm.
 
-Based on the above theory, we propose a reinforcement learning approach. Techniques such as Q-learning, which learns the best decision out of many possibilities, are perfect for this kind of problem. Also, through game theory, each autonomous vehicle can utilize the other to optimize their own route. If a vehicle recognizes that most of the other intelligent agents in its lane are moving to another it may be in its best reward to remain in the lane they are in, as moving lanes may just cause congestion. Through this shared knowledge, it can alert other vehicles of congested areas, so that they may avoid them. By using the Q algorithm to define tables for vehicle adjustments, each autonomous vehicle may be able to conduct its own simulations and therefore create more optimal routes. For these theoretical solutions, we could find some possible methods to build a testable environment or model to test our theory.
+Based on the above theory, we propose a reinforcement learning approach.
+Techniques such as Q-learning, which learns the best decision out of many possibilities, are perfect for this kind of problem.
+Also, through game theory, each autonomous vehicle can use the others to optimize their own route.
+If a vehicle recognizes that most of the other intelligent agents in its lane are moving to another it may be in its best reward to remain in the lane they are in, as moving lanes may just cause congestion.
+Through this shared knowledge, it can alert other vehicles of congested areas, so that they may avoid them.
+By using the Q algorithm to define tables for vehicle adjustments, each autonomous vehicle may be able to conduct its own simulations and therefore create more optimal routes.
+For these theoretical solutions, we could find some possible methods to build a testable environment or model to test our theory.
 
-A possible solution is to develop a series of models to represent how multiple vehicles with independent goals travel on a transportation network infrastructure when optimizing routes and avoiding collisions. This can be done by first building a basic simulation framework in Python, then running various models against the framework to empirically rank the model efficiency. The more efficient models can then be used to determine solutions to minimize network congestion and vehicle time in the network.
+A possible solution is to develop a series of models to represent how multiple vehicles with independent goals travel on a transportation network infrastructure when optimizing routes and avoiding collisions.
+This can be done by first building a basic simulation framework in Python, then running various models against the framework to empirically rank the model efficiency.
+The more efficient models can then be used to determine solutions to minimize network congestion and vehicle time in the network.
 
-The basic simulation framework will be in Python because it is object-oriented, has been used by the client before, and its programs can be built to the exact needs of the future models. Speed of the program will not be a problem because even if it took twice as long as a different language, the relative amount of time difference would be fairly small compared to the time difference between various algorithms used.
+The basic simulation framework will be in Python because it is object-oriented, has been used by the client before, and its programs can be built to the exact needs of the future models.
+Speed of the program will not be a problem because even if it took twice as long as a different language, the relative amount of time difference would be fairly small compared to the time difference between various algorithms used.
 
-The models will entail detailing general vehicular actions such as following length and stopping time for various market penetrations of HV, CHV, AV, and CAV vehicles. They will also test these statistics against multiple levels of network congestion and differing network layouts. A research paper may be developed displaying the results found from testing these models on the basic simulation framework. Furthermore, real-life testing may be performed using scale models to confirm test results.
+The models will entail detailing general vehicular actions such as following length and stopping time for various market penetrations of HV, CHV, AV, and CAV vehicles.
+They will also test these statistics against multiple levels of network congestion and differing network layouts.
+A research paper may be developed displaying the results found from testing these models on the basic simulation framework.
+Furthermore, real-life testing may be performed using scale models to confirm test results.
 
-We intend to set up a simulation of a traffic network with vehicles that work as a system. Each vehicle has a destination, and given the destinations and current positions of all of the other vehicles, each vehicle will calculate the optimal path to minimize the travel time for all of the cars in the simulation given a set of constraints such as path, speed limit, etc.. With a higher number of cars, the number of constraints in the optimization problem grows to a point where it would simply take too long to calculate these decisions in real time. This is where some heuristics will come into place to estimate a solution to what is a very non-convex problem. In total, we now have three issues to consider:
+We intend to set up a simulation of a traffic network with vehicles that work as a system.
+Each vehicle has a destination, and given the destinations and current positions of all of the other vehicles, each vehicle will calculate the optimal path to minimize the travel time for all of the cars in the simulation given a set of constraints such as path, speed limit, etc..
+With a higher number of cars, the number of constraints in the optimization problem grows to a point where it would simply take too long to calculate these decisions in real time.
+This is where some heuristics will come into place to estimate a solution to what is a very non-convex problem.
+In total, we now have three issues to consider:
 \begin{enumerate}
 \item Real-time delivery of data which would require specialized software and hardware such as a real-time kernel and a NIC with real time capabilities for the autonomous driving itself.
-\item A highly efficient approximation algorithm to find the optimal routing for all vehicles in the network. We will need to find a way to implement these necessary features into our solution or to at least simulate these in order to get a better understanding of the problem.
+\item A highly efficient approximation algorithm to find the optimal routing for all vehicles in the network.
+We will need to find a way to implement these necessary features into our solution or to at least simulate these in order to get a better understanding of the problem.
 \item Thirdly, through the numerical study of real traffic data, we must verify our hypothesis and prove that the proposed real-time routing and rebalancing algorithm is superior to the most advanced point-to-point rebalancing algorithm in reducing customer waiting time, thus avoiding excessive congestion on the road.
 \end{enumerate}
 \section{Performance Metrics}
-Some basic performance metrics to be used will include a document about developing algorithms, building methods regarding routing and rebalancing issues, and creating a new routing network to test if our algorithm is suitable for autonomous and manned vehicles to identify each other. We will use those algorithms and methods to build a basic simulation of 3 various types of vehicles (HV, AV and CAV) in a routing transportation network. Based on those methods, the simulation of vehicles and routing transportation network will be built by some software and it will need to be fit for basic rules that enforce physics in the real world (for example, it is impossible for vehicles to pass through each other or instantly go from a stopped position to their final speed). In addition, after finishing the simulation of vehicles and routing transportation network, the basic simulation framework should have enough features to be able to test the given models, show that some models were developed and tested, and show that the information was collected and documented.
+Some basic performance metrics to be used will include a document about developing algorithms, building methods regarding routing and rebalancing issues, and creating a new routing network to test if our algorithm is suitable for autonomous and manned vehicles to identify each other.
+We will use those algorithms and methods to build a basic simulation of 3 various types of vehicles (HV, AV and CAV) in a routing transportation network.
+Based on those methods, the simulation of vehicles and routing transportation network will be built by some software and it will need to be fit for basic rules that enforce physics in the real world (for example, it is impossible for vehicles to pass through each other or instantly go from a stopped position to their final speed).
+In addition, after finishing the simulation of vehicles and routing transportation network, the basic simulation framework should have enough features to be able to test the given models, show that some models were developed and tested, and show that the information was collected and documented.
 \end{document}
