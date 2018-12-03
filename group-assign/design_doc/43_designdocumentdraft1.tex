@@ -60,6 +60,8 @@
                 \NameSigPair{\GroupMemberOne}\par
                 \NameSigPair{\GroupMemberTwo}\par
                 \NameSigPair{\GroupMemberThree}\par
+		\NameSigPair{\GroupMemberFour}\par
+		\NameSigPair{\GroupMemberFive}\par
             }
             \vspace{20pt}
         }
@@ -179,7 +181,7 @@ WebGL provides this functionality, while allowing for enough frames per second t
 Vehicle decisions such as routing will be calculated using Dijkstra’s Shortest Path algorithm (DSP), minimizing distance between the two nodes each vehicle will be concerned with: the origin and destination.
 Put on a grid network, the DSP will go further to include nodes representing intersections, calculating its minimum distance to its destination from each.
 Further, each autonomous vehicle will make use of its connectivity with the other CAV’s in a certain radius of 3,000 feet, using the information regarding those vehicles’ speed, location, and acceleration to make its decisions.
-A vehicle may begin assessing other vehicles around it at the 3,000 feet mentioned, but will withhold reacting or executing its decision until 500 feet away from the vehicle it is connected to. 
+A vehicle may begin assessing other vehicles around it at the 3,000 feet mentioned, but will withhold reacting or executing its decision until 500 feet away from the vehicle it is connected to.
 
 The vehicle will be modelled as a point on a graph, where the graph is a simplified version of the map.
 Each vehicle will have associated with it a speed, starting location, destination, and type (autonomous or not autonomous).
@@ -204,7 +206,7 @@ There is a backend program that needs to be tested and a frontend GUI that also 
 
 For the backend program test, we need to find all possible function errors.
 In this program, we have road modeling, vehicle modeling, crossroad modeling, and signal light modeling.
-We are required to test whether the whole model meets our design requirements. 
+We are required to test whether the whole model meets our design requirements.
 
 Firstly, for the road test, we want to check whether all the roads meet the requirements of the design: both one-way lane and two-way lane hybrid modeling.
 The lane must have an obvious lane number and lane direction.
@@ -222,7 +224,7 @@ Otherwise, the system will report an error "traffic light conversion error".
 
 Finally, vehicle modeling requires that vehicles be labeled as human or autonomous vehicles.
 Each has an independent ID.
-If the vehicle is not marked as a Human Vehicle or an Autonomous Vehicle, the system will report an error "the vehicle (id) is not marked". 
+If the vehicle is not marked as a Human Vehicle or an Autonomous Vehicle, the system will report an error "the vehicle (id) is not marked".
 
 Next, we will check all the possible errors in the GUI.
 In the GUI we will create a city model containing many roads and traffic lights, on which users can set parameters freely, such as the number of vehicles.
@@ -233,21 +235,21 @@ They are Communication, Missing Command, Syntactic, Error Handling, Calculation,
 
 Firstly, for Communication errors since we will provide users with a complete user interface, it requires that all menus, options, and buttons must be able to let users immediately understand its function.
 For example, menus, vehicle number settings, start, pause, terminate programs, and so on must be clear.
-Users can see if there are any errors on the GUI. 
+Users can see if there are any errors on the GUI.
 
 Next, for testing Command errors we will add test code for each command.
 When there is a button which does not respond after the user clicks it on the GUI, the user will see the program report an error "the button has no corresponding function".
 After the program is edited, we will test it ourselves several times to ensure that each option has its corresponding function.
-For example, the start option will start running the program, and the stop option will stop the program immediately. 
+For example, the start option will start running the program, and the stop option will stop the program immediately.
 
 Thirdly, for Syntactic Error, all words visible on the GUI must be spelled correctly.
-It can be visually checked from the GUI. 
+It can be visually checked from the GUI.
 
 Fourthly, we need to check Error Handling.
 On the GUI, all errors must be described clearly.
 Simply showing "error" on the GUI is not allowed.
 All errors must be clearly stated whether they are internal or user errors.
-For example, if the user sets the parameter beyond the limit value, the program will report an error "setting parameter is not accepted". 
+For example, if the user sets the parameter beyond the limit value, the program will report an error "setting parameter is not accepted".
 
 Fifthly, we need to check the program Calculation.
 We cannot test it on the backend program.
@@ -257,7 +259,7 @@ On the GUI, the number of vehicles required to be displayed corresponds to the n
 For this reason, we can check whether the number of vehicles conforms to the set parameters by formula or vehicle ID.
 Each data type must be identified, such as time, vehicle speed, and distance length.
 For example, for time calculation we can first set the change of the vehicle within 1 minute, but control the speed of GUI operation to estimate the change after 1 hour and then compare the actual change with the estimation method.
-If the situation is similar, the calculation results are consistent with the real situation. 
+If the situation is similar, the calculation results are consistent with the real situation.
 
 Finally, we will check the Control Flow.
 The results of the software's control flow must conform to its description.
