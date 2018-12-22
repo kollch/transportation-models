@@ -1,37 +1,40 @@
 const { vec2, vec4, mat4 } = glMatrix;
 
+var viewWidth = 600;
+var viewHeight = 600;
+
 var jsonFrame = {
   "frameid": 1,
   "vehicles": [
     {
       "id": 1,
       "loc": {
-        "x": 0.5,
-        "y": 0.5
+        "x": 400,
+        "y": 400
       },
       "direction": 0
     },
     {
       "id": 2,
       "loc": {
-        "x": -0.5,
-        "y": 0.5
+        "x": 200,
+        "y": 400
       },
       "direction": 90
     },
     {
       "id": 3,
       "loc": {
-        "x": 0.5,
-        "y": -0.5
+        "x": 400,
+        "y": 200
       },
       "direction": 330
     },
     {
       "id": 4,
       "loc": {
-        "x": -0.5,
-        "y": -0.5
+        "x": 200,
+        "y": 200
       },
       "direction": 45
     }
@@ -43,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function main() {
     const canvas = document.querySelector("#glCanvas");
+    canvas.width = viewWidth;
+    canvas.height = viewHeight;
     // Initialize the GL context
     const gl = canvas.getContext("webgl");
 
@@ -109,10 +114,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const vehicleLoc = vec2.fromValues(vehicle["loc"]["x"], vehicle["loc"]["y"]);
       // Positions for the object
       let positions = [
-        vec2.fromValues(0.2, 0.1),
-        vec2.fromValues(-0.2, 0.1),
-        vec2.fromValues(0.2, -0.1),
-        vec2.fromValues(-0.2, -0.1)
+        vec2.fromValues(40, 20),
+        vec2.fromValues(-40, 20),
+        vec2.fromValues(40, -20),
+        vec2.fromValues(-40, -20)
       ];
       for (j in positions) {
         vec2.add(positions[j], positions[j], vehicleLoc);
@@ -156,11 +161,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Not currently used, but useful to know the aspect ratio
     //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
-    mat4.ortho(projectionMatrix, -1, 1, -1, 1, 0, 1);
+    mat4.ortho(projectionMatrix, 0, viewWidth, 0, viewHeight, 0, 1);
 
     // Set drawing position to the "identity" point (center of the scene)
     const modelViewMatrix = mat4.create();
 
+    mat4.scale(projectionMatrix, projectionMatrix, [1, 1, 1]);
     /*
     mat4.translate(modelViewMatrix,    // destination matrix
                    modelViewMatrix,    // matrix to translate
