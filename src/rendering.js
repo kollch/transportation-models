@@ -152,22 +152,20 @@ document.addEventListener("DOMContentLoaded", () => {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     const projectionMatrix = mat4.create();
-    // Create a perspective matrix for the camera
-    ///*
-    const fieldOfView = 90 * Math.PI / 180; // in radians
-    const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    const zNear = 0.01;
-    const zFar = 100.0;
 
-    mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
-    //*/
+    // Not currently used, but useful to know the aspect ratio
+    //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+
+    mat4.ortho(projectionMatrix, -1, 1, -1, 1, 0, 1);
 
     // Set drawing position to the "identity" point (center of the scene)
     const modelViewMatrix = mat4.create();
 
+    /*
     mat4.translate(modelViewMatrix,    // destination matrix
                    modelViewMatrix,    // matrix to translate
-                   [-0.0, 0.0, -1.0]); // amount to translate
+                   [-0.0, 0.0, -0.5]); // amount to translate
+    */
 
     {
       const numComponents = 2;
