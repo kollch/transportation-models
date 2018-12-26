@@ -1,53 +1,270 @@
 const { vec2, vec4, mat4 } = glMatrix;
 
-var viewWidth = 600;
-var viewHeight = 600;
+var viewWidth = 1600;
+var viewHeight = 1600;
 
-var jsonFrame = {
-  "frameid": 1,
-  "vehicles": [
+var infrastructure = {
+  "intersections": [
     {
       "id": 1,
+      "connects_roads": [
+        1,
+        2,
+        3
+      ],
       "loc": {
-        "x": 400,
-        "y": 400
-      },
-      "direction": 0
+        "x": 500,
+        "y": 500
+      }
     },
     {
       "id": 2,
+      "connects_roads": [
+        2,
+        4,
+        5,
+        6
+      ],
       "loc": {
-        "x": 200,
-        "y": 400
-      },
-      "direction": 90
+        "x": 400,
+        "y": 1000
+      }
     },
     {
       "id": 3,
+      "connects_roads": [
+        6,
+        7,
+        8,
+        9
+      ],
       "loc": {
-        "x": 400,
-        "y": 200
-      },
-      "direction": 330
+        "x": 1100,
+        "y": 1000
+      }
     },
     {
       "id": 4,
+      "connects_roads": [
+        3,
+        9,
+        10,
+        11
+      ],
       "loc": {
-        "x": 200,
-        "y": 200
-      },
-      "direction": 45
+        "x": 900,
+        "y": 600
+      }
     }
+  ],
+  "roads": [
+    {
+      "id": 1,
+      "ends": [
+        1,
+        {
+          "x": 0,
+          "y": 500
+        }
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 2,
+      "ends": [
+        1,
+        2
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 3,
+      "ends": [
+        1,
+        4
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 4,
+      "ends": [
+        {
+          "x": 0,
+          "y": 1000
+        },
+        2
+      ],
+      "two-way": true,
+      "lanes": 2
+    },
+    {
+      "id": 5,
+      "ends": [
+        2,
+        {
+          "x": 400,
+          "y": 1500
+        }
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 6,
+      "ends": [
+        2,
+        3
+      ],
+      "two-way": true,
+      "lanes": 2
+    },
+    {
+      "id": 7,
+      "ends": [
+        3,
+        {
+          "x": 1100,
+          "y": 1500
+        }
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 8,
+      "ends": [
+        3,
+        {
+          "x": 1600,
+          "y": 1000
+        }
+      ],
+      "two-way": true,
+      "lanes": 2
+    },
+    {
+      "id": 9,
+      "ends": [
+        4,
+        3
+      ],
+      "two-way": false,
+      "lanes": 2
+    },
+    {
+      "id": 10,
+      "ends": [
+        4,
+        {
+          "x": 1600,
+          "y": 600
+        }
+      ],
+      "two-way": true,
+      "lanes": 1
+    },
+    {
+      "id": 11,
+      "ends": [
+        {
+          "x": 900,
+          "y": 0
+        },
+        4
+      ],
+      "two-way": false,
+      "lanes": 1
+    },
   ]
 }
+
+var jsonFrame = [
+  {
+    "frameid": 1,
+    "vehicles": [
+      {
+        "id": 1,
+        "loc": {
+          "x": 400,
+          "y": 400
+        },
+        "direction": 0
+      },
+      {
+        "id": 2,
+        "loc": {
+          "x": 200,
+          "y": 400
+        },
+        "direction": 90
+      },
+      {
+        "id": 3,
+        "loc": {
+          "x": 400,
+          "y": 200
+        },
+        "direction": 330
+      },
+      {
+        "id": 4,
+        "loc": {
+          "x": 200,
+          "y": 200
+        },
+        "direction": 45
+      }
+    ]
+  },
+  {
+    "frameid": 2,
+    "vehicles": [
+      {
+        "id": 1,
+        "loc": {
+          "x": 300,
+          "y": 300
+        },
+        "direction": 0
+      },
+      {
+        "id": 2,
+        "loc": {
+          "x": 100,
+          "y": 300
+        },
+        "direction": 90
+      },
+      {
+        "id": 3,
+        "loc": {
+          "x": 300,
+          "y": 100
+        },
+        "direction": 330
+      },
+      {
+        "id": 4,
+        "loc": {
+          "x": 100,
+          "y": 100
+        },
+        "direction": 45
+      }
+    ]
+  }
+];
 
 document.addEventListener("DOMContentLoaded", () => {
   main();
 
   function main() {
     const canvas = document.querySelector("#glCanvas");
-    canvas.width = viewWidth;
-    canvas.height = viewHeight;
+    //canvas.width = viewWidth;
+    //canvas.height = viewHeight;
     // Initialize the GL context
     const gl = canvas.getContext("webgl");
 
@@ -88,74 +305,46 @@ document.addEventListener("DOMContentLoaded", () => {
       },
     };
 
-    // Build all of the objects to be drawn
-    const buffers = initBuffers(gl);
+    // Set parameters for clearing
+    gl.clearColor(1.0, 1.0, 1.0, 1.0); // Clear to white, fully opaque
+    gl.clearDepth(1.0);                // Clear everything
+    gl.enable(gl.DEPTH_TEST);          // Enable depth testing
+    gl.depthFunc(gl.LEQUAL);           // Near things obscure far things
+
+    // Tell WebGL to use our program when drawing
+    gl.useProgram(programInfo.program);
+
+    const lineBuf = gl.createBuffer();
+    const rectBuf = gl.createBuffer();
+
+    const zoom = 4;
+    setupCamera(gl, programInfo, zoom);
+
+    // Set up the buffer
+    //useBuffer(gl, programInfo, rectBuf);
 
     var then = 0;
 
+    var count = 0;
     // Draw the scene repeatedly
     function render(now) {
       const dTime = now - then;
       then = now;
 
-      drawScene(gl, programInfo, buffers, now, dTime);
+      // Clear the canvas before drawing
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      drawInfrastructure(gl, now, dTime, programInfo, lineBuf);
+      drawVehicles(gl, now, dTime, programInfo, rectBuf, count % 2);
+      count += 1;
+
       requestAnimationFrame(render);
     }
 
     requestAnimationFrame(render);
   }
 
-  function storeToBuffer(gl, buffer) {
-    // 32 because there are 4 points with 2 values each, each value of size 4 bytes
-    gl.bufferData(gl.ARRAY_BUFFER, jsonFrame["vehicles"].length * 32, gl.STATIC_DRAW);
-    for (i in jsonFrame["vehicles"]) {
-      const vehicle = jsonFrame["vehicles"][i];
-
-      const vehicleLoc = vec2.fromValues(vehicle["loc"]["x"], vehicle["loc"]["y"]);
-      // Positions for the object
-      let positions = [
-        vec2.fromValues(40, 20),
-        vec2.fromValues(-40, 20),
-        vec2.fromValues(40, -20),
-        vec2.fromValues(-40, -20)
-      ];
-      for (j in positions) {
-        vec2.add(positions[j], positions[j], vehicleLoc);
-        vec2.rotate(positions[j], positions[j], vehicleLoc, glMatrix.glMatrix.toRadian(vehicle["direction"]));
-      }
-
-      let coords = new Float32Array(8);
-      // 2 because there are 2 coordinates for every point (2D)
-      positions.forEach((item, j) => {
-        coords.set(item, j * 2);
-      });
-      // Store positions into the buffer
-      gl.bufferSubData(gl.ARRAY_BUFFER, i * 32, coords);
-    }
-  }
-
-  function initBuffers(gl) {
-    const positionBuffer = gl.createBuffer();
-
-    // Set positionBuffer as the one to apply buffer operations to
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    storeToBuffer(gl, positionBuffer);
-
-    return {
-      position: positionBuffer,
-    };
-  }
-
-  function drawScene(gl, programInfo, buffers, currTime, dTime) {
-    gl.clearColor(1.0, 1.0, 1.0, 1.0); // Clear to black, fully opaque
-    gl.clearDepth(1.0);                // Clear everything
-    gl.enable(gl.DEPTH_TEST);          // Enable depth testing
-    gl.depthFunc(gl.LEQUAL);           // Near things obscure far things
-
-    // Clear the canvas before drawing
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
+  function setupCamera(gl, programInfo, zoom) {
     const projectionMatrix = mat4.create();
 
     // Not currently used, but useful to know the aspect ratio
@@ -163,57 +352,89 @@ document.addEventListener("DOMContentLoaded", () => {
 
     mat4.ortho(projectionMatrix, 0, viewWidth, 0, viewHeight, 0, 1);
 
-    // Set drawing position to the "identity" point (center of the scene)
+    // Set drawing position to the "identity" point (bottom left point of the scene)
     const modelViewMatrix = mat4.create();
 
-    mat4.scale(projectionMatrix, projectionMatrix, [1, 1, 1]);
-    /*
-    mat4.translate(modelViewMatrix,    // destination matrix
-                   modelViewMatrix,    // matrix to translate
-                   [-0.0, 0.0, -0.5]); // amount to translate
-    */
-
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-      gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset);
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-    }
-
-    // Tell WebGL to use our program when drawing
-    gl.useProgram(programInfo.program);
+    mat4.scale(projectionMatrix, projectionMatrix, [zoom, zoom, 1]);
+    mat4.translate(projectionMatrix, projectionMatrix, [0, 0, 0]);
 
     // Set the shader uniforms
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.projectionMatrix,
-      false,
-      projectionMatrix);
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.modelViewMatrix,
-      false,
-      modelViewMatrix);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
+    gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
+  }
 
-    {
-      const vertexCount = 4;
-      // Get the size of the buffer and check that it's valid
-      const bufSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
-      if (!Number.isInteger(bufSize / 32)) {
-        console.log("WARNING: Buffer is not a valid size!");
+  function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
+    useBuffer(gl, programInfo, buffer);
+    storeToBuffer(gl, 4, vehiclePos(frame));
+    drawPoints(gl, now, dTime, 4, gl.TRIANGLE_STRIP);
+  }
+
+  function drawInfrastructure(gl, now, dTime, programInfo, buffer) {
+    useBuffer(gl, programInfo, buffer);
+    let points = [[
+      vec2.fromValues(300, 300),
+      vec2.fromValues(320, 320)
+    ]];
+    storeToBuffer(gl, 2, points);
+    drawPoints(gl, now, dTime, 2, gl.LINE_STRIP);
+  }
+
+  function vehiclePos(frame) {
+    let allPositions = [];
+    for (i in jsonFrame[frame]["vehicles"]) {
+      const vehicle = jsonFrame[frame]["vehicles"][i];
+
+      const vehicleLoc = vec2.fromValues(vehicle["loc"]["x"], vehicle["loc"]["y"]);
+      // Positions for the object
+      let positions = [
+        vec2.fromValues(5, 4),
+        vec2.fromValues(-10, 4),
+        vec2.fromValues(10, -4),
+        vec2.fromValues(-10, -4)
+      ];
+      for (j in positions) {
+        vec2.add(positions[j], positions[j], vehicleLoc);
+        vec2.rotate(positions[j], positions[j], vehicleLoc, glMatrix.glMatrix.toRadian(vehicle["direction"]));
       }
-      // Draw vertices on the screen
-      for (let i = 0; i < bufSize / 32; i++) {
-        gl.drawArrays(gl.TRIANGLE_STRIP, i * 4, vertexCount);
-      }
+      allPositions.push(positions);
+    }
+    return allPositions;
+  }
+
+  function storeToBuffer(gl, type, allPositions) {
+    // 8 because there are 2 values for every point, each value of size 4 bytes
+    gl.bufferData(gl.ARRAY_BUFFER, allPositions.length * 8 * type, gl.STATIC_DRAW);
+
+    for (i in allPositions) {
+      const positions = allPositions[i];
+      let coords = new Float32Array(2 * type);
+      // 2 because there are 2 values for every point (2D)
+      positions.forEach((item, j) => {
+        coords.set(item, j * 2);
+      });
+      // Store positions into the buffer
+      gl.bufferSubData(gl.ARRAY_BUFFER, i * 8 * type, coords);
+    }
+  }
+
+  function useBuffer(gl, programInfo, buffer) {
+    // Set 'buffer' as the one to apply buffer operations to
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+
+    gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
+  }
+
+  function drawPoints(gl, currTime, dTime, vertexCount, type) {
+    const pointSize = 8 * vertexCount;
+    // Get the size of the buffer and check that it's valid
+    const bufSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
+    if (!Number.isInteger(bufSize / pointSize)) {
+      console.log("WARNING: Buffer is not a valid size!");
+    }
+    // Draw vertices on the screen
+    for (let i = 0; i < bufSize / pointSize; i++) {
+      gl.drawArrays(type, i * 4, vertexCount);
     }
   }
 
