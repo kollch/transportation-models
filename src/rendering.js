@@ -399,6 +399,13 @@ document.addEventListener("DOMContentLoaded", () => {
       let vehicleLoc = vec2.create();
       vec2.lerp(vehicleLoc, vehicle1Loc, vehicle2Loc, dTime);
       function lerp(a, b, diff) {
+        if (a >= 180) {
+          if (b < a - 180) {
+            b += 360;
+          }
+        } else if (b > a + 180) {
+          a += 360;
+        }
         return a * (1 - diff) + b * diff;
       }
       const vehicleDir = glMatrix.glMatrix.toRadian(lerp(vehicle1Dir, vehicle2Dir, dTime));
