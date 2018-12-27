@@ -228,7 +228,7 @@ var jsonFrame = [
           "x": 300,
           "y": 300
         },
-        "direction": 0
+        "direction": 90
       },
       {
         "id": 2,
@@ -236,7 +236,7 @@ var jsonFrame = [
           "x": 100,
           "y": 300
         },
-        "direction": 90
+        "direction": 45
       },
       {
         "id": 3,
@@ -244,7 +244,7 @@ var jsonFrame = [
           "x": 300,
           "y": 100
         },
-        "direction": 330
+        "direction": 0
       },
       {
         "id": 4,
@@ -252,7 +252,7 @@ var jsonFrame = [
           "x": 100,
           "y": 100
         },
-        "direction": 45
+        "direction": 330
       }
     ]
   }
@@ -323,21 +323,25 @@ document.addEventListener("DOMContentLoaded", () => {
     // Set up the buffer
     //useBuffer(gl, programInfo, rectBuf);
 
-    var then = 0;
-
-    var count = 0;
+    var time = 0;
+    var numFrames = jsonFrame.length;
+    var then = performance.now();
     // Draw the scene repeatedly
     function render(now) {
-      const dTime = now - then;
+      time += now - then;
+      const frame = time / 1000 + 1;
+      const currFrame = Math.floor(frame);
       then = now;
+
+      if (currFrame >= numFrames) {
+        return;
+      }
 
       // Clear the canvas before drawing
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      drawInfrastructure(gl, now, dTime, programInfo, lineBuf);
-      drawVehicles(gl, now, dTime, programInfo, rectBuf, count % 2);
-      count += 1;
-
+      drawInfrastructure(gl, now, time % 1, programInfo, lineBuf);
+      drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
       requestAnimationFrame(render);
     }
 
@@ -365,7 +369,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
     useBuffer(gl, programInfo, buffer);
-    storeToBuffer(gl, 4, vehiclePos(frame));
+    //console.log(frame + dTime / 1000);
+    storeToBuffer(gl, 4, vehiclePos(frame, dTime));
     drawPoints(gl, now, dTime, 4, gl.TRIANGLE_STRIP);
   }
 
@@ -379,12 +384,24 @@ document.addEventListener("DOMContentLoaded", () => {
     drawPoints(gl, now, dTime, 2, gl.LINE_STRIP);
   }
 
-  function vehiclePos(frame) {
+  function vehiclePos(frame, dTime) {
     let allPositions = [];
-    for (i in jsonFrame[frame]["vehicles"]) {
-      const vehicle = jsonFrame[frame]["vehicles"][i];
-
-      const vehicleLoc = vec2.fromValues(vehicle["loc"]["x"], vehicle["loc"]["y"]);
+    for (i in jsonFrame[frame - 1]["vehicles"]) {
+      const vehicle1 = jsonFrame[frame - 1]["vehicles"][i];
+      const vehicle2 = jsonFrame[frame]["vehicles"].find(x => x.id === vehicle1.id);
+      if (vehicle2 === undefined) {
+        continue;
+      }
+      const vehicle1Loc = vec2.fromValues(vehicle1["loc"]["x"], vehicle1["loc"]["y"]);
+      const vehicle2Loc = vec2.fromValues(vehicle2["loc"]["x"], vehicle2["loc"]["y"]);
+      const vehicle1Dir = vehicle1["direction"];
+      const vehicle2Dir = vehicle2["direction"];
+      let vehicleLoc = vec2.create();
+      vec2.lerp(vehicleLoc, vehicle1Loc, vehicle2Loc, dTime);
+      function lerp(a, b, diff) {
+        return a * (1 - diff) + b * diff;
+      }
+      const vehicleDir = glMatrix.glMatrix.toRadian(lerp(vehicle1Dir, vehicle2Dir, dTime));
       // Positions for the object
       let positions = [
         vec2.fromValues(5, 4),
@@ -394,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ];
       for (j in positions) {
         vec2.add(positions[j], positions[j], vehicleLoc);
-        vec2.rotate(positions[j], positions[j], vehicleLoc, glMatrix.glMatrix.toRadian(vehicle["direction"]));
+        vec2.rotate(positions[j], positions[j], vehicleLoc, vehicleDir);
       }
       allPositions.push(positions);
     }
