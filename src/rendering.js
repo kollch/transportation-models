@@ -8,9 +8,10 @@ var infrastructure = {
     {
       "id": 1,
       "connects_roads": [
-        1,
         2,
-        3
+        3,
+        null,
+        1
       ],
       "loc": {
         "x": 500,
@@ -20,10 +21,10 @@ var infrastructure = {
     {
       "id": 2,
       "connects_roads": [
-        2,
-        4,
         5,
-        6
+        6,
+        2,
+        4
       ],
       "loc": {
         "x": 400,
@@ -33,10 +34,10 @@ var infrastructure = {
     {
       "id": 3,
       "connects_roads": [
-        6,
         7,
         8,
-        9
+        9,
+        6
       ],
       "loc": {
         "x": 1100,
@@ -46,10 +47,10 @@ var infrastructure = {
     {
       "id": 4,
       "connects_roads": [
-        3,
         9,
         10,
-        11
+        11,
+        3
       ],
       "loc": {
         "x": 900,
@@ -67,8 +68,8 @@ var infrastructure = {
           "y": 500
         }
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 2,
@@ -76,8 +77,8 @@ var infrastructure = {
         1,
         2
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 3,
@@ -85,8 +86,8 @@ var infrastructure = {
         1,
         4
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 4,
@@ -97,8 +98,8 @@ var infrastructure = {
         },
         2
       ],
-      "two-way": true,
-      "lanes": 2
+      "two_way": true,
+      "lanes": 4
     },
     {
       "id": 5,
@@ -109,8 +110,8 @@ var infrastructure = {
           "y": 1500
         }
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 6,
@@ -118,8 +119,8 @@ var infrastructure = {
         2,
         3
       ],
-      "two-way": true,
-      "lanes": 2
+      "two_way": true,
+      "lanes": 4
     },
     {
       "id": 7,
@@ -130,8 +131,8 @@ var infrastructure = {
           "y": 1500
         }
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 8,
@@ -142,8 +143,8 @@ var infrastructure = {
           "y": 1000
         }
       ],
-      "two-way": true,
-      "lanes": 2
+      "two_way": true,
+      "lanes": 4
     },
     {
       "id": 9,
@@ -151,8 +152,8 @@ var infrastructure = {
         4,
         3
       ],
-      "two-way": false,
-      "lanes": 2
+      "two_way": false,
+      "lanes": 4
     },
     {
       "id": 10,
@@ -163,8 +164,8 @@ var infrastructure = {
           "y": 600
         }
       ],
-      "two-way": true,
-      "lanes": 1
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 11,
@@ -175,8 +176,8 @@ var infrastructure = {
         },
         4
       ],
-      "two-way": false,
-      "lanes": 1
+      "two_way": false,
+      "lanes": 2
     },
   ]
 }
@@ -314,14 +315,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // Tell WebGL to use our program when drawing
     gl.useProgram(programInfo.program);
 
-    const lineBuf = gl.createBuffer();
+    const infrBuf = gl.createBuffer();
     const rectBuf = gl.createBuffer();
 
-    const zoom = 4;
+    const zoom = 1;
     setupCamera(gl, programInfo, zoom);
 
-    // Set up the buffer
-    //useBuffer(gl, programInfo, rectBuf);
+    // Set up the infrastructure buffer
+    useBuffer(gl, programInfo, infrBuf);
+    let infrNum = setupInfr(gl);
 
     var time = 0;
     var numFrames = jsonFrame.length;
@@ -340,8 +342,8 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear the canvas before drawing
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-      drawInfrastructure(gl, now, time % 1, programInfo, lineBuf);
-      drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
+      drawInfr(gl, programInfo, infrBuf, infrNum);
+      //drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
       requestAnimationFrame(render);
     }
 
@@ -367,35 +369,138 @@ document.addEventListener("DOMContentLoaded", () => {
     gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
   }
 
+  function setupInfr(gl) {
+    let allPositions = [];
+    let intersections = [];
+    function roadAngle(road) {
+      let loc1 = road.ends[0];
+      let loc2 = road.ends[1];
+      // Check if element is a number; if so, retrieve loc from intersections
+      if (!isNaN(loc1)) {
+        loc1 = infrastructure.intersections.find(x => x.id === loc1).loc;
+      }
+      if (!isNaN(loc2)) {
+        loc2 = infrastructure.intersections.find(x => x.id === loc2).loc;
+      }
+      const a = vec2.fromValues(loc1.x, loc1.y);
+      let b = vec2.fromValues(loc2.x, loc2.y);
+      vec2.subtract(b, b, a);
+      let angle = vec2.angle(b, vec2.fromValues(0, 1));
+      const rad90 = glMatrix.glMatrix.toRadian(90);
+      angle %= rad90;
+      if (angle > rad90 / 2) {
+        angle = rad90 - angle;
+      }
+      return angle;
+    }
+    function addIntersections() {
+      for (i in infrastructure.intersections) {
+        const intersection = infrastructure.intersections[i];
+        let intersectionInfo = {
+          "id": intersection.id,
+          "roadcorners": []
+        };
+        // Width, height
+        let dims = [0, 0];
+        // Up to 4 roads connect to an intersection
+        for (let j = 0; j < 4; j++) {
+          const roadId = intersection.connects_roads[j];
+          const road = infrastructure.roads.find(x => x.id === roadId);
+          if (road === undefined) {
+            continue;
+          }
+          // 12 is the width of a lane
+          const roadWidth = road.lanes * 12;
+          dims[j % 2] = Math.max(dims[j % 2], roadWidth / Math.cos(roadAngle(road)));
+        }
+        // Round lane widths up
+        const halfWidth = Math.ceil(dims[0] / 2);
+        const halfHeight = Math.ceil(dims[1] / 2);
+        let points = [
+          vec2.fromValues(-halfWidth, halfHeight),
+          vec2.fromValues(halfWidth, halfHeight),
+          vec2.fromValues(halfWidth, -halfHeight),
+          vec2.fromValues(-halfWidth, -halfHeight)
+        ];
+        if (points.length != 4) {
+          console.log("ERROR: incorrect number of intersection points!");
+        }
+        // Add the intersection origin to the offsets
+        for (let j = 0; j < 4; j++) {
+          vec2.add(points[j], points[j], vec2.fromValues(intersection.loc.x, intersection.loc.y));
+        }
+        // Separate loop because all points must be calculated first
+        for (let j = 0; j < 4; j++) {
+          const roadId = intersection.connects_roads[j];
+          if (roadId === null) {
+            continue;
+          }
+          // Make sure road points are left-right and up-down
+          let firstPoint = points[j];
+          let secondPoint = points[(j + 1) % 4];
+          if (j > 1) {
+            firstPoint = secondPoint;
+            secondPoint = points[j];
+          }
+          intersectionInfo.roadcorners.push({
+            "road": roadId,
+            "coords": [
+              firstPoint,
+              secondPoint
+            ]
+          });
+        }
+        intersections.push(intersectionInfo);
+        allPositions.push(points);
+      }
+      return allPositions;
+    }
+    function addRoads() {
+      for (i in infrastructure.roads) {
+        const road = infrastructure.roads[i];
+      }
+    }
+    const intersectionCoords = addIntersections();
+    storeToBuffer(gl, 4, intersectionCoords);
+    //const roadCoords = addRoads();
+    //storeToBuffer(gl, 2, roadCoords);
+    return {
+      "rect": intersectionCoords.length,
+      //"line": infrastructure.roads.length
+    };
+  }
+
   function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
     useBuffer(gl, programInfo, buffer);
     //console.log(frame + dTime / 1000);
     storeToBuffer(gl, 4, vehiclePos(frame, dTime));
-    drawPoints(gl, now, dTime, 4, gl.TRIANGLE_STRIP);
+    drawPoints(gl, 4, gl.TRIANGLE_STRIP);
   }
 
-  function drawInfrastructure(gl, now, dTime, programInfo, buffer) {
+  function drawInfr(gl, programInfo, buffer, infrNum) {
     useBuffer(gl, programInfo, buffer);
+    /*
     let points = [[
       vec2.fromValues(300, 300),
       vec2.fromValues(320, 320)
     ]];
     storeToBuffer(gl, 2, points);
-    drawPoints(gl, now, dTime, 2, gl.LINE_STRIP);
+    */
+    drawPoints(gl, 4, gl.LINE_LOOP);
   }
 
   function vehiclePos(frame, dTime) {
     let allPositions = [];
-    for (i in jsonFrame[frame - 1]["vehicles"]) {
-      const vehicle1 = jsonFrame[frame - 1]["vehicles"][i];
-      const vehicle2 = jsonFrame[frame]["vehicles"].find(x => x.id === vehicle1.id);
+    for (i in jsonFrame[frame - 1].vehicles) {
+      const vehicle1 = jsonFrame[frame - 1].vehicles[i];
+      const vehicle2 = jsonFrame[frame].vehicles.find(x => x.id === vehicle1.id);
       if (vehicle2 === undefined) {
         continue;
       }
-      const vehicle1Loc = vec2.fromValues(vehicle1["loc"]["x"], vehicle1["loc"]["y"]);
-      const vehicle2Loc = vec2.fromValues(vehicle2["loc"]["x"], vehicle2["loc"]["y"]);
-      const vehicle1Dir = vehicle1["direction"];
-      const vehicle2Dir = vehicle2["direction"];
+      const vehicle1Loc = vec2.fromValues(vehicle1.loc.x, vehicle1.loc.y);
+      const vehicle2Loc = vec2.fromValues(vehicle2.loc.x, vehicle2.loc.y);
+      const vehicle1Dir = vehicle1.direction;
+      const vehicle2Dir = vehicle2.direction;
       let vehicleLoc = vec2.create();
       vec2.lerp(vehicleLoc, vehicle1Loc, vehicle2Loc, dTime);
       function lerp(a, b, diff) {
@@ -449,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
     gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
   }
 
-  function drawPoints(gl, currTime, dTime, vertexCount, type) {
+  function drawPoints(gl, vertexCount, type) {
     const pointSize = 8 * vertexCount;
     // Get the size of the buffer and check that it's valid
     const bufSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
