@@ -373,6 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let allPositions = [];
     let intersections = [];
     function roadAngle(road) {
+      /* Return the angle of the road with regards to the x axis */
       let loc1 = road.ends[0];
       let loc2 = road.ends[1];
       // Check if element is a number; if so, retrieve loc from intersections
@@ -382,16 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isNaN(loc2)) {
         loc2 = infrastructure.intersections.find(x => x.id === loc2).loc;
       }
-      const a = vec2.fromValues(loc1.x, loc1.y);
-      let b = vec2.fromValues(loc2.x, loc2.y);
-      vec2.subtract(b, b, a);
-      let angle = vec2.angle(b, vec2.fromValues(0, 1));
-      const rad90 = glMatrix.glMatrix.toRadian(90);
-      angle %= rad90;
-      if (angle > rad90 / 2) {
-        angle = rad90 - angle;
-      }
-      return angle;
+      return Math.atan2(loc2.y - loc1.y, loc2.x - loc1.x);
     }
     function addIntersections() {
       for (i in infrastructure.intersections) {
@@ -411,7 +403,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           // 12 is the width of a lane
           const roadWidth = road.lanes * 12;
-          dims[j % 2] = Math.max(dims[j % 2], roadWidth / Math.cos(roadAngle(road)));
+          if (j % 2 === 0) {
+            dims[0] = Math.max(dims[0], roadWidth / Math.sin(roadAngle(road)));
+          } else {
+            dims[1] = Math.max(dims[1], roadWidth / Math.cos(roadAngle(road)));
+          }
         }
         // Round lane widths up
         const halfWidth = Math.ceil(dims[0] / 2);
@@ -442,8 +438,17 @@ document.addEventListener("DOMContentLoaded", () => {
             firstPoint = secondPoint;
             secondPoint = points[j];
           }
+          /* Get vertical or horizontal width of road;
+           * negative value specifies the road is horizontal */
+          let roadVertWidth;
+          if (j % 2 === 0) {
+            roadVertWidth = halfWidth;
+          } else {
+            roadVertWidth = -halfHeight;
+          }
           intersectionInfo.roadcorners.push({
             "road": roadId,
+            "roadVertWidth": roadVertWidth,
             "coords": [
               firstPoint,
               secondPoint
@@ -455,26 +460,42 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return allPositions;
     }
+    /*
     function addRoads() {
+      console.log(intersections);
+      let vectorPairs = [];
       for (i in infrastructure.roads) {
         const road = infrastructure.roads[i];
+        let end1 = road.ends[0];
+        let end2 = road.ends[1];
+        let point1;
+        let point2;
+        let point3;
+        let point4;
+          // 12 is the width of a lane
+          const roadWidth = road.lanes * 12;
+          dims[j % 2] = Math.max(dims[j % 2], roadWidth / Math.cos(roadAngle(road)));
+        if (isNaN(end1)) {
+
+        } else {
+          const temp = intersections.find(x => x.id === end1).roadcorners.coords;
+          point1 = temp[0];
+          point3 = temp[1];
+        }
+        let points = [
+          vec2.fromValues(),
+          vec2.fromValues()
+        ];
       }
-    }
+    } */
     const intersectionCoords = addIntersections();
     storeToBuffer(gl, 4, intersectionCoords);
     //const roadCoords = addRoads();
     //storeToBuffer(gl, 2, roadCoords);
     return {
       "rect": intersectionCoords.length,
-      //"line": infrastructure.roads.length
+      //"line": roadCoords.length
     };
-  }
-
-  function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
-    useBuffer(gl, programInfo, buffer);
-    //console.log(frame + dTime / 1000);
-    storeToBuffer(gl, 4, vehiclePos(frame, dTime));
-    drawPoints(gl, 4, gl.TRIANGLE_STRIP);
   }
 
   function drawInfr(gl, programInfo, buffer, infrNum) {
@@ -486,7 +507,21 @@ document.addEventListener("DOMContentLoaded", () => {
     ]];
     storeToBuffer(gl, 2, points);
     */
-    drawPoints(gl, 4, gl.LINE_LOOP);
+    // Draw rectangles
+    for (let i = 0; i < infrNum.rect; i++) {
+      gl.drawArrays(gl.LINE_LOOP, i * 4, 4);
+    }
+    // Draw lines
+    //for (let i = 0; i < infrNum.line; i++) {
+      //gl.drawArrays(gl.LINES, i * 4, 2);
+    //}
+  }
+
+  function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
+    useBuffer(gl, programInfo, buffer);
+    //console.log(frame + dTime / 1000);
+    storeToBuffer(gl, 4, vehiclePos(frame, dTime));
+    drawPoints(gl, 4, gl.TRIANGLE_STRIP);
   }
 
   function vehiclePos(frame, dTime) {
