@@ -107,7 +107,7 @@ var infrastructure = {
         2,
         {
           "x": 400,
-          "y": 1500
+          "y": 1600
         }
       ],
       "two_way": true,
@@ -128,7 +128,7 @@ var infrastructure = {
         3,
         {
           "x": 1100,
-          "y": 1500
+          "y": 1600
         }
       ],
       "two_way": true,
@@ -383,14 +383,14 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!isNaN(loc2)) {
         loc2 = infrastructure.intersections.find(x => x.id === loc2).loc;
       }
-      return Math.atan2(loc2.y - loc1.y, loc2.x - loc1.x);
+      return Math.abs(Math.atan((loc2.y - loc1.y) / (loc2.x - loc1.x)));
     }
     function addIntersections() {
       for (i in infrastructure.intersections) {
         const intersection = infrastructure.intersections[i];
         let intersectionInfo = {
           "id": intersection.id,
-          "roadcorners": []
+          "roads": []
         };
         // Width, height
         let dims = [0, 0];
@@ -421,9 +421,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (points.length != 4) {
           console.log("ERROR: incorrect number of intersection points!");
         }
+        const intersectionOrigin = vec2.fromValues(intersection.loc.x, intersection.loc.y);
         // Add the intersection origin to the offsets
         for (let j = 0; j < 4; j++) {
-          vec2.add(points[j], points[j], vec2.fromValues(intersection.loc.x, intersection.loc.y));
+          vec2.add(points[j], points[j], intersectionOrigin);
         }
         // Separate loop because all points must be calculated first
         for (let j = 0; j < 4; j++) {
@@ -440,19 +441,23 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           /* Get vertical or horizontal width of road;
            * negative value specifies the road is horizontal */
-          let roadVertWidth;
-          if (j % 2 === 0) {
-            roadVertWidth = halfWidth;
-          } else {
-            roadVertWidth = -halfHeight;
+          let roadLoc = vec2.clone(intersectionOrigin);
+          // Figure out if offset is positive or negative
+          let sign = 1;
+          if (j > 1) {
+            sign = -1;
           }
-          intersectionInfo.roadcorners.push({
-            "road": roadId,
-            "roadVertWidth": roadVertWidth,
-            "coords": [
-              firstPoint,
-              secondPoint
-            ]
+          // Set offset
+          let offset;
+          if (j % 2 === 0) {
+            offset = vec2.fromValues(0, sign * halfHeight);
+          } else {
+            offset = vec2.fromValues(sign * halfWidth, 0);
+          }
+          vec2.add(roadLoc, roadLoc, offset);
+          intersectionInfo.roads.push({
+            "id": roadId,
+            "loc": roadLoc
           });
         }
         intersections.push(intersectionInfo);
@@ -460,9 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       return allPositions;
     }
-    /*
     function addRoads() {
-      console.log(intersections);
       let vectorPairs = [];
       for (i in infrastructure.roads) {
         const road = infrastructure.roads[i];
@@ -472,55 +475,80 @@ document.addEventListener("DOMContentLoaded", () => {
         let point2;
         let point3;
         let point4;
-          // 12 is the width of a lane
-          const roadWidth = road.lanes * 12;
-          dims[j % 2] = Math.max(dims[j % 2], roadWidth / Math.cos(roadAngle(road)));
-        if (isNaN(end1)) {
-
+        const angle = roadAngle(road);
+        // 12 is the width of a lane
+        const roadWidth = road.lanes * 12;
+        let roadVertWidth;
+        let offset;
+        if (angle > glMatrix.glMatrix.toRadian(45)) {
+          roadVertWidth = roadWidth / Math.sin(angle);
+          offset = vec2.fromValues(roadVertWidth / 2, 0);
         } else {
-          const temp = intersections.find(x => x.id === end1).roadcorners.coords;
-          point1 = temp[0];
-          point3 = temp[1];
+          roadVertWidth = roadWidth / Math.cos(angle);
+          offset = vec2.fromValues(0, roadVertWidth / 2);
         }
+        if (isNaN(end1)) {
+          point1 = vec2.fromValues(end1.x, end1.y);
+          point3 = vec2.fromValues(end1.x, end1.y);
+        } else {
+          point1 = vec2.clone(intersections.find(x => x.id === end1).roads.find(x => x.id === road.id).loc);
+          point3 = vec2.clone(intersections.find(x => x.id === end1).roads.find(x => x.id === road.id).loc);
+        }
+        vec2.add(point1, point1, offset);
+        vec2.sub(point3, point3, offset);
+        if (isNaN(end2)) {
+          point2 = vec2.fromValues(end2.x, end2.y);
+          point4 = vec2.fromValues(end2.x, end2.y);
+        } else {
+          point2 = vec2.clone(intersections.find(x => x.id === end2).roads.find(x => x.id === road.id).loc);
+          point4 = vec2.clone(intersections.find(x => x.id === end2).roads.find(x => x.id === road.id).loc);
+        }
+        vec2.add(point2, point2, offset);
+        vec2.sub(point4, point4, offset);
         let points = [
-          vec2.fromValues(),
-          vec2.fromValues()
+          point1,
+          point2
         ];
+        vectorPairs.push(points);
+        points = [
+          point3,
+          point4
+        ];
+        vectorPairs.push(points);
       }
-    } */
+      return vectorPairs;
+    }
     const intersectionCoords = addIntersections();
-    storeToBuffer(gl, 4, intersectionCoords);
-    //const roadCoords = addRoads();
-    //storeToBuffer(gl, 2, roadCoords);
+    const roadCoords = addRoads();
+    initBuffer(gl, intersectionCoords.length * 4 + roadCoords.length * 2);
+    storeToBuffer(gl, 4, intersectionCoords, 0);
+    storeToBuffer(gl, 2, roadCoords, intersectionCoords.length * 32);
     return {
       "rect": intersectionCoords.length,
-      //"line": roadCoords.length
+      "line": roadCoords.length
     };
   }
 
   function drawInfr(gl, programInfo, buffer, infrNum) {
     useBuffer(gl, programInfo, buffer);
-    /*
-    let points = [[
-      vec2.fromValues(300, 300),
-      vec2.fromValues(320, 320)
-    ]];
-    storeToBuffer(gl, 2, points);
-    */
+    /* Don't call drawPoints() because the checks don't work */
     // Draw rectangles
     for (let i = 0; i < infrNum.rect; i++) {
       gl.drawArrays(gl.LINE_LOOP, i * 4, 4);
     }
+    const offset = infrNum.rect * 4;
     // Draw lines
-    //for (let i = 0; i < infrNum.line; i++) {
-      //gl.drawArrays(gl.LINES, i * 4, 2);
-    //}
+    for (let i = 0; i < infrNum.line; i++) {
+      gl.drawArrays(gl.LINES, offset + i * 2, 2);
+    }
   }
 
   function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
     useBuffer(gl, programInfo, buffer);
     //console.log(frame + dTime / 1000);
-    storeToBuffer(gl, 4, vehiclePos(frame, dTime));
+    const vehicles = vehiclePos(frame, dTime);
+    initBuffer(gl, vehicles.length * 4);
+    storeToBuffer(gl, 4, vehicles, 0);
     drawPoints(gl, 4, gl.TRIANGLE_STRIP);
   }
 
@@ -565,10 +593,12 @@ document.addEventListener("DOMContentLoaded", () => {
     return allPositions;
   }
 
-  function storeToBuffer(gl, type, allPositions) {
+  function initBuffer(gl, length) {
     // 8 because there are 2 values for every point, each value of size 4 bytes
-    gl.bufferData(gl.ARRAY_BUFFER, allPositions.length * 8 * type, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, length * 8, gl.STATIC_DRAW);
+  }
 
+  function storeToBuffer(gl, type, allPositions, offset) {
     for (i in allPositions) {
       const positions = allPositions[i];
       let coords = new Float32Array(2 * type);
@@ -577,7 +607,7 @@ document.addEventListener("DOMContentLoaded", () => {
         coords.set(item, j * 2);
       });
       // Store positions into the buffer
-      gl.bufferSubData(gl.ARRAY_BUFFER, i * 8 * type, coords);
+      gl.bufferSubData(gl.ARRAY_BUFFER, offset + i * 8 * type, coords);
     }
   }
 
@@ -598,7 +628,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Draw vertices on the screen
     for (let i = 0; i < bufSize / pointSize; i++) {
-      gl.drawArrays(type, i * 4, vertexCount);
+      gl.drawArrays(type, i * type, vertexCount);
     }
   }
 
