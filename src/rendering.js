@@ -3,264 +3,27 @@ const { vec2, vec4, mat4 } = glMatrix;
 var viewWidth = 1600;
 var viewHeight = 1600;
 
-var infrastructure = {
-  "intersections": [
-    {
-      "id": 1,
-      "connects_roads": [
-        2,
-        3,
-        null,
-        1
-      ],
-      "loc": {
-        "x": 500,
-        "y": 500
-      }
-    },
-    {
-      "id": 2,
-      "connects_roads": [
-        5,
-        6,
-        2,
-        4
-      ],
-      "loc": {
-        "x": 400,
-        "y": 1000
-      }
-    },
-    {
-      "id": 3,
-      "connects_roads": [
-        7,
-        8,
-        9,
-        6
-      ],
-      "loc": {
-        "x": 1100,
-        "y": 1000
-      }
-    },
-    {
-      "id": 4,
-      "connects_roads": [
-        9,
-        10,
-        11,
-        3
-      ],
-      "loc": {
-        "x": 900,
-        "y": 600
-      }
-    }
-  ],
-  "roads": [
-    {
-      "id": 1,
-      "ends": [
-        1,
-        {
-          "x": 0,
-          "y": 500
-        }
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 2,
-      "ends": [
-        1,
-        2
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 3,
-      "ends": [
-        1,
-        4
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 4,
-      "ends": [
-        {
-          "x": 0,
-          "y": 1000
-        },
-        2
-      ],
-      "two_way": true,
-      "lanes": 4
-    },
-    {
-      "id": 5,
-      "ends": [
-        2,
-        {
-          "x": 400,
-          "y": 1600
-        }
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 6,
-      "ends": [
-        2,
-        3
-      ],
-      "two_way": true,
-      "lanes": 4
-    },
-    {
-      "id": 7,
-      "ends": [
-        3,
-        {
-          "x": 1100,
-          "y": 1600
-        }
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 8,
-      "ends": [
-        3,
-        {
-          "x": 1600,
-          "y": 1000
-        }
-      ],
-      "two_way": true,
-      "lanes": 4
-    },
-    {
-      "id": 9,
-      "ends": [
-        4,
-        3
-      ],
-      "two_way": false,
-      "lanes": 4
-    },
-    {
-      "id": 10,
-      "ends": [
-        4,
-        {
-          "x": 1600,
-          "y": 600
-        }
-      ],
-      "two_way": true,
-      "lanes": 2
-    },
-    {
-      "id": 11,
-      "ends": [
-        {
-          "x": 900,
-          "y": 0
-        },
-        4
-      ],
-      "two_way": false,
-      "lanes": 2
-    },
-  ]
-}
-
-var jsonFrame = [
-  {
-    "frameid": 1,
-    "vehicles": [
-      {
-        "id": 1,
-        "loc": {
-          "x": 400,
-          "y": 400
-        },
-        "direction": 0
-      },
-      {
-        "id": 2,
-        "loc": {
-          "x": 200,
-          "y": 400
-        },
-        "direction": 90
-      },
-      {
-        "id": 3,
-        "loc": {
-          "x": 400,
-          "y": 200
-        },
-        "direction": 330
-      },
-      {
-        "id": 4,
-        "loc": {
-          "x": 200,
-          "y": 200
-        },
-        "direction": 45
-      }
-    ]
-  },
-  {
-    "frameid": 2,
-    "vehicles": [
-      {
-        "id": 1,
-        "loc": {
-          "x": 300,
-          "y": 300
-        },
-        "direction": 90
-      },
-      {
-        "id": 2,
-        "loc": {
-          "x": 100,
-          "y": 300
-        },
-        "direction": 45
-      },
-      {
-        "id": 3,
-        "loc": {
-          "x": 300,
-          "y": 100
-        },
-        "direction": 0
-      },
-      {
-        "id": 4,
-        "loc": {
-          "x": 100,
-          "y": 100
-        },
-        "direction": 330
-      }
-    ]
-  }
-];
-
+var infrastructure;
+var frames;
 document.addEventListener("DOMContentLoaded", () => {
-  main();
+  // Retrieve data from json files for now until we can pull from the backend
+  let requestLoc = './data.json';
+  let request = new XMLHttpRequest();
+  request.open('GET', requestLoc);
+  request.responseType = 'json';
+  request.send();
+  request.onload = () => {
+    infrastructure = request.response;
+    requestLoc = './testframes.json';
+    request = new XMLHttpRequest();
+    request.open('GET', requestLoc);
+    request.responseType = 'json';
+    request.send();
+    request.onload = () => {
+      frames = request.response;
+      main();
+    }
+  }
 
   function main() {
     const canvas = document.querySelector("#glCanvas");
@@ -326,11 +89,14 @@ document.addEventListener("DOMContentLoaded", () => {
     let infrNum = setupInfr(gl);
 
     var time = 0;
-    var numFrames = jsonFrame.length;
+    var numFrames = frames.length;
     var then = performance.now();
     // Draw the scene repeatedly
     function render(now) {
-      time += now - then;
+      // Ignore if then > now because of async
+      if (now > then) {
+        time += now - then;
+      }
       const frame = time / 1000 + 1;
       const currFrame = Math.floor(frame);
       then = now;
@@ -343,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
       drawInfr(gl, programInfo, infrBuf, infrNum);
-      //drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
+      drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
       requestAnimationFrame(render);
     }
 
@@ -545,7 +311,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
     useBuffer(gl, programInfo, buffer);
-    //console.log(frame + dTime / 1000);
     const vehicles = vehiclePos(frame, dTime);
     initBuffer(gl, vehicles.length * 4);
     storeToBuffer(gl, 4, vehicles, 0);
@@ -554,9 +319,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function vehiclePos(frame, dTime) {
     let allPositions = [];
-    for (i in jsonFrame[frame - 1].vehicles) {
-      const vehicle1 = jsonFrame[frame - 1].vehicles[i];
-      const vehicle2 = jsonFrame[frame].vehicles.find(x => x.id === vehicle1.id);
+    for (i in frames[frame - 1].vehicles) {
+      const vehicle1 = frames[frame - 1].vehicles[i];
+      const vehicle2 = frames[frame].vehicles.find(x => x.id === vehicle1.id);
       if (vehicle2 === undefined) {
         continue;
       }
@@ -628,7 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     // Draw vertices on the screen
     for (let i = 0; i < bufSize / pointSize; i++) {
-      gl.drawArrays(type, i * type, vertexCount);
+      gl.drawArrays(type, i * vertexCount, vertexCount);
     }
   }
 
