@@ -198,16 +198,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (roadId === null) {
             continue;
           }
-          // Make sure road points are left-right and up-down
-          let firstPoint = points[j];
-          let secondPoint = points[(j + 1) % 4];
-          if (j > 1) {
-            firstPoint = secondPoint;
-            secondPoint = points[j];
-          }
           /* Get vertical or horizontal width of road;
            * negative value specifies the road is horizontal */
-          let roadLoc = vec2.clone(intersectionOrigin);
+          let roadLoc = vec2.create();
           // Figure out if offset is positive or negative
           let sign = 1;
           if (j > 1) {
@@ -220,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
           } else {
             offset = vec2.fromValues(sign * halfWidth, 0);
           }
-          vec2.add(roadLoc, roadLoc, offset);
+          vec2.add(roadLoc, intersectionOrigin, offset);
           intersectionInfo.roads.push({
             "id": roadId,
             "loc": roadLoc
@@ -235,52 +228,50 @@ document.addEventListener("DOMContentLoaded", () => {
       let vectorPairs = [];
       for (i in infrastructure.roads) {
         const road = infrastructure.roads[i];
-        let end1 = road.ends[0];
-        let end2 = road.ends[1];
-        let point1;
-        let point2;
-        let point3;
-        let point4;
         const angle = roadAngle(road);
         // 12 is the width of a lane
         const roadWidth = road.lanes * 12;
-        let roadVertWidth;
         let offset;
+        // Determine if road is horizontal or vertical
         if (angle > glMatrix.glMatrix.toRadian(45)) {
-          roadVertWidth = roadWidth / Math.sin(angle);
-          offset = vec2.fromValues(roadVertWidth / 2, 0);
+          offset = vec2.fromValues(roadWidth / Math.sin(angle) / 2, 0);
         } else {
-          roadVertWidth = roadWidth / Math.cos(angle);
-          offset = vec2.fromValues(0, roadVertWidth / 2);
+          offset = vec2.fromValues(0, roadWidth / Math.cos(angle) / 2);
         }
-        if (isNaN(end1)) {
-          point1 = vec2.fromValues(end1.x, end1.y);
-          point3 = vec2.fromValues(end1.x, end1.y);
-        } else {
-          point1 = vec2.clone(intersections.find(x => x.id === end1).roads.find(x => x.id === road.id).loc);
-          point3 = vec2.clone(intersections.find(x => x.id === end1).roads.find(x => x.id === road.id).loc);
+        // Add points for the four outer corners of the road
+        let points = [];
+        for (let j = 0; j < 4; j++) {
+          const end = road.ends[j % 2];
+          if (isNaN(end)) {
+            points[j] = vec2.fromValues(end.x, end.y);
+          } else {
+            points[j] = vec2.clone(intersections.find(x => x.id === end).roads.find(x => x.id === road.id).loc);
+          }
+          if (j < 2) {
+            vec2.add(points[j], points[j], offset);
+          } else {
+            vec2.sub(points[j], points[j], offset);
+          }
+          if (j % 2 === 1) {
+            const pointPair = [
+              points[j - 1],
+              points[j]
+            ];
+            vectorPairs.push(pointPair);
+          }
         }
-        vec2.add(point1, point1, offset);
-        vec2.sub(point3, point3, offset);
-        if (isNaN(end2)) {
-          point2 = vec2.fromValues(end2.x, end2.y);
-          point4 = vec2.fromValues(end2.x, end2.y);
-        } else {
-          point2 = vec2.clone(intersections.find(x => x.id === end2).roads.find(x => x.id === road.id).loc);
-          point4 = vec2.clone(intersections.find(x => x.id === end2).roads.find(x => x.id === road.id).loc);
+        // Add points for the lanes of the road
+        for (let j = 1; j < road.lanes; j++) {
+          let pointPair = [];
+          // One point per end of the road
+          for (let k = 0; k < 2; k++) {
+            const base = points[k + 2];
+            let lanePoint = vec2.create();
+            vec2.scaleAndAdd(lanePoint, base, offset, 2 * j / road.lanes);
+            pointPair.push(lanePoint);
+          }
+          vectorPairs.push(pointPair);
         }
-        vec2.add(point2, point2, offset);
-        vec2.sub(point4, point4, offset);
-        let points = [
-          point1,
-          point2
-        ];
-        vectorPairs.push(points);
-        points = [
-          point3,
-          point4
-        ];
-        vectorPairs.push(points);
       }
       return vectorPairs;
     }
@@ -320,6 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function vehiclePos(frame, dTime) {
     let allPositions = [];
     for (i in frames[frame - 1].vehicles) {
+      // Vehicle in last frame and current frame
       const vehicle1 = frames[frame - 1].vehicles[i];
       const vehicle2 = frames[frame].vehicles.find(x => x.id === vehicle1.id);
       if (vehicle2 === undefined) {
