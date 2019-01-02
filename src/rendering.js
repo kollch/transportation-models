@@ -25,12 +25,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function setCanvasSize(canvas) {
+    const aspect = viewWidth / viewHeight;
+    const smallestDim = Math.min(window.innerWidth, window.innerHeight);
+    if (aspect > 1) {
+      canvas.width = smallestDim * .9;
+      canvas.height = smallestDim * .9 / aspect;
+    } else {
+      canvas.width = smallestDim * .9 * aspect;
+      canvas.height = smallestDim * .9;
+    }
+  }
+
   function main() {
     const canvas = document.querySelector("#glCanvas");
-    //canvas.width = viewWidth;
-    //canvas.height = viewHeight;
+    setCanvasSize(canvas);
     // Initialize the GL context
     const gl = canvas.getContext("webgl");
+    //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
     // Only continue if WebGL is available and working
     if (gl === null) {
@@ -83,6 +95,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const zoom = 1;
     setupCamera(gl, programInfo, zoom);
+    window.addEventListener("resize", () => {
+      setCanvasSize(canvas);
+      //setupCamera(gl, programInfo, zoom);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+    });
 
     // Set up the infrastructure buffer
     useBuffer(gl, programInfo, infrBuf);
