@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setupCamera(gl, programInfo, zoom);
     window.addEventListener("resize", () => {
       setCanvasSize(canvas);
-      //setupCamera(gl, programInfo, zoom);
       gl.viewport(0, 0, canvas.width, canvas.height);
     });
 
@@ -118,12 +117,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const currFrame = Math.floor(frame);
       then = now;
 
-      if (currFrame >= numFrames) {
-        return;
-      }
-
       // Clear the canvas before drawing
       gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      if (currFrame >= numFrames) {
+        gl.viewport(0, 0, 0, 0);
+        return;
+      }
 
       drawInfr(gl, programInfo, infrBuf, infrNum);
       drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
