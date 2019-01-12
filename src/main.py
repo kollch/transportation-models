@@ -23,11 +23,12 @@ class InvisibleHand():
         """
         return
 
-    def build_frames(self):
+    async def build_frames(self):
         """Run simulation for certain number of frames;
         when ready to send a frame,
-        call "await gui.send_frame(json)".
+        call "await self.gui.send_frame(json)".
         """
+        await self.gui.send_frame("Pseudo-frame data")
         return
 
     def cavs_in_range(self, location, length):
@@ -123,6 +124,7 @@ class Connection():
             payload = data.decode()
 
         # TODO: store data in connection (from variable "payload")
+        print("Data from frontend:", payload)
 
     async def send_frame(self, data):
         """Send frame from json data to GUI"""
@@ -149,7 +151,7 @@ async def main(reader, writer):
     await connect.establish()
     await connect.get_parameters()
     run = InvisibleHand(connect)
-    run.build_frames()
+    await run.build_frames()
     connect.close()
 
 loop = asyncio.get_event_loop()
