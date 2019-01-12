@@ -6,6 +6,23 @@ var viewHeight = 1600;
 var infrastructure;
 var frames;
 document.addEventListener("DOMContentLoaded", () => {
+  /* Pass data to and from backend */
+  function passData(socket) {
+    const value = "Hello World";
+    socket.onmessage = e => {
+      console.log(`Message from server: '${e.data}'`);
+    };
+    console.log(`Sending '${value}' to the server`);
+    socket.send(value);
+    console.log("Done sending.");
+  }
+  // Establish a websocket connection
+  const socket = new WebSocket('ws://localhost:8888');
+  socket.onopen = e => {
+    console.log("Ready to start sending.");
+    passData(socket);
+  };
+
   // Retrieve data from json files for now until we can pull from the backend
   let requestLoc = './data.json';
   let request = new XMLHttpRequest();
