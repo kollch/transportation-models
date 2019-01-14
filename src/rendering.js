@@ -3,17 +3,30 @@ const { vec2, vec4, mat4 } = glMatrix;
 var viewWidth = 1600;
 var viewHeight = 1600;
 
-var infrastructure;
-var frames;
+var infrastructure = null;
+var frames = [];
 document.addEventListener("DOMContentLoaded", () => {
   /* Pass data to and from backend */
   function passData(socket) {
-    const value = "Hello World";
-    socket.onmessage = e => {
-      console.log(`Message from server: '${e.data}'`);
+    const value = {
+      id: 4,
+      value: [
+        "Hello",
+        "world"
+      ]
     };
-    console.log(`Sending '${value}' to the server`);
-    socket.send(value);
+    socket.onmessage = e => {
+      const frame = JSON.parse(e.data);
+      console.log("Message from server:");
+      console.log(frame);
+      if (frame === null && infrastructure !== null) {
+        main();
+      } else {
+        frames.push(frame);
+      }
+    };
+    console.log("Sending json object to the server");
+    socket.send(JSON.stringify(value));
     console.log("Done sending.");
   }
   // Establish a websocket connection
@@ -31,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   request.send();
   request.onload = () => {
     infrastructure = request.response;
+    /*
     requestLoc = './testframes.json';
     request = new XMLHttpRequest();
     request.open('GET', requestLoc);
@@ -40,7 +54,8 @@ document.addEventListener("DOMContentLoaded", () => {
       frames = request.response;
       main();
     }
-  }
+    */
+  };
 
   function setCanvasSize(canvas) {
     const aspect = viewWidth / viewHeight;
