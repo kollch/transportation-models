@@ -2,6 +2,7 @@
 import asyncio
 import re
 import logging
+import json
 from hashlib import sha1
 from base64 import b64encode
 
@@ -28,7 +29,10 @@ class InvisibleHand():
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        await self.gui.send_frame("Pseudo-frame data")
+        for i in range(6):
+            frame = get_frame_data("testframes.json", i)
+            await self.gui.send_frame(frame)
+        await self.gui.send_frame(None)
         return
 
     def cavs_in_range(self, location, length):
@@ -119,15 +123,18 @@ class Connection():
             # octet i of the original data with octet at index
             # i modulo 4 of the masking key
             unmasked_data = [data[i] ^ mask[i % 4] for i in range(len(data))]
-            payload = bytearray(unmasked_data).decode()
+            payload_str = bytearray(unmasked_data).decode()
         else:
-            payload = data.decode()
+            payload_str = data.decode()
+        # Now convert the payload string to a json object
+        payload = json.loads(payload_str)
 
         # TODO: store data in connection (from variable "payload")
         print("Data from frontend:", payload)
 
-    async def send_frame(self, data):
+    async def send_frame(self, json_data):
         """Send frame from json data to GUI"""
+        data = json.dumps(json_data)
         frame = [129]
         if 125 < len(data) < 65536:
             frame.append(126)
@@ -153,6 +160,14 @@ async def main(reader, writer):
     run = InvisibleHand(connect)
     await run.build_frames()
     connect.close()
+
+def get_frame_data(file_name, frame):
+    """Temporary function to read json from a file;
+    should be deleted soon
+    """
+    with open(file_name) as json_file:
+        data = json.load(json_file)
+        return data[frame]
 
 loop = asyncio.get_event_loop()
 coro = asyncio.start_server(main, '127.0.0.1', 8888, loop=loop)
