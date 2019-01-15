@@ -1,5 +1,10 @@
 const { vec2, vec4, mat4 } = glMatrix;
 
+var secure = false;
+
+var url = 'localhost';
+var port = 8888;
+
 var viewWidth = 1600;
 var viewHeight = 1600;
 
@@ -30,7 +35,13 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Done sending.");
   }
   // Establish a websocket connection
-  const socket = new WebSocket('ws://localhost:8888');
+  let socketLoc = '://' + url + ':' + port.toString();
+  if (secure) {
+    socketLoc = 'wss' + socketLoc;
+  } else {
+    socketLoc = 'ws' + socketLoc;
+  }
+  const socket = new WebSocket(socketLoc);
   socket.onopen = e => {
     console.log("Ready to start sending.");
     passData(socket);
