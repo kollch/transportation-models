@@ -1,13 +1,15 @@
+"""This is the primary component of the backend."""
 # Needed for connection to frontend
 import asyncio
 import ssl
-import websockets
 import json
+import websockets
 
 from vehicles import Vehicle, CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
 
-secure = False
+SECURE = False
+
 
 class InvisibleHand():
     """Runs everything like the clock and spawning of vehicles;
@@ -42,13 +44,15 @@ class InvisibleHand():
         """
         return
 
+
 class Connection():
     """Handles a connection with the GUI"""
     def __init__(self, websocket, path):
         self.websocket = websocket
-        #self.addr = writer.get_extra_info('peername')
+        self.addr = websocket.remote_address
 
     async def get_parameters(self):
+        """Get infrastructure parameters from the frontend"""
         payload_str = await self.websocket.recv()
         # Now convert the payload string to a json object
         payload = json.loads(payload_str)
@@ -68,6 +72,7 @@ async def main(websocket, path):
     run = InvisibleHand(connect)
     await run.build_frames()
 
+
 def get_frame_data(file_name, frame):
     """Temporary function to read json from a file;
     should be deleted soon
@@ -77,25 +82,25 @@ def get_frame_data(file_name, frame):
         return data[frame]
 
 # Start server with or without ssl
-if secure:
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    ssl_context.load_cert_chain('cert/localhost.crt', 'cert/localhost.key')
+if SECURE:
+    SSL_CONTEXT = ssl.SSLContext()
+    SSL_CONTEXT.load_cert_chain('cert/localhost.crt', 'cert/localhost.key')
 else:
-    ssl_context = None
-start_server = websockets.serve(main, 'localhost', 8888, ssl=ssl_context)
+    SSL_CONTEXT = None
+START_SERVER = websockets.serve(main, 'localhost', 8888, ssl=SSL_CONTEXT)
 
-loop = asyncio.get_event_loop()
-server = loop.run_until_complete(start_server)
+LOOP = asyncio.get_event_loop()
+SERVER = LOOP.run_until_complete(START_SERVER)
 
 # Serve requests until Ctrl+C is pressed
-socket_name = server.sockets[0].getsockname()
-print("Serving on port", socket_name[1], "at", socket_name[0])
+SOCKET_NAME = SERVER.sockets[0].getsockname()
+print("Serving on port", SOCKET_NAME[1], "at", SOCKET_NAME[0])
 try:
-    loop.run_forever()
+    LOOP.run_forever()
 except KeyboardInterrupt:
     print("Closing server")
 
 # Close the server
-server.close()
-loop.run_until_complete(server.wait_closed())
-loop.close()
+SERVER.close()
+LOOP.run_until_complete(SERVER.wait_closed())
+LOOP.close()
