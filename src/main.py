@@ -1,5 +1,15 @@
+"""This is the primary component of the backend."""
+# Needed for connection to frontend
+import asyncio
+import ssl
+import json
+import websockets
+
 from vehicles import Vehicle, CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
+
+SECURE = False
+
 
 class InvisibleHand():
     """Runs everything like the clock and spawning of vehicles;
@@ -10,44 +20,87 @@ class InvisibleHand():
         self.gui = connection
         self.set_parameters()
 
-    def set_parameters():
+    def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
         return
 
-    def build_frames():
-        """Run simulation for certain number of frames"""
+    async def build_frames(self):
+        """Run simulation for certain number of frames;
+        when ready to send a frame,
+        call "await self.gui.send_frame(json)".
+        """
+        for i in range(6):
+            frame = get_frame_data("testframes.json", i)
+            await self.gui.send_frame(frame)
+        # Specify end of frames
+        await self.gui.send_frame(None)
         return
 
-    def cavs_in_range(location, length):
+    def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in meters) of
         location
         """
         return
 
+
 class Connection():
     """Handles a connection with the GUI"""
-    def establish():
-        """Make connection with GUI (using websockets)"""
-        return
+    def __init__(self, websocket, path):
+        self.websocket = websocket
+        self.addr = websocket.remote_address
 
-    def get_parameters():
-        """Get parameters from GUI and store them"""
-        return
+    async def get_parameters(self):
+        """Get infrastructure parameters from the frontend"""
+        payload_str = await self.websocket.recv()
+        # Now convert the payload string to a json object
+        payload = json.loads(payload_str)
 
-    def close():
-        """Close connection with GUI"""
-        return
+        # TODO: store data in connection (from variable "payload")
+        print("Data from frontend:", payload)
 
-def main():
-    """Start the program"""
-    connect = Connection()
-    connect.establish()
-    connect.get_parameters()
-    run = InvisibleHand(connection)
-    run.build_frames()
-    connect.close()
+    async def send_frame(self, json_data):
+        """Send frame from json data to GUI"""
+        data = json.dumps(json_data)
+        await self.websocket.send(data)
 
-while True:
-    main()
+async def main(websocket, path):
+    """Start the program with a connected frontend"""
+    connect = Connection(websocket, path)
+    await connect.get_parameters()
+    run = InvisibleHand(connect)
+    await run.build_frames()
+
+
+def get_frame_data(file_name, frame):
+    """Temporary function to read json from a file;
+    should be deleted soon
+    """
+    with open(file_name) as json_file:
+        data = json.load(json_file)
+        return data[frame]
+
+# Start server with or without ssl
+if SECURE:
+    SSL_CONTEXT = ssl.SSLContext()
+    SSL_CONTEXT.load_cert_chain('cert/localhost.crt', 'cert/localhost.key')
+else:
+    SSL_CONTEXT = None
+START_SERVER = websockets.serve(main, 'localhost', 8888, ssl=SSL_CONTEXT)
+
+LOOP = asyncio.get_event_loop()
+SERVER = LOOP.run_until_complete(START_SERVER)
+
+# Serve requests until Ctrl+C is pressed
+SOCKET_NAME = SERVER.sockets[0].getsockname()
+print("Serving on port", SOCKET_NAME[1], "at", SOCKET_NAME[0])
+try:
+    LOOP.run_forever()
+except KeyboardInterrupt:
+    print("Closing server")
+
+# Close the server
+SERVER.close()
+LOOP.run_until_complete(SERVER.wait_closed())
+LOOP.close()
