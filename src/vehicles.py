@@ -1,3 +1,5 @@
+import random
+
 class Vehicle():
     """Includes CAVs and HVs"""
     def __init__(self, length, location, destination):
@@ -40,7 +42,14 @@ class HV(Vehicle):
     """
     def react_time():
         """Randomly-generated time it will take to react"""
-        return
+        mu = 0.5
+        sigma = 1
+        r_time = random.gauss(mu, sigma)
+
+        # r_time is randomly number but sometimes it will has negative number
+        while r_time <= 0:
+             r_time = random.gauss(mu, sigma)
+        return r_time
 
     def decide_move():
         """Looks in immediate vicinity and determines move"""
