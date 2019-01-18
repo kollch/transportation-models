@@ -51,14 +51,18 @@ class Connection():
         self.websocket = websocket
         self.addr = websocket.remote_address
 
-    async def get_parameters(self):
+    async def get_parameters(self, data_type):
         """Get infrastructure parameters from the frontend"""
         payload_str = await self.websocket.recv()
         # Now convert the payload string to a json object
         payload = json.loads(payload_str)
 
-        # TODO: store data in connection (from variable "payload")
-        print("Data from frontend:", payload)
+        if data_type is "infrastructure":
+            self.infrastructure = payload
+        elif data_type is "vehicles":
+            self.vehicles = payload
+        else:
+            raise ValueError("Parameter type unknown")
 
     async def send_frame(self, json_data):
         """Send frame from json data to GUI"""
@@ -68,7 +72,8 @@ class Connection():
 async def main(websocket, path):
     """Start the program with a connected frontend"""
     connect = Connection(websocket, path)
-    await connect.get_parameters()
+    await connect.get_parameters("infrastructure")
+    await connect.get_parameters("vehicles")
     run = InvisibleHand(connect)
     await run.build_frames()
 
