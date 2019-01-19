@@ -25,6 +25,7 @@ class InvisibleHand():
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
         file_data_json = get_json_data("./data.json")
+        """creating intersection list"""
         intersections_id_data = []
         intersections_road_data = []
         intersections_position_data = []
@@ -32,7 +33,16 @@ class InvisibleHand():
         intersection_list = []
         for i in range(num_of_intersections):
             intersection_list.append(Intersection(intersections_id_data[i],intersections_road_data[i],intersections_position_data[i]))
-            print(intersection_list[i].roads)
+        """creating roads list"""
+        roads_id = []
+        roads_two_ways = []
+        roads_lanes = []
+        roads_ends = []
+        num_of_roads = data_from_roads(file_data_json, roads_id, roads_two_ways, roads_lanes,roads_ends)
+        roads_list = []
+        for i in range(num_of_roads):
+            roads_list.append(Road(roads_id[i],roads_two_ways[i],roads_lanes[i],roads_ends[i]))
+        print(roads_list[0].ends)
         return
 
     async def build_frames(self):
@@ -98,6 +108,29 @@ def data_from_intersection(file_data_json, id_data, roads_data, loc_data):
             roads_data[current_count_num].append(intersections['connects_roads'][i])
         current_count_num += 1
     return num_of_intersections
+
+def data_from_roads(file_data_json, roads_id, roads_two_ways, roads_lanes, roads_ends):
+    num_of_roads = 0
+    num = 0
+    for roads in file_data_json['roads']:
+        """Store roads' id in list"""
+        roads_id.append(roads['id'])
+        """Store two_way info in list"""
+        roads_two_ways.append(roads['two_way'])
+        """Store lanes number in list"""
+        roads_lanes.append(roads['lanes'])
+        """append ends data in roads to 2d list"""
+        roads_ends.append([])
+        num_of_roads += 1
+    for roads in file_data_json['roads']:
+        """store roads' ends in 2d list"""
+        for ele in roads['ends']:
+            if isinstance(ele,dict):
+                roads_ends[num].append((ele['x'],ele['y']))
+            else:
+                roads_ends[num].append(ele)
+        num += 1
+    return num_of_roads
 
 def get_json_data(file_name):
     """read json file data"""

@@ -18,7 +18,8 @@ class Road():
     """Connect intersections together and vehicles drive on them"""
     # vehicles_on = []
     # speed_limit = 60
-    def __init__(self, roads_id, two_way, lanes):
+    def __init__(self, roads_id, two_way, lanes, ends):
         self.road_id = roads_id
         self.two_Way = two_way
         self.lanes = lanes
+        self.ends = ends
