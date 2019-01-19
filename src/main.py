@@ -42,7 +42,10 @@ class InvisibleHand():
         roads_list = []
         for i in range(num_of_roads):
             roads_list.append(Road(roads_id[i],roads_two_ways[i],roads_lanes[i],roads_ends[i]))
-        print(roads_list[0].ends)
+
+        """creating infrastructure which contain all roads and intersections"""
+        infrastructure = Infrastructure(intersection_list,roads_list)
+        # print(infrastructure.roads[0].road_id)
         return
 
     async def build_frames(self):
