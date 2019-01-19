@@ -24,6 +24,15 @@ class InvisibleHand():
         """Set parameters pulled from GUI, aka initializing simulation
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
+        file_data_json = get_json_data("./data.json")
+        intersections_id_data = []
+        intersections_road_data = []
+        intersections_position_data = []
+        num_of_intersections = data_from_intersection(file_data_json, intersections_id_data, intersections_road_data, intersections_position_data)
+        intersection_list = []
+        for i in range(num_of_intersections):
+            intersection_list.append(Intersection(intersections_id_data[i],intersections_road_data[i],intersections_position_data[i]))
+            print(intersection_list[i].roads)
         return
 
     async def build_frames(self):
@@ -72,6 +81,29 @@ async def main(websocket, path):
     run = InvisibleHand(connect)
     await run.build_frames()
 
+def data_from_intersection(file_data_json, id_data, roads_data, loc_data):
+    num_of_intersections = 0
+    current_count_num = 0
+    for intersections in file_data_json['intersections']:
+        """Store Intersections' id"""
+        id_data.append(intersections['id'])
+        """append roads data to 2d list"""
+        roads_data.append([])
+        """store intersections' location"""
+        loc_data.append((intersections['loc']['x'],intersections['loc']['y']))
+        num_of_intersections += 1
+    for intersections in file_data_json['intersections']:
+        """store intersections' roads in 2d list"""
+        for i in range(4):
+            roads_data[current_count_num].append(intersections['connects_roads'][i])
+        current_count_num += 1
+    return num_of_intersections
+
+def get_json_data(file_name):
+    """read json file data"""
+    with open(file_name) as json_file:
+        data = json.load(json_file)
+        return data
 
 def get_frame_data(file_name, frame):
     """Temporary function to read json from a file;
