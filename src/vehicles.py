@@ -40,6 +40,22 @@ class CAV(Vehicle):
 
     def decide_move(self):
         """Uses available information and determines move"""
+        current = self.location #2
+        print('Currently on node: ',current)
+        visited = {current:0}
+        distances = {}
+        unvisited = {}
+        distances[self.location] = 0
+        path = {}
+        for node in map:
+            unvisited[node] = float('inf')
+        for adj in map[current]:
+            if adj in unvisited:
+                new_dist = distances[self.location] + map[self.location][adj] #calc distances from this node to adjacent ones
+            if new_dist < unvisited[adj]:
+                unvisited[adj] = new_dist
+                print unvisited[adj]
+                print
         return
 
 
