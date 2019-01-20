@@ -181,17 +181,14 @@ function main() {
     if (zoom < 1) {
       zoom = 1;
     }
-    const newViewportSize = {
-      "x": viewDims.x / zoom,
-      "y": viewDims.y / zoom
-    };
     const setScreenLoc = a => {
+      const newViewportSize = viewDims[a] / zoom;
       if (screenLoc[a] < 0) {
         return 0;
-      } else if (screenLoc[a] + newViewportSize[a] > viewDims[a]) {
-        return viewDims[a] - newViewportSize[a];
+      } else if (screenLoc[a] + newViewportSize > viewDims[a]) {
+        return viewDims[a] - newViewportSize;
       }
-      return cursorLoc[a] - cursorFrac[a] * newViewportSize[a];
+      return cursorLoc[a] - cursorFrac[a] * newViewportSize;
     };
     screenLoc.x = setScreenLoc("x");
     screenLoc.y = setScreenLoc("y");
