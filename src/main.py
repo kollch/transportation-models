@@ -47,13 +47,14 @@ class InvisibleHand():
         in_range_cavs = []
 
         for single_vehicle in self.cavs:
-            x2 = single_vehicle.location[0]  # using lac (data will caome from the jason file)
+            x2 = single_vehicle.location[0]
             y2 = single_vehicle.location[1]
-            if not (x2 - x1 == 0 and y2 - y1 == 0):
+            if x2 - x1 != 0 and y2 - y1 != 0:
                 dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
                 if dist <= 3000:
                     in_range_cavs.append(single_vehicle)
         return in_range_cavs
+
 
 class Connection():
     """Handles a connection with the GUI"""
