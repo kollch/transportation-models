@@ -7,8 +7,10 @@ var secure = false;
 var url = 'localhost';
 var port = 8888;
 
-var viewWidth = 1600;
-var viewHeight = 1600;
+var viewDims = {
+  "x": 1600,
+  "y": 1600
+};
 
 var infrastructure = null;
 var frames = [];
@@ -89,7 +91,7 @@ function build() {
 }
 
 function setCanvasSize(canvas) {
-  const aspect = viewWidth / viewHeight;
+  const aspect = viewDims.x / viewDims.y;
   const smallestDim = Math.min(window.innerWidth, window.innerHeight);
   if (aspect > 1) {
     canvas.width = smallestDim * .9;
@@ -156,11 +158,45 @@ function main() {
   const infrBuf = gl.createBuffer();
   const rectBuf = gl.createBuffer();
 
-  const zoom = 1;
-  setupCamera(gl, programInfo, zoom);
+  let zoom = 1;
+  let screenLoc = {
+    "x": 0,
+    "y": 0
+  };
+  setupCamera(gl, programInfo, zoom, screenLoc);
   window.addEventListener("resize", () => {
     setCanvasSize(canvas);
     gl.viewport(0, 0, canvas.width, canvas.height);
+  });
+  window.addEventListener("wheel", e => {
+    const cursorFrac = {
+      "x": e.offsetX / canvas.width,
+      "y": 1 - e.offsetY / canvas.height
+    };
+    const cursorLoc = {
+      "x": screenLoc.x + cursorFrac.x * viewDims.x / zoom,
+      "y": screenLoc.y + cursorFrac.y * viewDims.y / zoom
+    };
+    zoom -= e.deltaY * 0.1;
+    if (zoom < 1) {
+      zoom = 1;
+    }
+    const newViewportSize = {
+      "x": viewDims.x / zoom,
+      "y": viewDims.y / zoom
+    };
+    const setScreenLoc = a => {
+      if (screenLoc[a] < 0) {
+        return 0;
+      } else if (screenLoc[a] + newViewportSize[a] > viewDims[a]) {
+        return viewDims[a] - newViewportSize[a];
+      }
+      return cursorLoc[a] - cursorFrac[a] * newViewportSize[a];
+    };
+    screenLoc.x = setScreenLoc("x");
+    screenLoc.y = setScreenLoc("y");
+
+    setupCamera(gl, programInfo, zoom, screenLoc);
   });
 
   // Set up the infrastructure buffer
@@ -196,19 +232,18 @@ function main() {
   requestAnimationFrame(render);
 }
 
-function setupCamera(gl, programInfo, zoom) {
+function setupCamera(gl, programInfo, zoom, screenLoc) {
   const projectionMatrix = mat4.create();
-
   // Not currently used, but useful to know the aspect ratio
   //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
-  mat4.ortho(projectionMatrix, 0, viewWidth, 0, viewHeight, 0, 1);
+  mat4.ortho(projectionMatrix, 0, viewDims.x, 0, viewDims.y, 0, 1);
 
   // Set drawing position to the "identity" point (bottom left point of the scene)
   const modelViewMatrix = mat4.create();
 
   mat4.scale(projectionMatrix, projectionMatrix, [zoom, zoom, 1]);
-  mat4.translate(projectionMatrix, projectionMatrix, [0, 0, 0]);
+  mat4.translate(projectionMatrix, projectionMatrix, [-screenLoc.x, -screenLoc.y, 0]);
 
   // Set the shader uniforms
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
