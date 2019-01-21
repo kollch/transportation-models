@@ -15,53 +15,19 @@ var viewDims = {
 var infrastructure = null;
 var frames = [];
 
-function enableBuild() {
+const enableBuild = () => {
   const infrBtn = document.getElementById("infrInput");
   const vehicleBtn = document.getElementById("vehicleInput");
-  const build = document.getElementById("build");
+  const buildBtn = document.getElementById("build");
   // If not ready to build
   if (infrBtn.files.length !== 1 || vehicleBtn.files.length !== 1) {
-    build.disabled = true;
+    buildBtn.disabled = true;
     return;
   }
-  build.disabled = false;
-}
+  buildBtn.disabled = false;
+};
 
-/* Pass data to and from backend */
-function passData(socket, infrData, vehicleData) {
-  socket.onmessage = e => {
-    const frame = JSON.parse(e.data);
-    // If all simulation frames have been received
-    if (frame === null && infrastructure !== null) {
-      main();
-    } else {
-      frames.push(frame);
-    }
-  };
-  // Send parameters to the server
-  socket.send(JSON.stringify(infrData));
-  socket.send(JSON.stringify(vehicleData));
-}
-
-function estabConn(infrData, vehicleData) {
-  // Establish a websocket connection
-  let socketLoc = '://' + url + ':' + port.toString();
-  if (secure) {
-    socketLoc = 'wss' + socketLoc;
-  } else {
-    socketLoc = 'ws' + socketLoc;
-  }
-  const socket = new WebSocket(socketLoc);
-  socket.onerror = e => {
-    alert("Can't establish a connection with the server! Verify the backend is running and refresh the page.");
-  };
-  socket.onopen = e => {
-    // Ready to start sending
-    passData(socket, infrData, vehicleData);
-  };
-}
-
-function build() {
+const build = () => {
   const infrReader = new FileReader();
   infrReader.onload = e => {
     let infrData;
@@ -81,7 +47,34 @@ function build() {
         alert("Vehicles file is not valid JSON!");
         throw err;
       }
-      estabConn(infrData, vehicleData);
+      //const estabConn = (infrData, vehicleData) => {
+      // Establish a websocket connection
+      let socketLoc = '://' + url + ':' + port.toString();
+      if (secure) {
+        socketLoc = 'wss' + socketLoc;
+      } else {
+        socketLoc = 'ws' + socketLoc;
+      }
+      const socket = new WebSocket(socketLoc);
+      socket.onerror = e => {
+        alert("Can't establish a connection with the server! Verify the backend is running and refresh the page.");
+      };
+      socket.onopen = e => {
+        // Ready to start sending
+        /* Pass data to and from backend */
+        socket.onmessage = e => {
+          const frame = JSON.parse(e.data);
+          // If all simulation frames have been received
+          if (frame === null && infrastructure !== null) {
+            main();
+          } else {
+            frames.push(frame);
+          }
+        };
+        // Send parameters to the server
+        socket.send(JSON.stringify(infrData));
+        socket.send(JSON.stringify(vehicleData));
+      };
     }
     const vehicleFile = document.getElementById("vehicleInput").files[0];
     vehicleReader.readAsText(vehicleFile);
@@ -90,7 +83,8 @@ function build() {
   infrReader.readAsText(infrFile);
 }
 
-function setCanvasSize(canvas) {
+const setCanvasSize = canvas => {
+  canvas.style.display = "block";
   const aspect = viewDims.x / viewDims.y;
   const smallestDim = Math.min(window.innerWidth, window.innerHeight);
   if (aspect > 1) {
@@ -102,7 +96,7 @@ function setCanvasSize(canvas) {
   }
 }
 
-function main() {
+const main = () => {
   const canvas = document.querySelector("#glCanvas");
   setCanvasSize(canvas);
   // Initialize the GL context
@@ -204,7 +198,7 @@ function main() {
   var numFrames = frames.length;
   var then = performance.now();
   // Draw the scene repeatedly
-  function render(now) {
+  const render = now => {
     // Ignore if then > now because of async
     if (now > then) {
       time += now - then;
@@ -229,7 +223,7 @@ function main() {
   requestAnimationFrame(render);
 }
 
-function setupCamera(gl, programInfo, zoom, screenLoc) {
+const setupCamera = (gl, programInfo, zoom, screenLoc) => {
   const projectionMatrix = mat4.create();
   // Not currently used, but useful to know the aspect ratio
   //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -247,7 +241,7 @@ function setupCamera(gl, programInfo, zoom, screenLoc) {
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
 }
 
-function setupInfr(gl) {
+const setupInfr = gl => {
   let allPositions = [];
   let intersections = [];
   function roadAngle(road) {
@@ -263,7 +257,7 @@ function setupInfr(gl) {
     }
     return Math.abs(Math.atan((loc2.y - loc1.y) / (loc2.x - loc1.x)));
   }
-  function addIntersections() {
+  const addIntersections = () => {
     let i;
     for (i in infrastructure.intersections) {
       const intersection = infrastructure.intersections[i];
@@ -337,7 +331,7 @@ function setupInfr(gl) {
     }
     return allPositions;
   }
-  function addRoads() {
+  const addRoads = () => {
     let vectorPairs = [];
     let i;
     for (i in infrastructure.roads) {
@@ -400,7 +394,7 @@ function setupInfr(gl) {
   };
 }
 
-function drawInfr(gl, programInfo, buffer, infrNum) {
+const drawInfr = (gl, programInfo, buffer, infrNum) => {
   useBuffer(gl, programInfo, buffer);
   /* Don't call drawPoints() because the checks don't work */
   // Draw rectangles
@@ -414,7 +408,7 @@ function drawInfr(gl, programInfo, buffer, infrNum) {
   }
 }
 
-function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
+const drawVehicles = (gl, now, dTime, programInfo, buffer, frame) => {
   useBuffer(gl, programInfo, buffer);
   const vehicles = vehiclePos(frame, dTime);
   initBuffer(gl, vehicles.length * 4);
@@ -422,7 +416,7 @@ function drawVehicles(gl, now, dTime, programInfo, buffer, frame) {
   drawPoints(gl, 4, gl.TRIANGLE_STRIP);
 }
 
-function vehiclePos(frame, dTime) {
+const vehiclePos = (frame, dTime) => {
   let allPositions = [];
   let i;
   for (i in frames[frame - 1].vehicles) {
@@ -438,7 +432,7 @@ function vehiclePos(frame, dTime) {
     const vehicle2Dir = vehicle2.direction;
     let vehicleLoc = vec2.create();
     vec2.lerp(vehicleLoc, vehicle1Loc, vehicle2Loc, dTime);
-    function lerp(a, b, diff) {
+    const lerp = (a, b, diff) => {
       if (a >= 180) {
         if (b < a - 180) {
           b += 360;
@@ -466,12 +460,12 @@ function vehiclePos(frame, dTime) {
   return allPositions;
 }
 
-function initBuffer(gl, length) {
+const initBuffer = (gl, length) => {
   // 8 because there are 2 values for every point, each value of size 4 bytes
   gl.bufferData(gl.ARRAY_BUFFER, length * 8, gl.STATIC_DRAW);
 }
 
-function storeToBuffer(gl, type, allPositions, offset) {
+const storeToBuffer = (gl, type, allPositions, offset) => {
   let i;
   for (i in allPositions) {
     const positions = allPositions[i];
@@ -485,7 +479,7 @@ function storeToBuffer(gl, type, allPositions, offset) {
   }
 }
 
-function useBuffer(gl, programInfo, buffer) {
+const useBuffer = (gl, programInfo, buffer) => {
   // Set 'buffer' as the one to apply buffer operations to
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
@@ -493,7 +487,7 @@ function useBuffer(gl, programInfo, buffer) {
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
 }
 
-function drawPoints(gl, vertexCount, type) {
+const drawPoints = (gl, vertexCount, type) => {
   const pointSize = 8 * vertexCount;
   // Get the size of the buffer and check that it's valid
   const bufSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
@@ -506,28 +500,27 @@ function drawPoints(gl, vertexCount, type) {
   }
 }
 
-// Initialize a shader program so WebGL knows how to draw our data
-function initShaderProgram(gl, vsSource, fsSource) {
+const initShaderProgram = (gl, vsSource, fsSource) => {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
   // Create the shader program
-  const shaderProgram = gl.createProgram();
-  gl.attachShader(shaderProgram, vertexShader);
-  gl.attachShader(shaderProgram, fragmentShader);
-  gl.linkProgram(shaderProgram);
+  const newShaderProgram = gl.createProgram();
+  gl.attachShader(newShaderProgram, vertexShader);
+  gl.attachShader(newShaderProgram, fragmentShader);
+  gl.linkProgram(newShaderProgram);
 
   // If creating the shader program failed then alert
-  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-    alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(shaderProgram));
+  if (!gl.getProgramParameter(newShaderProgram, gl.LINK_STATUS)) {
+    alert('Unable to initialize the shader program: ' + gl.getProgramInfoLog(newShaderProgram));
     return null;
   }
 
-  return shaderProgram;
+  return newShaderProgram;
 }
 
 // Creates a shader of the given type, uploads the source, and compiles it.
-function loadShader(gl, type, source) {
+const loadShader = (gl, type, source) => {
   const shader = gl.createShader(type);
 
   gl.shaderSource(shader, source);
