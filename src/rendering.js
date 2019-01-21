@@ -98,26 +98,14 @@ const getDimensions = infrastructure => {
   return viewDims;
 };
 
-const setCanvasSize = (canvas, viewDims) => {
-  canvas.style.display = "block";
-  const aspect = viewDims.x / viewDims.y;
-  const smallestDim = Math.min(window.innerWidth, window.innerHeight);
-  if (aspect > 1) {
-    canvas.width = smallestDim * .9;
-    canvas.height = smallestDim * .9 / aspect;
-  } else {
-    canvas.width = smallestDim * .9 * aspect;
-    canvas.height = smallestDim * .9;
-  }
-};
-
 const main = (frames, infrastructure) => {
   const canvas = document.querySelector("#glCanvas");
   const viewDims = getDimensions(infrastructure);
-  setCanvasSize(canvas, viewDims);
+  const aspect = viewDims.x / viewDims.y;
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
   // Initialize the GL context
   const gl = canvas.getContext("webgl");
-  //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
   // Only continue if WebGL is available and working
   if (gl === null) {
@@ -165,6 +153,13 @@ const main = (frames, infrastructure) => {
   // Tell WebGL to use our program when drawing
   gl.useProgram(programInfo.program);
 
+  // Set the viewport size
+  if (aspect > 1) {
+    gl.viewport(0, 0, canvas.width, canvas.width / aspect);
+  } else {
+    gl.viewport(0, 0, canvas.height * aspect, canvas.height);
+  }
+
   const infrBuf = gl.createBuffer();
   const rectBuf = gl.createBuffer();
 
@@ -175,8 +170,13 @@ const main = (frames, infrastructure) => {
   };
   setupCamera(gl, programInfo, viewDims, zoom, screenLoc);
   window.addEventListener("resize", () => {
-    setCanvasSize(canvas);
-    gl.viewport(0, 0, canvas.width, canvas.height);
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    if (aspect > 1) {
+      gl.viewport(0, 0, canvas.width, canvas.width / aspect);
+    } else {
+      gl.viewport(0, 0, canvas.height * aspect, canvas.height);
+    }
   });
   window.addEventListener("wheel", e => {
     const cursorFrac = {
@@ -241,8 +241,6 @@ const main = (frames, infrastructure) => {
 
 const setupCamera = (gl, programInfo, viewDims, zoom, screenLoc) => {
   const projectionMatrix = mat4.create();
-  // Not currently used, but useful to know the aspect ratio
-  //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 
   mat4.ortho(projectionMatrix, 0, viewDims.x, 0, viewDims.y, 0, 1);
 

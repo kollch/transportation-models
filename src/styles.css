@@ -4,7 +4,6 @@ html {
 
 body {
   height: 100%;
-  background: white;
   margin: 0;
   display: flex;
   align-items: center;
@@ -12,7 +11,9 @@ body {
 }
 
 #glCanvas {
-  border: 5px solid grey;
-  display: none;
+  display: block;
   margin: auto;
+  width: 90vmin;
+  height: 90vmin;
 }
+
