@@ -161,6 +161,51 @@ class HV(Vehicle):
             r_time = random.gauss(mu, sigma)
         return r_time
 
-    def decide_move(self):
-        """Looks in immediate vicinity and determines move"""
+    def decide_move(self, map, visited={},distances={},unvisited={}, path={}):
+        """Uses available information and determines move"""
+
+        """Currently running with custom main function which feeds a dictionary with with map of infrastructure and custom vehicle"""
+
+        current = self.location
+
+        """If we are at very beginning, set/reset vehicle routing info"""
+        if(current == self.origin):
+            visited = {current:0}
+            distances[current] = 0
+            path[current] = 'Begin'
+
+            """Set all adjacency edges to infinity"""
+            for node in map:
+                if node == self.origin: continue
+                unvisited[node] = float('inf')
+
+        """starting with all adjacent nodes surrounding given location"""
+        for adj in map[current]:
+            #            print "FOR LOOP ON", adj,"--------------------------"
+            """run dijkstra's and tentatively find most viable next node"""
+            current = self.dijkstras(current, map[current], unvisited, visited, distances, path)
+            #            print "here is current:", current
+            """if we haven't visited the node yet, mark as visited and run again"""
+            if current in unvisited:
+                visited[current] = distances[current]
+                del unvisited[current]
+            """If we cannot find a viable node that we haven't already checked, just move on"""
+            elif current == "nothing":
+                current = self.location
+                break
+            self.dijkstras(current, map[current], unvisited, visited, distances, path)
+            current = self.location
+                #            print current
+
+        """After we check all adjacent, pick node we actually want to move to"""
+        current = min(map[current], key = map[current].get) #should be E
+
+
+        """run this method until we reach the destination"""
+        while current != self.destination:
+            self.location = current
+                current = self.dijkstras(current, map[current], unvisited,visited, distances, path )
+
+        print "Path routed:"
+        self.print_path(path)
         return
