@@ -2,18 +2,10 @@
 
 const { vec2, vec4, mat4 } = glMatrix;
 
-var secure = false;
+const secure = false;
 
-var url = 'localhost';
-var port = 8888;
-
-var viewDims = {
-  "x": 1600,
-  "y": 1600
-};
-
-var infrastructure = null;
-var frames = [];
+const url = 'localhost';
+const port = 8888;
 
 const enableBuild = () => {
   const infrBtn = document.getElementById("infrInput");
@@ -28,6 +20,7 @@ const enableBuild = () => {
 };
 
 const build = () => {
+  let infrastructure = null;
   const infrReader = new FileReader();
   infrReader.onload = e => {
     let infrData;
@@ -47,7 +40,6 @@ const build = () => {
         alert("Vehicles file is not valid JSON!");
         throw err;
       }
-      //const estabConn = (infrData, vehicleData) => {
       // Establish a websocket connection
       let socketLoc = '://' + url + ':' + port.toString();
       if (secure) {
@@ -62,11 +54,12 @@ const build = () => {
       socket.onopen = e => {
         // Ready to start sending
         /* Pass data to and from backend */
+        const frames = [];
         socket.onmessage = e => {
           const frame = JSON.parse(e.data);
           // If all simulation frames have been received
           if (frame === null && infrastructure !== null) {
-            main();
+            main(frames, infrastructure);
           } else {
             frames.push(frame);
           }
@@ -81,9 +74,31 @@ const build = () => {
   };
   const infrFile = document.getElementById("infrInput").files[0];
   infrReader.readAsText(infrFile);
-}
+};
 
-const setCanvasSize = canvas => {
+const getDimensions = infrastructure => {
+  let viewDims = {
+    "x": 0,
+    "y": 0
+  };
+  for (let i in infrastructure.roads) {
+    const roadCoords = infrastructure.roads[i].ends;
+    for (let j = 0; j < 2; j++) {
+      if (isNaN(roadCoords[j])) {
+        const updateDim = a => {
+          if (roadCoords[j][a] > viewDims[a]) {
+            viewDims[a] = roadCoords[j][a];
+          }
+        };
+        updateDim("x");
+        updateDim("y");
+      }
+    }
+  }
+  return viewDims;
+};
+
+const setCanvasSize = (canvas, viewDims) => {
   canvas.style.display = "block";
   const aspect = viewDims.x / viewDims.y;
   const smallestDim = Math.min(window.innerWidth, window.innerHeight);
@@ -94,11 +109,12 @@ const setCanvasSize = canvas => {
     canvas.width = smallestDim * .9 * aspect;
     canvas.height = smallestDim * .9;
   }
-}
+};
 
-const main = () => {
+const main = (frames, infrastructure) => {
   const canvas = document.querySelector("#glCanvas");
-  setCanvasSize(canvas);
+  const viewDims = getDimensions(infrastructure);
+  setCanvasSize(canvas, viewDims);
   // Initialize the GL context
   const gl = canvas.getContext("webgl");
   //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -157,7 +173,7 @@ const main = () => {
     "x": 0,
     "y": 0
   };
-  setupCamera(gl, programInfo, zoom, screenLoc);
+  setupCamera(gl, programInfo, viewDims, zoom, screenLoc);
   window.addEventListener("resize", () => {
     setCanvasSize(canvas);
     gl.viewport(0, 0, canvas.width, canvas.height);
@@ -192,7 +208,7 @@ const main = () => {
 
   // Set up the infrastructure buffer
   useBuffer(gl, programInfo, infrBuf);
-  let infrNum = setupInfr(gl);
+  let infrNum = setupInfr(gl, infrastructure);
 
   var time = 0;
   var numFrames = frames.length;
@@ -216,14 +232,14 @@ const main = () => {
     }
 
     drawInfr(gl, programInfo, infrBuf, infrNum);
-    drawVehicles(gl, now, frame % 1, programInfo, rectBuf, currFrame);
+    drawVehicles(gl, now, frame % 1, programInfo, rectBuf, frames, currFrame);
     requestAnimationFrame(render);
-  }
+  };
 
   requestAnimationFrame(render);
-}
+};
 
-const setupCamera = (gl, programInfo, zoom, screenLoc) => {
+const setupCamera = (gl, programInfo, viewDims, zoom, screenLoc) => {
   const projectionMatrix = mat4.create();
   // Not currently used, but useful to know the aspect ratio
   //const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
@@ -239,12 +255,12 @@ const setupCamera = (gl, programInfo, zoom, screenLoc) => {
   // Set the shader uniforms
   gl.uniformMatrix4fv(programInfo.uniformLocations.projectionMatrix, false, projectionMatrix);
   gl.uniformMatrix4fv(programInfo.uniformLocations.modelViewMatrix, false, modelViewMatrix);
-}
+};
 
-const setupInfr = gl => {
+const setupInfr = (gl, infrastructure) => {
   let allPositions = [];
   let intersections = [];
-  function roadAngle(road) {
+  const roadAngle = road => {
     /* Return the angle of the road with regards to the x axis */
     let loc1 = road.ends[0];
     let loc2 = road.ends[1];
@@ -256,10 +272,9 @@ const setupInfr = gl => {
       loc2 = infrastructure.intersections.find(x => x.id === loc2).loc;
     }
     return Math.abs(Math.atan((loc2.y - loc1.y) / (loc2.x - loc1.x)));
-  }
+  };
   const addIntersections = () => {
-    let i;
-    for (i in infrastructure.intersections) {
+    for (let i in infrastructure.intersections) {
       const intersection = infrastructure.intersections[i];
       let intersectionInfo = {
         "id": intersection.id,
@@ -330,11 +345,10 @@ const setupInfr = gl => {
       allPositions.push(points);
     }
     return allPositions;
-  }
+  };
   const addRoads = () => {
     let vectorPairs = [];
-    let i;
-    for (i in infrastructure.roads) {
+    for (let i in infrastructure.roads) {
       const road = infrastructure.roads[i];
       const angle = roadAngle(road);
       // 12 is the width of a lane
@@ -382,7 +396,7 @@ const setupInfr = gl => {
       }
     }
     return vectorPairs;
-  }
+  };
   const intersectionCoords = addIntersections();
   const roadCoords = addRoads();
   initBuffer(gl, intersectionCoords.length * 4 + roadCoords.length * 2);
@@ -392,7 +406,7 @@ const setupInfr = gl => {
     "rect": intersectionCoords.length,
     "line": roadCoords.length
   };
-}
+};
 
 const drawInfr = (gl, programInfo, buffer, infrNum) => {
   useBuffer(gl, programInfo, buffer);
@@ -406,20 +420,19 @@ const drawInfr = (gl, programInfo, buffer, infrNum) => {
   for (let i = 0; i < infrNum.line; i++) {
     gl.drawArrays(gl.LINES, offset + i * 2, 2);
   }
-}
+};
 
-const drawVehicles = (gl, now, dTime, programInfo, buffer, frame) => {
+const drawVehicles = (gl, now, dTime, programInfo, buffer, frames, frame) => {
   useBuffer(gl, programInfo, buffer);
-  const vehicles = vehiclePos(frame, dTime);
+  const vehicles = vehiclePos(frames, frame, dTime);
   initBuffer(gl, vehicles.length * 4);
   storeToBuffer(gl, 4, vehicles, 0);
   drawPoints(gl, 4, gl.TRIANGLE_STRIP);
-}
+};
 
-const vehiclePos = (frame, dTime) => {
+const vehiclePos = (frames, frame, dTime) => {
   let allPositions = [];
-  let i;
-  for (i in frames[frame - 1].vehicles) {
+  for (let i in frames[frame - 1].vehicles) {
     // Vehicle in last frame and current frame
     const vehicle1 = frames[frame - 1].vehicles[i];
     const vehicle2 = frames[frame].vehicles.find(x => x.id === vehicle1.id);
@@ -441,7 +454,7 @@ const vehiclePos = (frame, dTime) => {
         a += 360;
       }
       return a * (1 - diff) + b * diff;
-    }
+    };
     const vehicleDir = glMatrix.glMatrix.toRadian(lerp(vehicle1Dir, vehicle2Dir, dTime));
     // Positions for the object
     let positions = [
@@ -450,24 +463,22 @@ const vehiclePos = (frame, dTime) => {
       vec2.fromValues(10, -4),
       vec2.fromValues(-10, -4)
     ];
-    let j;
-    for (j in positions) {
+    for (let j in positions) {
       vec2.add(positions[j], positions[j], vehicleLoc);
       vec2.rotate(positions[j], positions[j], vehicleLoc, vehicleDir);
     }
     allPositions.push(positions);
   }
   return allPositions;
-}
+};
 
 const initBuffer = (gl, length) => {
   // 8 because there are 2 values for every point, each value of size 4 bytes
   gl.bufferData(gl.ARRAY_BUFFER, length * 8, gl.STATIC_DRAW);
-}
+};
 
 const storeToBuffer = (gl, type, allPositions, offset) => {
-  let i;
-  for (i in allPositions) {
+  for (let i in allPositions) {
     const positions = allPositions[i];
     let coords = new Float32Array(2 * type);
     // 2 because there are 2 values for every point (2D)
@@ -477,7 +488,7 @@ const storeToBuffer = (gl, type, allPositions, offset) => {
     // Store positions into the buffer
     gl.bufferSubData(gl.ARRAY_BUFFER, offset + i * 8 * type, coords);
   }
-}
+};
 
 const useBuffer = (gl, programInfo, buffer) => {
   // Set 'buffer' as the one to apply buffer operations to
@@ -485,7 +496,7 @@ const useBuffer = (gl, programInfo, buffer) => {
 
   gl.vertexAttribPointer(programInfo.attribLocations.vertexPosition, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-}
+};
 
 const drawPoints = (gl, vertexCount, type) => {
   const pointSize = 8 * vertexCount;
@@ -498,7 +509,7 @@ const drawPoints = (gl, vertexCount, type) => {
   for (let i = 0; i < bufSize / pointSize; i++) {
     gl.drawArrays(type, i * vertexCount, vertexCount);
   }
-}
+};
 
 const initShaderProgram = (gl, vsSource, fsSource) => {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
@@ -517,7 +528,7 @@ const initShaderProgram = (gl, vsSource, fsSource) => {
   }
 
   return newShaderProgram;
-}
+};
 
 // Creates a shader of the given type, uploads the source, and compiles it.
 const loadShader = (gl, type, source) => {
@@ -534,4 +545,4 @@ const loadShader = (gl, type, source) => {
   }
 
   return shader;
-}
+};
