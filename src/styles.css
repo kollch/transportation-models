@@ -13,6 +13,6 @@ body {
 
 #glCanvas {
   border: 5px solid grey;
-  display: block;
+  display: none;
   margin: auto;
 }
