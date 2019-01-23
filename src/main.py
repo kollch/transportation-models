@@ -19,7 +19,6 @@ class InvisibleHand():
         """Allow class to pass to GUI via Connection class"""
         self.gui = connection
         self.set_parameters()
-        self.infrastructure
         return
 
     def data_from_intersection(self, file_data_json, id_data, roads_data, loc_data):
