@@ -1,5 +1,5 @@
 """This is the primary component of the backend."""
-# Needed for connection to frontend
+import math
 import asyncio
 import ssl
 import json
@@ -18,8 +18,8 @@ class InvisibleHand():
     def __init__(self, connection):
         """Allow class to pass to GUI via Connection class"""
         self.gui = connection
+        self.infrastructure = None
         self.set_parameters()
-        return
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
@@ -51,7 +51,6 @@ class InvisibleHand():
             road.ends = (new_ends[0], new_ends[1])
         # Create infrastructure
         self.infrastructure = Infrastructure(intersections, roads)
-        return
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
@@ -69,16 +68,16 @@ class InvisibleHand():
         """Gives list of CAVs within distance of length (in meters) of
         location
         """
-        x1 = location[0]
-        y1 = location[1]
+        x_1 = location[0]
+        y_1 = location[1]
         in_range_cavs = []
 
         for single_vehicle in self.cavs:
-            x2 = single_vehicle.location[0]
-            y2 = single_vehicle.location[1]
-            if x2 - x1 != 0 or y2 - y1 != 0:
-                dist = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-                if dist <= 3000:
+            x_2 = single_vehicle.location[0]
+            y_2 = single_vehicle.location[1]
+            if x_2 - x_1 != 0 or y_2 - y_1 != 0:
+                dist = math.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2)
+                if dist <= length:
                     in_range_cavs.append(single_vehicle)
         return in_range_cavs
 
@@ -88,6 +87,8 @@ class Connection():
     def __init__(self, websocket, path):
         self.websocket = websocket
         self.addr = websocket.remote_address
+        self.infrastructure = None
+        self.vehicles = None
 
     async def get_parameters(self, data_type):
         """Get infrastructure parameters from the frontend"""
@@ -95,9 +96,9 @@ class Connection():
         # Now convert the payload string to a json object
         payload = json.loads(payload_str)
 
-        if data_type is "infrastructure":
+        if data_type == "infrastructure":
             self.infrastructure = payload
-        elif data_type is "vehicles":
+        elif data_type == "vehicles":
             self.vehicles = payload
         else:
             raise ValueError("Parameter type unknown")

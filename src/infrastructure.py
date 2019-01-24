@@ -1,9 +1,9 @@
-
 class Infrastructure():
     """Holds all of the intersections and roads"""
     def __init__(self, intersections, roads):
         self.intersections = intersections
         self.roads = roads
+
 
 class Intersection():
     """May need connecting capabilities"""
@@ -13,6 +13,7 @@ class Intersection():
         self.intersection_id = intersection_id
         self.roads = roads
         self.location = location
+
 
 class Road():
     """Connect intersections together and vehicles drive on them"""
