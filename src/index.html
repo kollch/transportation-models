@@ -12,6 +12,17 @@
 <body>
 
 <canvas id="glCanvas"></canvas>
+<div id="userInput">
+  <div class="group">
+    <label for="infrInput" class="subitem">Infrastructure</label>
+    <input type="file" id="infrInput" class="subitem" onchange="enableBuild()">
+  </div>
+  <div class="group">
+    <label for="vehicleInput" class="subitem">Vehicles</label>
+    <input type="file" id="vehicleInput" class="subitem" onchange="enableBuild()">
+  </div>
+  <button type="button" id="build" disabled onclick="build()">Build</button>
+</div>
 
 </body>
 </html>
