@@ -9,8 +9,8 @@ class Intersection():
     """May need connecting capabilities"""
     # roads_blocked = []
     # roads_open = []
-    def __init__(self, intersections_id, roads, location):
-        self.intersection_id = intersections_id
+    def __init__(self, intersection_id, roads, location):
+        self.intersection_id = intersection_id
         self.roads = roads
         self.location = location
 
@@ -18,8 +18,8 @@ class Road():
     """Connect intersections together and vehicles drive on them"""
     # vehicles_on = []
     # speed_limit = 60
-    def __init__(self, roads_id, two_way, lanes, ends):
-        self.road_id = roads_id
-        self.two_Way = two_way
+    def __init__(self, road_id, two_way, lanes, ends):
+        self.road_id = road_id
+        self.two_way = two_way
         self.lanes = lanes
         self.ends = ends
