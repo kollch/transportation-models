@@ -1,0 +1,96 @@
+\documentclass[letterpaper,10pt,draftclsnofoot,onecolumn]{IEEEtran}
+
+\usepackage[margin = 0.75in]{geometry}
+
+\title{Autonomous vehicle routing in congested transportation network.}
+\author{Shengjun Gu}
+\IEEEspecialpapernotice{CS 461 Fall 2018}
+\IEEEspecialpapernotice{Team Number: 43\\Technical Review\\Role in the Project: Researcher}
+\usepackage[numbers]{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Abstract}
+
+\setlength{\parindent}{7ex} This project offers a practical solution to the inclusion of autonomous vehicles into transportation network models and discusses how they will not only create optimal paths but coexist with human driven vehicles. By pairing connected autonomous vehicles (CAVs) with a Q-learning algorithm, vehicle autonomy and the overall infrastructure of transportation may be restructured positively to include multiple intelligent agents. Additionally, this project will explore the impact of CAVs relative to transportation congestion, using a Python based framework and vehicle models to create data on how CAVs behave on a transportation network. This project will define the problem that autonomous vehicles present in the infrastructure we have already built and live in, as well as consider how navigation among other intelligent vehicles will be handled.
+
+\pagebreak
+
+
+\section{tasks we are working on}
+We intend to set up a simulation of a traffic network with vehicles that work as a system. Each vehicle has a destination, and given the destinations and current positions of all the other vehicles, each vehicle will calculate the optimal path to minimize the travel time for all of the cars in the simulation given a set of constraints such as path, speed limit, etc. With a higher number of cars, the number of constraints in the optimization problem grows to a point where it would simply take too long to calculate these decisions in real time. This is where some heuristics will come into place to estimate a solution to what is a very non-convex problem. In total, we now have three issues to consider. First one is real-time delivery of data which would require specialized software and hardware such as a real-time kernel and a NIC with real time capabilities for the autonomous driving itself. Second one is highly efficient approximation algorithm to find the optimal routing for all vehicles in the network. We need to find at least one way to implement the necessary functions of these automated vehicle detection, or at least simulate these functions, to better understand the problem during the experiment. Thirdly, by studying actual traffic data, we must verify our assumptions. We also need to prove that the proposed algorithm is even better than the point-to-point rebalancing algorithm is real-time routing and rebalancing algorithm.
+
+
+\section{TECHs}
+
+ Piece 1: Vehicle Internet. Literature Review about: Multi-Agent Reinforcement Learning for Integrated Network of Adaptive Traffic Signal Controllers (MARLIN-ATSC). The steady growth of the global population has led to traffic jams in some densely populated cities or regions. With the development of society, Adaptive Traffic Signal Control technology (ATSC). The technology has great power to solve the problem of traffic congestion. The technology can be used to improve traffic congestion, mainly through real-time adjustment of signal timing, for example, by minimizing delays and making the lights respond quickly to improve traffic problems. This is the idea of an efficient ATSC designed by a Multi-Agent Reinforce Learning method, which requires each controller to control all traffic lights at a single traffic intersection. This paper introduces a Multi-Agent Reinforcement Learning (MARL) method, which is mainly used the adaptive traffic signal controller (MARLIN-ATSC). MARLIN-ATSC control system provides autonomous learning of ATSC through the cooperative combination of enhanced learning method and game theory. MARLIN-ATSC mainly has two main modes :(1) Independent mode, that is, each intersection controller runs independently, and each agent has its own controller. (2) Comprehensive mode. In this mode, the controller can coordinate adjacent intersection signal control. This paper introduces how to use the mathematical modeling of traffic control problem as a stochastic control problem, and combines with the application of artificial intelligence technology, such as the reinforcement learning in game theory setting. Also, this paper provides useful and inexpensive solutions to real life traffic congestion problems.There are three main Technology in this article. 
+
+First of them is Agents learn strategies based on implementing one of two learning methods: MARLIN-IC and MARLIN-DC. In MARLIN-IC, each agent estimates the model of the neighborhood strategy and updates its strategy with the estimated model. Similar to Q learning, MARLI-IC updates the estimate value function (Q value) using the best response action, independent of the currently followed policy, which involves an exploratory operation. Therefore, MARLI-IC is considered to be an iterative value algorithm with non-policy approaches, as agents try to improve strategies while following another strategy. On the other hand, in marlin-dc, the agent first randomly selects the policy and then swaps it with the neighbor. The agent uses this information to evaluate and improve policies. Therefore, MARLIN-DC is seen as a strategy iteration algorithm with a strategy approach. In this case, the broker's policy is updated based on the current policy. Finally, during the agent's decision-making process, the joint policy from the learning process is given with the neighboring agent.
+        	    
+Next the paper introduced that Paramics is an adaptive traffic control system for evaluating significant intersections in downtown Toronto using observed traffic data. Reinforce Learning is compared with Webster - based fixed time signal control and NEMA actuation control as a reference. The results show that Reinforce Learning-based signal control system is superior to fixed time and excitation control methods in saving the cumulative delay of each vehicle. Also, it was found that compared with fixed time or actuation control. Reinforce Learning -based controls are more robust and achieve the same average latency regardless of the contours reached. It concludes that Reinforce Learning is more effective in the signal control and more vivid in an overview of variable demand. Compared with fixed time and start-up control, the average Reinforce Learning delay saves 52 percentage and 35 percentage, respectively. This reflects strong adaptability of Reinforce Learning to traffic fluctuations.
+
+Third one is by the network of five intersections of Paramics in the center of Toronto. Compare the two operating modes, MARLIN-ATSC, standalone mode and integrated mode usage. The results of the experiment. 1) the MARLIN-ATSC integration mode is always superior to its independent mode. That is, regardless of the level of demand, the integration model saves more on average intersection delays and average route travel time. 2) find MARL-IN more compelling at high demand levels. Experiments show that when overflows occur from an intersection to an upstream intersection, under the condition of highly saturated, it has more efficient coordination. This means that the MARLIN-ATSC integration pattern can provide more reliable travel time, a performance indicator of equal importance for travel time. It is more recommended to use the indirect coordination mechanism (MARL-IN) direct coordination mechanism (MARL-DC). Because it can show similar performance, but it has faster speed and it spends shorter time.
+                
+
+Piece 2: Vehicle data collect. When people understand the concept of self-driving cars for the first time, most of them will intuitively understand system dependence on data of incredible. For example, the vehicle needs to be in continuous communication with a position tracking satellite and be able to transmit and receive messages from other vehicles on the road. Whether it's finding a destination or getting around unexpected obstacles, everyone knows that self-driving cars must continually absorb data from the outside world and often feed that data to advanced neural network algorithms to filter out meaning in real time. Still, as surprising as those extroverts are, few realize that these vehicles may collect as much data from inside the car as they do from outside. Advanced vehicle AI will watch Tomorrow's self-driving car passengers, and in many ways, ride quality and safety will depend on the vehicle's ability to interpret human wishes and needs. Traditional cars may run on natural gas, but autonomous vehicles run on data they can mine from anywhere. I found three main Technologies.
+    
+
+First of all, by creating a convolutional neural network and capturing the raw pixels of a single front camera, the technology can then apply the data directly to the direction control. It turns out that this end-to-end approach is very powerful. Autonomous vehicles can systematically learn to drive on roads with or without lane markings as well as on highways. Convolutional neural networks are also tested in areas where visual guidance is unclear, such as parking lots and unpaved roads. With a lot of systematic learning, autonomous vehicle internal components can be self-optimized to maximize overall system performance. This is better than autonomous vehicles systematically learning human behavior to meet reasonable human standards.
+                
+Second one is using cheap multimode sensor fusion system. The system uses commercially available equipment and can realize automatically data collection of road condition. Detailed evaluation and enhancement of various technical methods and algorithms to overcome visual measurement distortion caused by the movement of the monitoring platform. Fracture detection using laser line scan is studied. However, infrared thermal imaging technology is used to identify defects on the surface of the site. The system includes an RGB-d camera, a global positioning system, an accelerometer and a data acquisition module. There is evidence that the technology in providing accurate quantity limitations existing pavement and its calculation error. In order to be able to properly integrate data from multiple sensors, infrared thermal imaging technology synchronization time is needed to establish the consistency between the heterogeneous data. In addition, the data synchronization is based on the timeline of each sensor and recorded by the corresponding data acquisition program.
+                
+Third one is using a probability method to locate 3-D laser radar scanner automatic vehicles. The central principle of the algorithm is modeled by a Gaussian mixture of several kinds of the world. Therefore, the height and reflectivity of the environment are used to analyze the road condition. The 2-D grid structure is recommended. All independent cell grids are accompanied by a gaussian mixture model: height and appearance, which can capture the distribution of reflectivity. Through the raster version of the multi-resolution gaussian hybrid, the system can be searched efficiently. In these mappings, the registration is implemented, using the universal ceiling situation to implement the fast branch and binding registration and live registration, guaranteed the optimal registration. This allows the system to get real-time information.
+                
+        
+
+Piece 3: Correct positioning of the vehicle. As we know, vehicle positioning is a key requirement for many safety applications. Accurate vehicle position information in the right time to correct the pilot group of warning is very important. Active safety systems are primarily directed to alert and intervention strategies for security crises. It needs to be able to accurately locate vehicles and accurately assess safety threats. Today's global positioning system and digital map not only provide information on the location of the vehicle, but also provide real-time road conditions, so that they become an important tool for vehicle positioning. Today's vehicles can share their location information with other vehicles and traffic operations centers. The progress of wireless technology has greatly increased the use of vehicle mapping technology for road safety. There are also three main Technologies.
+    
+First one is using a novel algorithm which is presented by using a non-tracking Kalman filter, which includes a global positioning system, a multi-hypothesis mapping matching algorithm and a vehicle positioning system that integrates navigation system data. This technique has proposed a new way to evaluate the multi-hypothesis mapping algorithm, and to propose a way to increase the accuracy of the location based on the way it should be feedback. In multiple hypothesis graph matching algorithm, if the node number exponentially with time, you need a large amount of computing time and memory. This technology is dedicated to reducing the number of hypothesized nodes, by suggesting a few ways to generate technology by improving the virtual node, and by modifying the branch of the multiple hypothesis tree, to eliminate or merge the redundant nodes. The system can achieve higher precision through map matching feedback, which can save computing time and memory significantly. The data calibration module USES UKF or navigation position prediction (DR) to update and calibrate vehicle status information based on GPS data quality. Also, if feedback information is available, it can be used to improve vehicle status information further. Then, the calibration information will go into the map matching module, where the map matching will make the position of the vehicle match a road in the digital map.
+                
+Second one is using a new GPS system Differential Global Positioning System (DGPS) which is now available. By increasing precision, automatic vehicle location (AVL) can now be accurate to a specific road lane. Lane level positioning provides a better development platform for many new intelligent transportation systems and some applications, such as better management of fleets on the road, lane level navigation and carrier-based vehicle traffic measurements. It is important for that match precision and utilization of the digital network data development. Through these two methods, it is possible to determine the vehicle traffic lanes at any time. This technology will help a lot of transportation research.
+                
+Third one is using enhanced maps on the vehicle. Enhanced maps should represent roads. First, it is more complete than previous maps. Second, more accurate than standard maps, it offers more comprehensive applications for road safety and Advanced Driver Assistance Systems (ADAS). GPS is a key system in automotive applications, but it still has some limitations. The mobile map can be used to mark the area on the map, so that the system can directly collect the road network and generate real-time geometric shape in line with the road network. Most map providers use dedicated vehicles equipped with calibration sensors to collect and process information. This can not only locate the vehicle, but also map all the road markings and signs around it. Thus, the system can have automatic identification function to help automatic vehicle self-positioning and self-identification.
+                
+        
+
+
+	
+
+
+\section{Conclusion}
+The above technologies will provide network flow models for autonomous on-demand systems with capacity. We will develop routing and rebalancing issues so that it can always rebalance vehicles without increasing traffic congestion. We may use the network model to prove that rebalancing does not increase congestion. We will develop a computationally efficient congestion aware routing and rebalancing algorithm. That highlights the awareness of traffic congestion in the autonomous control strategy design and implementation of importance. We will create a new routing network to test whether our algorithm is suitable for autonomous and manned vehicles to identify each other. We will then create a smart system to help cars find the best routes to run in the city, thus saving time for vehicles. And we're going to submit the results, give you the theoretical information about how the autopilot system can do the best thing. Finally, we will present the research results in a research report, with our road model, code example, and some theoretical formulas. For the success of the project, we need to submit complete code of various tests, submit test reports, and measure the best configuration of unmanned vehicles, including AI system, algorithm, etc. If we can create an entirely new measurement system, it will be more perfect. If not, we will have to make maximum optimization based on the existing system and propose an optimal environment for Autonomous Vehicles.
+
+    
+
+\pagebreak
+    
+\begin{thebibliography}{}
+        \bibitem{article1}
+         Bétaille, D., and Toledo-Moreo, R. (2010). Creating enhanced maps for lane-level vehicle navigation. \emph{IEEE Transactions on Intelligent Transportation Systems, 11}(4), 786-798.
+        
+        \bibitem{article2}
+        Bojarski, M., Del Testa, D., Dworakowski, D., Firner, B., Flepp, B., Goyal, P., ... and Zhang, X. (2016). End to end learning for self-driving cars. \emph{arXiv preprint arXiv:1604.07316.}
+        
+        \bibitem{article3}
+        Chen, Y. L., Jahanshahi, M. R., Manjunatha, P., Gan, W., Abdelbarr, M., Masri, S. F., ... and Caffrey, J. P. (2016). Inexpensive multimodal sensor fusion system for autonomous data acquisition of road surface conditions. \emph{IEEE Sensors Journal, 16(21), 7731-7743.}
+        
+        \bibitem{article4}
+         Du, J., and Barth, M. J. (2008). Next-generation automated vehicle location systems: Positioning at the lane level. \emph{IEEE Transactions on Intelligent Transportation Systems, 9}(1), 48-57.
+        
+        \bibitem{article5}
+        El-Tantawy, S. M.-S. (2012). Multi-Agent Reinforcement Learning for Integrated Network of Adaptive Traffic Signal Controllers (MARLIN-ATSC). Department of Civil Engineering, Philosophy. University of Toronto.
+        
+        \bibitem{article6}
+        Wolcott, R. W., and Eustice, R. M. (2017). Robust LIDAR localization using multiresolution Gaussian mixture maps for autonomous driving. \emph{The International Journal of Robotics Research, 36}(3), 292-319.
+        
+        \bibitem{article7}
+        Zhang, K., Liu, S., Dong, Y., Wang, D., Zhang, Y., and Miao, L. (2017). Vehicle positioning system with multi-hypothesis map matching and robust feedback. \emph{IET Intelligent Transport Systems, 11}(10), 649-658.H
+
+\end{thebibliography}
+
+
+\end{document}

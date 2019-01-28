@@ -1,18 +1,67 @@
-html {
-  height: 100%;
-}
-
 body {
-  height: 100%;
-  background: white;
   margin: 0;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  flex-direction: row;
+  height: 100vh;
+  width: 100vw;
 }
 
 #glCanvas {
-  border: 5px solid grey;
   display: block;
   margin: auto;
+  width: 90vmin;
+  height: 90vmin;
+}
+
+#userInput {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 90vh;
+  padding: 5vh;
+  border-left: 2px solid #aaa;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.subitem {
+  padding: 5px;
+}
+
+/* When width smaller than height */
+@media screen and (orientation: portrait) {
+  body {
+    flex-direction: column;
+  }
+
+  #userInput {
+    height: auto;
+    width: 90vw;
+    padding: 0;
+    border-left: 0;
+    border-top: 2px solid #aaa;
+  }
+}
+
+/* When width smaller than height but close enough to a square that not
+ * everything fits */
+@media screen and (orientation: portrait) and (min-aspect-ratio: 2/3) {
+  #glCanvas {
+    width: 60vh;
+    height: 60vh;
+  }
+}
+
+/* When width larger than height but close enough to a square that not
+ * everything fits */
+@media screen and (orientation: landscape) and (max-aspect-ratio: 3/2) {
+  #glCanvas {
+    width: 60vw;
+    height: 60vw;
+  }
 }
