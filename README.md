@@ -5,14 +5,14 @@ With the increasing popularity and interest in autonomous vehicle development, t
 
 This project aids in the process of auotnomous vehucle research, providing an interface in which the user may view a given transportation network and the car models active within it. On the network will be active autonomous models, with a connective capability to one another, as well as models representing human driven vehicles. Through this simulation of both models, the user will be able to monitor how the autonomous vehicles are interacting with one another as well as with the human driven vehicles.
 
-##Members
+## Members
 * Eytan Brodsky
 * Samantha Estrada
 * Shengjun Gu
 * Charles Koll
 * Liang Zu
 
-##Requirements
+## Requirements
 * Provide an accurate simulation of traffic
 * User interface (GUI) should provide details such as the number, position, and other parameters of each variable
 in the environment.
@@ -20,9 +20,9 @@ in the environment.
 * Simulation should be displayed to the user at a minimum of 10 frames per second. 
 * All vehicles will individually route to their destination, and will have different destinations.
 
-##Deliverables
+## Deliverables
 * A GUI interface presenting the run simulation, with the ability to be interactive with the user.
 * Data for the autonomous vechicles' behaviors, represented by graphs and tables.
 
 
-##Instructions to run AV Routing Project
+## Instructions to run AV Routing Project
