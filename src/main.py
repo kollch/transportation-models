@@ -5,7 +5,7 @@ import ssl
 import json
 import websockets
 
-from vehicles import Vehicle, CAV, HV
+from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
 
 SECURE = False
@@ -19,20 +19,22 @@ class InvisibleHand():
         """Allow class to pass to GUI via Connection class"""
         self.gui = connection
         self.infrastructure = None
+        self.new_vehicles = []
         self.set_parameters()
+        self.cavs = []
+        self.hvs = []
 
-    def set_parameters(self):
-        """Set parameters pulled from GUI, aka initializing simulation
-        Parameters: num_frames, vehicle positions, infrastructure setup
-        """
-        # Create intersections
-        intersections = [
+    def init_intersections(self):
+        """Initialize intersections"""
+        return [
             Intersection(item['id'],
                          item['connects_roads'],
                          (item['loc']['x'], item['loc']['y']))
             for item in self.gui.infrastructure['intersections']
         ]
-        # Create roads
+
+    def init_roads(self):
+        """Initialize roads"""
         roads = [
             Road(item['id'],
                  item['two_way'],
@@ -49,8 +51,31 @@ class InvisibleHand():
                 except TypeError:
                     pass
             road.ends = (new_ends[0], new_ends[1])
-        # Create infrastructure
+        return roads
+
+    def init_vehicles(self):
+        """Initialize vehicles"""
+        for item in self.gui.vehicles:
+            if item['type'] == 0:
+                vehicle = HV()
+            elif item['type'] == 1:
+                vehicle = CAV()
+            else:
+                raise ValueError
+            vehicle.id = item['id']
+            vehicle.location = (item['start_loc']['x'], item['start_loc']['y'])
+            vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
+            self.new_vehicles.append({'entry': item['entry_time'],
+                                      'vehicle': vehicle})
+
+    def set_parameters(self):
+        """Set parameters pulled from GUI, aka initializing simulation
+        Parameters: num_frames, vehicle positions, infrastructure setup
+        """
+        intersections = self.init_intersections()
+        roads = self.init_roads()
         self.infrastructure = Infrastructure(intersections, roads)
+        self.init_vehicles()
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
