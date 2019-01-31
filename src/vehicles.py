@@ -44,51 +44,46 @@ class CAV(Vehicle):
 #        print "Adj_map",adj_map
         options = {}
 
-#        print "UNVISITED:",unvisited
+        print "UNVISITED:",unvisited
         starting_loc = distances[current]
         for adj in adj_map:
             if adj in unvisited:
-#                print "looking at node",adj
+                print "looking at node",adj
+                looking = adj
+                weight = adj_map.get(looking)
+                print weight
                 """calc distances from this node to adjacent ones"""
                 new_dist = distances[current] + adj_map[adj]
                 if new_dist < unvisited[adj]:
                     unvisited[adj] = new_dist
                     options[adj] = new_dist
+                    """update path accordingly"""
+                    path[looking] = ({prev : weight })
+                    distances[looking] = weight
+                    print
                 else:
                     options[adj] = unvisited[adj]
         """if there are elements in the options dict, we can take into consideration"""
         if options:
-#            print "OPTIONS:", options
             """gets lowest value adjacent node and makes it our new current"""
             current = min(options, key = options.get)
 
-            #        print "CURRENT:",current
-            weight = adj_map[current]
-            #        visited[current] = weight
-            ##        print "PREV", path[prev]
-            ##        path[current] = path[prev]
-            path[current] = ( {prev : weight }) #add previous shortest path for node
-            distances[current] = weight
-#            print "CHOOSE", current
-#            print "paths:",path
-#            print
             return current
         """otherwise, no need"""
         else:
-#            print "no options"
             return "nothing"
 
     def print_path(self, path):
         """function to print the found path"""
-        route = {}
-        step = self.destination
-
-        while step != self.origin:
-            route = {}
-            route.update(path[step])
-            print path[step]
-            step = route.iterkeys().next()
-
+        route = []
+        route.append(path[self.destination])
+        at = self.destination
+        while(at != self.origin):
+            for key, value in path[at].items():
+                prev = key
+            route.insert(0, path[prev])
+            at = prev
+        print str(route)[1:-1]
         return
 
     def decide_move(self, map, visited={},distances={},unvisited={}, path={}):
@@ -156,7 +151,7 @@ class HV(Vehicle):
         sigma = 1
         r_time = random.gauss(mu, sigma)
 
-        # r_time is randomly number but sometimes it will has negative number
+#         r_time is randomly number but sometimes it will has negative number
         while r_time <= 0:
             r_time = random.gauss(mu, sigma)
         return r_time
@@ -204,7 +199,7 @@ class HV(Vehicle):
         """run this method until we reach the destination"""
         while current != self.destination:
             self.location = current
-                current = self.dijkstras(current, map[current], unvisited,visited, distances, path )
+            current = self.dijkstras(current, map[current], unvisited,visited, distances, path )
 
         print "Path routed:"
         self.print_path(path)
