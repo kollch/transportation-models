@@ -133,6 +133,7 @@ class Connection():
         data = json.dumps(json_data)
         await self.websocket.send(data)
 
+
 async def main(websocket, path):
     """Start the program with a connected frontend"""
     connect = Connection(websocket, path)
@@ -149,6 +150,7 @@ def get_frame_data(file_name, frame):
     with open(file_name) as json_file:
         data = json.load(json_file)
         return data[frame]
+
 
 # Start server with or without ssl
 if SECURE:
