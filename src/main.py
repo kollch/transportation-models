@@ -33,24 +33,22 @@ class InvisibleHand():
             for item in self.gui.infrastructure['intersections']
         ]
 
-    def init_roads(self):
+    def init_roads(self, intersections):
         """Initialize roads"""
-        roads = [
-            Road(item['id'],
-                 item['two_way'],
-                 item['lanes'],
-                 (item['ends'][0], item['ends'][1]))
-            for item in self.gui.infrastructure['roads']
-        ]
-        # Convert road endpoints to tuples if they're coordinates
-        for road in roads:
-            new_ends = [road.ends[0], road.ends[1]]
+        roads = []
+        for item in self.gui.infrastructure['roads']:
+            ends = [item['ends'][0], item['ends'][1]]
+            # Convert road endpoints to tuples if they're coordinates
             for i in range(2):
                 try:
-                    new_ends[i] = (new_ends[i]['x'], new_ends[i]['y'])
+                    ends[i] = (ends[i]['x'], ends[i]['y'])
                 except TypeError:
-                    pass
-            road.ends = (new_ends[0], new_ends[1])
+                    for intersection in intersections:
+                        if intersection.intersection_id == ends[i]:
+                            ends[i] = intersection
+                            break
+            roads.append(Road(item['id'], item['two_way'],
+                              item['lanes'], (ends[0], ends[1])))
         return roads
 
     def init_vehicles(self):
@@ -73,7 +71,7 @@ class InvisibleHand():
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
         intersections = self.init_intersections()
-        roads = self.init_roads()
+        roads = self.init_roads(intersections)
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
