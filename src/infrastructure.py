@@ -1,3 +1,5 @@
+import math
+
 class Infrastructure():
     """Holds all of the intersections and roads"""
     def __init__(self, intersections, roads):
@@ -19,35 +21,76 @@ class Infrastructure():
         else:
             end_x = self.roads[i].ends[1][0]
             end_y = self.roads[i].ends[1][1]
-        k = b1 = b2 = 0
+        k = b = b1 = b2 = 0
+        # print(start_x," ",start_y," ",end_x," ",end_y)
+        # print(self.roads[i].lanes/2)
         if self.roads[i].lanes % 2 == 0:
             #linear function y = kx + b
-            if (end_x - start_x) != 0:
-                k = (end_y - start_y) / (end_x - start_x)
-                b1 = (end_y + 6) - k * end_x
-                b2 = (end_y - 6) - k * end_x
-                y1 = k * current_x + b1
-                y2 = k * current_x + b2
+            if (end_x - start_x) != 0 and (end_y - start_y) == 0:
+                y1 = end_y + 6
+                y2 = end_y - 6
                 # if the lanes is 2 then the road is in +6 or -6 because of road space
                 if self.roads[i].lanes / 2 == 1:
-                    if float(current_y) == y1 or float(current_y) == y2:
+                    if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
                         return True
                     else:
                         return False
                 # if the lanes is larger than 2. the road is  +6 + 12 ...
                 else:
                     for i in range(int(self.roads[i].lanes / 2) - 1):
-                        if float(current_y) == y1 or float(current_y) == y2:
+                        if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
                             return True
                         else:
-                            b1 += 12
-                            b2 -= 12
-                            y1 = k * current_x + b1
-                            y2 = k * current_x + b2
-                            if float(current_y) == y1 or float(current_y) == y2:
+                            y1 += 12
+                            y2 -= 12
+                            if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
                                 return True
                     return False
-                    """need consider when lane is old in one-way roads"""
+            elif (end_x - start_x) != 0 and (end_y - start_y) != 0:
+                # when the line is slash
+                k = (end_y - start_y) / (end_x - start_x)
+                angle = math.atan(k)
+                b = start_y - k * start_x
+                #calcullate 1st lane center and -1 lane center
+                b1 = b + 6/math.cos(angle)
+                b2 = b - 6/math.cos(angle)
+                y1 = k * current_x + b1
+                y2 = k * current_y + b2
+                if self.roads[i].lanes / 2 == 1:
+                    if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
+                        return True
+                    else:
+                        return False
+                else:
+                    for i in range(int(self.roads[i].lanes / 2) - 1):
+                        if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
+                            return True
+                        else:
+                            b1 += 12/math.cos(angle)
+                            b2 -= 12/math.cos(angle)
+                            y1 = k * current_x + b1
+                            y2 = k * current_y + b2
+                            if (current_y == y1 or current_y == y2) and (current_x >= start_x and current_x <= end_x):
+                                return True
+                    return False
+            else:
+                #if end_x - start_x = 0
+                if current_y <= max(start_y, end_y) and current_y >= min(start_y, end_y):
+                    if (self.roads[i].lanes / 2 == 1) and (current_x == start_x + 6 or current_x == start_x - 6):
+                        return True
+                    elif self.roads[i].lanes / 2 > 1:
+                        x1 = start_x + 6
+                        x2 = start_x - 6
+                        for i in range(int(self.roads[i].lanes / 2) - 1):
+                            if current_x == x1 or current_x == x2:
+                                return True
+                            else:
+                                x1 += 12
+                                x2 -= 12
+                                if current_x == x1 or current_x == x2:
+                                    return True
+                        return False
+                """TODO: seperate to two funtion One in on_road another in road class"""
         return False
 
 
