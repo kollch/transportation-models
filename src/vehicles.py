@@ -12,6 +12,9 @@ class Vehicle():
 
     def decide_move(self):
         """Determines move. Required to be implemented in CAV and HV"""
+        #TODO: should use InvisibleHand's cavs_in_range function to determine neraby vehicles,
+        # then use that information in dijkstra's to determine next location and update
+        # the self.* parameters above.
         raise NotImplementedError
 
 
