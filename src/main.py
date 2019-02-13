@@ -24,6 +24,9 @@ class InvisibleHand():
         self.cavs = []
         self.hvs = []
 
+    def init_vehicle_dir(self, vehicle):
+        """Initialize vehicle direction based on which road it's on"""
+
     def init_intersections(self):
         """Initialize intersections"""
         return [
@@ -60,7 +63,7 @@ class InvisibleHand():
                 vehicle = CAV()
             else:
                 raise ValueError
-            vehicle.id = item['id']
+            vehicle.vehicle_id = item['id']
             vehicle.location = (item['start_loc']['x'], item['start_loc']['y'])
             vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
@@ -87,22 +90,18 @@ class InvisibleHand():
         await self.gui.send_frame(None)
         return
 
+    def norm(self, p1, p2):
+        return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+
     def cavs_in_range(self, location, length):
-        """Gives list of CAVs within distance of length (in meters) of
+        """Gives list of CAVs within distance of length (in feet) of
         location
         """
-        x_1 = location[0]
-        y_1 = location[1]
-        in_range_cavs = []
-
-        for single_vehicle in self.cavs:
-            x_2 = single_vehicle.location[0]
-            y_2 = single_vehicle.location[1]
-            if x_2 - x_1 != 0 or y_2 - y_1 != 0:
-                dist = math.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2)
-                if dist <= length:
-                    in_range_cavs.append(single_vehicle)
-        return in_range_cavs
+        return [
+            vehicle
+            for vehicle in self.cavs
+            if 0 < self.norm(location, vehicle.location) <= length
+        ]
 
 
 class Connection():
