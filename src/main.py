@@ -19,9 +19,10 @@ class InvisibleHand():
         """Allow class to pass to GUI via Connection class"""
         self.gui = connection
         self.infrastructure = None
-        self.new_vehicles = {}
+        self.new_vehicles = []
         self.set_parameters()
         self.cavs = []
+        self.hvs = []
         self.frame_number = 0
 
     def init_intersections(self):
@@ -78,21 +79,34 @@ class InvisibleHand():
     def data_to_json(self):
         # takes data from vehicle array and puts into a json file as a new frame.
 
-        #TODO: Needs modification in vehicles.py to match json keys. Currently testframes
+        # TODO: Needs modification in vehicles.py to match json keys. Currently testframes
         # and the attributes in the Vehicle class are not exactly the same.
         data = {}
         data['frameid'] = self.frame_number
         data['vehicles'] = []
-        for i in range(len(self.new_vehicles)):
+        for i in range(len(self.cavs)):
             data['vehicles'].append({
-                'id': self.new_vehicles['vehicle'][i].vehicle_id,
+                'id': self.cavs[i].vehicle_id,
                 'loc': {
-                    'x': self.new_vehicles['vehicle'][i].location['x'],
-                    'y': self.new_vehicles['vehicle'][i].location['y']
+                    'x': self.cavs[i].location['x'],
+                    'y': self.cavs[i].location['y']
                 },
                 'destination': {
-                    'x': self.new_vehicles['vehicle'][i].destination['x']
-                    'y': self.new_vehicles['vehicle'][i].destination['y']
+                    'x': self.cavs[i].destination['x'],
+                    'y': self.cavs[i].destination['y']
+                }
+            })
+
+        for i in range(len(self.hvs)):
+            data['vehicles'].append({
+                'id': self.hvs[i].vehicle_id,
+                'loc': {
+                    'x': self.hvs[i].location['x'],
+                    'y': self.hvs[i].location['y']
+                },
+                'destination': {
+                    'x': self.hvs[i].destination['x'],
+                    'y': self.hvs[i].destination['y']
                 }
             })
         # dump the data into json
@@ -107,11 +121,15 @@ class InvisibleHand():
         """
         # decide each vehicle's move.
         #TODO decide_move should change the attributes in the
-        # Vehicle class
-        [vehicle['vehicle'].decide_move() for vehicle in self.new_vehicles]
+        # HV and CAV classes
 
-        #vehicle locations should have been changed now. call data_to_json to build a new frame
+        for cav in self.cavs:
+            cav.decide_move()
 
+        for hv in self.hvs:
+            hv.decide_move()
+
+        # vehicle locations should have been changed now. call data_to_json to build a new frame
         self.data_to_json()
 
         # send frame
