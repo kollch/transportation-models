@@ -6,15 +6,7 @@ class Infrastructure():
         self.intersections = intersections
         self.roads = roads
 
-    def on_road(self, current_x, current_y):
-        num_roads = len(self.roads);
-        for i in range(num_roads):
-            if self.on_each_road(current_x, current_y, i):
-                return True
-        return False
-
-    def on_each_road(self, current_x, current_y, i):
-        """check if a point on the road i"""
+    def roads_start_end(self,i):
         start_x = start_y = end_x = end_y = 0
         if type(self.roads[i].ends[0]) == int:
             start_x = self.intersections[self.roads[i].ends[0] - 1].location[0]
@@ -28,6 +20,91 @@ class Infrastructure():
         else:
             end_x = self.roads[i].ends[1][0]
             end_y = self.roads[i].ends[1][1]
+        return  start_x, start_y, end_x, end_y
+
+    def direction_roads(self, current_x, current_y, i):
+        start_x, start_y, end_x, end_y = self.roads_start_end(i)
+        k = b = b1 = b2 = 0
+        if self.roads[i].lanes % 2 == 0:
+            if (end_x - start_x) != 0 and (end_y - start_y) == 0:
+                y1 = end_y + 6
+                y2 = end_y - 6
+                min_x = min(start_x,end_x)
+                max_x = max(start_x, end_x)
+                if (current_x >= min_x and current_x <= max_x) and current_y == y1:
+                    # if the lane is horizontal, then upper lane is moving right and return 1
+                    return 1
+                elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
+                    # if the lane is horizontal, then upper lane is moving left and return 0
+                    return 0
+                else:
+                    for i in range(int(self.roads[i].lanes / 2) - 1):
+                        y1 += 12;
+                        y2 -= 12;
+                        if (current_x >= min_x and current_x <= max_x) and current_y == y1:
+                            return 1
+                        elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
+                            return 0
+            elif (end_x - start_x) != 0 and (end_y - start_y) != 0:
+                # when the line is slash
+                k = (end_y - start_y) / (end_x - start_x)
+                angle = math.atan(k)
+                b = start_y - k * start_x
+                #calcullate 1st lane center and -1 lane center
+                b1 = b + 6/math.cos(angle)
+                b2 = b - 6/math.cos(angle)
+                y1 = k * current_x + b1
+                y2 = k * current_y + b2
+                max_x = max(start_x, end_x)
+                min_x = min(start_x, end_x)
+                if (current_x >= min_x and current_x <= max_x) and current_y == y1:
+                    # if the lane is horizontal, then upper lane is moving up or right and return 1
+                    return 1
+                elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
+                    # if the lane is horizontal, then upper lane is moving left and return 0
+                    return 0
+                else:
+                    for i in range(int(self.roads[i].lanes / 2) - 1):
+                        b1 += 12/math.cos(angle)
+                        b2 -= 12/math.cos(angle)
+                        y1 = k * current_x + b1
+                        y2 = k * current_x + b2
+                        if (current_x >= min_x and current_x <= max_x) and current_y == y1:
+                            return 1
+                        elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
+                            return 0
+            else:
+                if current_y <= max(start_y, end_y) and current_y >= min(start_y, end_y):
+                    x1 = start_x + 6
+                    x2 = start_x - 6
+                    if (self.roads[i].lanes == 2) and (current_x == x1):
+                        #when the road is vertical, right side roads should go up, renturn 1
+                        return 1
+                    elif (self.roads[i].lanes == 2) and (current_x == x2):
+                        #when the road is vertical, left side roads should go down, renturn 0
+                        return 0
+                    else:
+                        for i in range(int(self.roads[i].lanes / 2) - 1):
+                            x1 += 12
+                            x2 -= 12
+                            if current_x == x1:
+                                return 1
+                            elif current_x == x2:
+                                return 0
+        return 2;
+
+
+
+    def on_road(self, current_x, current_y):
+        num_roads = len(self.roads);
+        for i in range(num_roads):
+            if self.on_each_road(current_x, current_y, i):
+                return True
+        return False
+
+    def on_each_road(self, current_x, current_y, i):
+        """check if a point on the road i"""
+        start_x, start_y, end_x, end_y = self.roads_start_end(i)
         k = b = b1 = b2 = 0
         # print(start_x," ",start_y," ",end_x," ",end_y)
         # print(self.roads[i].lanes/2)
@@ -78,7 +155,7 @@ class Infrastructure():
                             b1 += 12/math.cos(angle)
                             b2 -= 12/math.cos(angle)
                             y1 = k * current_x + b1
-                            y2 = k * current_y + b2
+                            y2 = k * current_x + b2
                             if (current_y == y1 or current_y == y2) and (current_x >= min_x and current_x <= max_x):
                                 return True
                     return False
