@@ -33,18 +33,18 @@ class Infrastructure():
                 max_x = max(start_x, end_x)
                 if (current_x >= min_x and current_x <= max_x) and current_y == y1:
                     # if the lane is horizontal, then upper lane is moving right and return 1
-                    return 1
+                    return 0
                 elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
                     # if the lane is horizontal, then upper lane is moving left and return 0
-                    return 0
+                    return math.pi
                 else:
                     for i in range(int(self.roads[i].lanes / 2) - 1):
                         y1 += 12;
                         y2 -= 12;
                         if (current_x >= min_x and current_x <= max_x) and current_y == y1:
-                            return 1
-                        elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
                             return 0
+                        elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
+                            return math.pi
             elif (end_x - start_x) != 0 and (end_y - start_y) != 0:
                 # when the line is slash
                 k = (end_y - start_y) / (end_x - start_x)
@@ -54,15 +54,15 @@ class Infrastructure():
                 b1 = b + 6/math.cos(angle)
                 b2 = b - 6/math.cos(angle)
                 y1 = k * current_x + b1
-                y2 = k * current_y + b2
+                y2 = k * current_x + b2
                 max_x = max(start_x, end_x)
                 min_x = min(start_x, end_x)
                 if (current_x >= min_x and current_x <= max_x) and current_y == y1:
                     # if the lane is horizontal, then upper lane is moving up or right and return 1
-                    return 1
+                    return angle
                 elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
                     # if the lane is horizontal, then upper lane is moving left and return 0
-                    return 0
+                    return -angle
                 else:
                     for i in range(int(self.roads[i].lanes / 2) - 1):
                         b1 += 12/math.cos(angle)
@@ -70,28 +70,28 @@ class Infrastructure():
                         y1 = k * current_x + b1
                         y2 = k * current_x + b2
                         if (current_x >= min_x and current_x <= max_x) and current_y == y1:
-                            return 1
+                            return angle
                         elif (current_x >= min_x and current_x <= max_x) and current_y == y2:
-                            return 0
+                            return -angle
             else:
                 if current_y <= max(start_y, end_y) and current_y >= min(start_y, end_y):
                     x1 = start_x + 6
                     x2 = start_x - 6
                     if (self.roads[i].lanes == 2) and (current_x == x1):
                         #when the road is vertical, right side roads should go up, renturn 1
-                        return 1
+                        return math.pi/2
                     elif (self.roads[i].lanes == 2) and (current_x == x2):
                         #when the road is vertical, left side roads should go down, renturn 0
-                        return 0
+                        return -math.pi/2
                     else:
                         for i in range(int(self.roads[i].lanes / 2) - 1):
                             x1 += 12
                             x2 -= 12
                             if current_x == x1:
-                                return 1
+                                return math.pi/2
                             elif current_x == x2:
-                                return 0
-        return 2;
+                                return -math.pi/2
+        return False;
 
 
 
@@ -139,7 +139,7 @@ class Infrastructure():
                 b1 = b + 6/math.cos(angle)
                 b2 = b - 6/math.cos(angle)
                 y1 = k * current_x + b1
-                y2 = k * current_y + b2
+                y2 = k * current_x + b2
                 max_x = max(start_x, end_x)
                 min_x = min(start_x, end_x)
                 if self.roads[i].lanes / 2 == 1:
