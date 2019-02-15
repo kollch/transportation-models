@@ -20,9 +20,9 @@ class InvisibleHand():
         self.gui = connection
         self.infrastructure = None
         self.new_vehicles = []
-        self.set_parameters()
         self.cavs = []
         self.hvs = []
+        self.set_parameters()
 
     def init_vehicle_dir(self, vehicle):
         """Initialize vehicle direction based on which road it's on"""
@@ -64,8 +64,8 @@ class InvisibleHand():
             else:
                 raise ValueError
             vehicle.vehicle_id = item['id']
-            vehicle.location = (item['start_loc']['x'], item['start_loc']['y'])
-            vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
+            vehicle.loc = (item['start_loc']['x'], item['start_loc']['y'])
+            vehicle.dest = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
 
@@ -91,7 +91,7 @@ class InvisibleHand():
         return
 
     def norm(self, p1, p2):
-        return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
+        return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
