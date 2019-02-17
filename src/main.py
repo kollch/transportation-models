@@ -100,7 +100,7 @@ class InvisibleHand():
         return [
             vehicle
             for vehicle in self.cavs
-            if 0 < self.norm(location, vehicle.location) <= length
+            if 0 < self.norm(location, vehicle.loc) <= length
         ]
 
 
