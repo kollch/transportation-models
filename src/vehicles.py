@@ -38,43 +38,6 @@ class CAV(Vehicle):
         """
         return 0
 
-    #    def calc_distance(self, intersections_roads):
-    #        """takes dictionary of connects_roads from json file as param, returns dictionary of distances from intersection to intersection"""
-    #        for x in intersections_roads:
-    #            arr = intersections_roads[x]
-    #        #        print arr
-    #        for y in intersections_roads:
-    #            if x == y:
-    #                continue
-    #
-    #            compare = intersections_roads[y]
-    #            #            print compare
-    #            #            print "Comparing",x, y
-    #            #            print
-    #            for i in arr:
-    #                if i is None:
-    #                    continue
-    #                for k in compare:
-    #                    #                print "X:", x, "Y:", y
-    #                    if k is None:
-    #                        continue
-    #
-    #                    if (i == k):
-    #
-    #                        distancex = locations[x]['x'] - locations[y]['x']
-    #                        distancey = locations[x]['y'] - locations[y]['y']
-    #
-    #                        distancex =  abs(distancex)
-    #                        distancey =  abs(distancey)
-    #                        totalDist = distancex + distancey
-    #
-    #                        if x in inter_to_inter:
-    #                            inter_to_inter[x].update({y:totalDist})
-    #                        else:
-    #                            inter_to_inter[x] = {y:totalDist}
-    #
-    #        return inter_to_inter
-
     def dijkstras(self,current,adj_map,unvisited, visited, distances, path):
         #        print "Currently on node:", current
         prev = current
