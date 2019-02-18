@@ -16,6 +16,19 @@ class Intersection():
         self.roads = roads
         self.location = location
 
+    def road_open(self):
+        """Create intersection roads list"""
+        roads = []
+        for i in range(4):
+            list = []
+            if self.roads[i] == "null":
+                list[0] = self.roads[i]
+                list[1] = "close"
+            else:
+                list[0] = self.roads[i]
+                list[1] = "open"
+            roads.append(list)
+        return roads
 
 class Road():
     """Connect intersections together and vehicles drive on them"""
