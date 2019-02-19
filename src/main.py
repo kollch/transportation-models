@@ -76,7 +76,6 @@ class InvisibleHand():
         roads = self.init_roads()
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
-        # print(self.infrastructure.direction_roads(300,994,3))
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
