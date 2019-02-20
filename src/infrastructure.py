@@ -52,7 +52,7 @@ class Road():
             return False
         calc_eq = dy * (loc[0] - ends[0][0]) - dx * (loc[1] - ends[0][1])
         dist = abs(calc_eq) / math.hypot(dx, dy)
-        if dist <= self.lanes / 2:
+        if dist <= self.lanes * 6:
             return True
         return False
 
