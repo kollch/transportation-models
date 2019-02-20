@@ -26,6 +26,7 @@ class Road():
         self.two_way = two_way
         self.lanes = lanes
         self.ends = ends
+        self.length = self.distance()
 
     def coords(self):
         """Get coordinates of the endpoints of the given road"""
@@ -36,7 +37,6 @@ class Road():
             except TypeError:
                 ends.append(self.ends[i])
         return (ends[0], ends[1])
-
 
     def has_point(self, loc):
         """Check if a point is on the road"""
@@ -67,3 +67,15 @@ class Road():
         if signed_dist < 0:
             angle = math.atan2(-dy, -dx)
         return math.degrees(angle)
+
+    def distance(self):
+        """Calculates the length of the road"""
+        locs = [[0, 0], [0, 0]]
+        for i in range(2):
+            for j in range(2):
+                try:
+                    locs[i][j] = self.ends[i][j]
+                except TypeError:
+                    locs[i][j] = self.ends[i].location[j]
+        return math.sqrt((locs[1][0] - locs[0][0]) ** 2
+                         + (locs[1][1] - locs[0][1]) ** 2)
