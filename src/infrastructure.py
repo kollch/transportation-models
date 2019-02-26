@@ -34,7 +34,7 @@ class Road():
         for i in range(2):
             try:
                 ends.append(self.ends[i].location)
-            except TypeError:
+            except AttributeError:
                 ends.append(self.ends[i])
         return (ends[0], ends[1])
 
