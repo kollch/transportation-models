@@ -16,6 +16,13 @@ class Intersection():
         self.roads = roads
         self.location = location
 
+    def road_open(self):
+        """Create intersection roads list, true -- road open, false -- road close"""
+        roads_list = [False, True, False, True]
+        for i in range(4): 
+            if self.roads[i] is None:
+                roads_list[i] = None
+        return roads_list
 
 class Road():
     """Connect intersections together and vehicles drive on them"""
