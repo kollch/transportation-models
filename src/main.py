@@ -55,12 +55,12 @@ class InvisibleHand():
         """Initialize vehicles"""
         for item in self.gui.vehicles:
             if item['type'] == 0:
-                vehicle = HV()
+                vehicle = HV(self)
             elif item['type'] == 1:
-                vehicle = CAV()
+                vehicle = CAV(self)
             else:
                 raise ValueError
-            vehicle.id = item['id']
+            vehicle.vehicle_id = item['id']
             vehicle.location = (item['start_loc']['x'], item['start_loc']['y'])
             vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
@@ -72,6 +72,14 @@ class InvisibleHand():
         """
         intersections = self.init_intersections()
         roads = self.init_roads(intersections)
+        for intersection in intersections:
+            for i, road_id in enumerate(intersection.roads):
+                if road_id is None:
+                    continue
+                for road in roads:
+                    if road_id == road.road_id:
+                       intersection.roads[i] = road
+                       break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
