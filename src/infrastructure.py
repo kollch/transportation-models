@@ -19,7 +19,7 @@ class Intersection():
     def road_open(self):
         """Create intersection roads list, true -- road open, false -- road close"""
         roads_list = [False, True, False, True]
-        for i in range(4): 
+        for i in range(4):
             if self.roads[i] is None:
                 roads_list[i] = None
         return roads_list
@@ -33,6 +33,7 @@ class Road():
         self.two_way = two_way
         self.lanes = lanes
         self.ends = ends
+        self.length = None
         self.length = self.distance()
 
     def coords(self):
@@ -77,12 +78,7 @@ class Road():
 
     def distance(self):
         """Calculates the length of the road"""
-        locs = [[0, 0], [0, 0]]
-        for i in range(2):
-            for j in range(2):
-                try:
-                    locs[i][j] = self.ends[i][j]
-                except TypeError:
-                    locs[i][j] = self.ends[i].location[j]
-        return math.sqrt((locs[1][0] - locs[0][0]) ** 2
-                         + (locs[1][1] - locs[0][1]) ** 2)
+        if self.length is not None:
+            return self.length
+        ends = self.coords()
+        return math.hypot(ends[1][0] - ends[0][0], ends[1][1] - ends[0][1])
