@@ -1,0 +1,53 @@
+%\documentclass[titlepage]{article}
+\documentclass[letterpaper, 10 pt, conference, draftclsnofoot, onecolumn]{ieeeconf}  
+
+\usepackage[utf8]{inputenc}
+\usepackage[letterpaper]{geometry}
+
+
+\begin{titlepage}
+\title{Autonomous Vehicle Routing in Congested Transportation Networks}
+\author{Eytan Brodsky } 
+\date{October 11th 2018}
+\end{titlepage}
+
+\begin{document}
+
+\maketitle
+\section{Project Abstract}
+
+    Autonomous vehicles are growing in importance to the point where almost every technology company has an investment in autonomous driving. With this much activity surrounding autonomous vehicles, it's safe to say that they will play a major role in the future of transportation. With this, however, comes a challenge; how can we scale to hundreds--if not thousands--of autonomous vehicles in an area? The solution requires careful coordination and routing to maximize the efficiency of autonomous vehicle transportation, which is what we intend to investigate in this project.
+    
+\maketitle
+\section{Description}
+    The goal of this project is to optimize the way in which autonomous vehicles drive in a highly congested environment; this will help minimize congestion and traffic problems in the future when autonomous cards will be much more prevalent than they are now. This task will require techniques and research from machine learning and convex optimization, including techniques such as Q learning to develop a model that optimally routes traffic given certain conditions and certain constraints.
+    
+    The problem with autonomous vehicles--and with current traffic as well--is that a lot of congestion on the road is unnecessary and can be easily avoided by making different route choices. With human drivers, relieving this congestion is much more difficult since people are not very cooperative. Autonomous vehicles, however, with their current momentum in industry, will in the future enable automated coordination through traffic control models.
+    
+    By having autonomous vehicles agree to follow a certain set of rules and take certain routes as specified by a central algorithm, traffic routing and congestion relief will become feasible. As the idea of smart cities becomes more prevalent, smart routing using autonomous vehicles is a natural complement to this idea.
+    
+\maketitle
+\section{Proposed Solution}
+    We propose a reinforcement learning approach as specified in some of the literature sent to us by our customer. Techniques like Q-learning which are based on many simulations of decisions made by the autonomous vehicles and learning the best decisions in any given circumstance are perfect for this kind of a problem. 
+    
+    We intend to set up a simulation of a traffic network with vehicles that work as a system. Each vehicle has a destination, and given the destinations and current positions of all of the other vehicles, each vehicle will calculate the optimal path to minimize the travel time for all of the cars in the simulation given a set of constraints such as path, speed limit, etc...
+    
+    With a higher number of cars, the number of constraints in the optimization problem grows to a point where it would simply take too long to calculate these decisions in real time. This is where some heuristics will come into place to estimate a solution to what is a very non-convex problem.
+    
+    In total, we now have two issues to consider: 
+    \begin{enumerate}
+        \item Real-time delivery of data which would require specialized software and hardware such as a real-time kernel and a NIC with real time capabilities for the autonomous driving itself.
+        \item A highly efficient approximation algorithm to find the optimal routing for all vehicles in the network.
+    \end{enumerate}
+    We will need to find a way to implement these necessary features into our solution or to at least simulate these in order to get a better understanding of the problem.
+    
+\maketitle
+\section{Performance Metrics}
+    We don't know yet if there is going to be an actually usable implementation of this, since it seems mostly to revolve around research. Right now we need to focus on finding ways to route autonomous vehicles efficiently to minimize traffic congestion, and then we can actually implement this as a working product. We will have two milestones: finishing the research and finishing the prototype. The research portion should be a complete white paper and the prototype should show a more organized flow of traffic and reduced congestion.
+    
+    We will quantify the effectiveness of our solution through simulating is initial prototype will be exclusively software, where all parts of the system are simulated; performance here will be measured just by seeing if the cars reach their destinations in a reasonable amount of time. A way to continue this project even further would be to set up a physical prototype as well, where the autonomous cars are small remote-controlled cars driving on a track. A similar performance metric can be used here, except that in this case the default would be people driving the cars themselves, which will be compared to the prototype treating all of the cars as autonomous vehicles and driving them according to its optimal routing.
+    
+    We will quantify the effectiveness of our white paper by seeing how clearly it conveys our ideas and our techniques for solving this problem. We can do this by talking to several professors and potentially even submitting this for review. If some of the professors in the school of EECS give us positive reviews, we can be fairly confident that our white paper is effective.
+\end{document} 
+
+
