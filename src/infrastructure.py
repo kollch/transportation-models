@@ -16,6 +16,21 @@ class Intersection():
         self.roads = roads
         self.location = location
 
+    def adjacent(self):
+        """Gets intersections adjacent to the current one;
+        Returns a list of tuples; each tuple has the intersection and
+        the connecting road
+        """
+        results = []
+        for road in self.roads:
+            if road is None:
+                continue
+            for end in road.ends:
+                if end is not self and hasattr(end, 'roads'):
+                    # If end is an intersection and is not current one
+                    results.append((end, road))
+        return results
+
     def road_open(self):
         """Create intersection roads list, true -- road open, false -- road close"""
         roads_list = [False, True, False, True]
@@ -24,15 +39,17 @@ class Intersection():
                 roads_list[i] = None
         return roads_list
 
+
 class Road():
     """Connect intersections together and vehicles drive on them"""
     # vehicles_on = []
     # speed_limit = 60
-    def __init__(self, road_id, two_way, lanes, ends):
+    def __init__(self, road_id, two_way, lanes, ends, speed=60):
         self.road_id = road_id
         self.two_way = two_way
         self.lanes = lanes
         self.ends = ends
+        self.speed = speed
         self.length = None
         self.length = self.distance()
 
