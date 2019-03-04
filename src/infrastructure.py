@@ -15,7 +15,7 @@ class Intersection():
         self.intersection_id = intersection_id
         self.roads = roads
         self.location = location
-
+    
     def adjacent(self):
         """Gets intersections adjacent to the current one;
         Returns a list of tuples; each tuple has the intersection and
@@ -31,12 +31,45 @@ class Intersection():
                     results.append((end, road))
         return results
 
-    def road_open(self):
-        """Create intersection roads list, true -- road open, false -- road close"""
-        roads_list = [False, True, False, True]
+    def road_open(self, casenumber):
+        """
+        Create the list of road vehicles allowed to move on that direction.
+        The corresponding value is: turn left, go straight, turn right.
+        """
+        roads_list = [[], [], [], []]
+
+        if casenumber == 1:
+            roads_list = [
+                    [False, True, True],
+                    [False, False, False],
+                    [False, True, True],
+                    [False, False, False]
+                    ]
+        elif casenumber == 2:
+            roads_list = [
+                    [False, False, False],
+                    [False, True, True],
+                    [False, False, False],
+                    [False, True, True]
+                    ]
+        elif casenumber == 3:
+            roads_list = [
+                    [True, False, False],
+                    [False, False, True],
+                    [True, False, False],
+                    [False, False, True]
+                    ]
+        elif casenumber == 4:
+            roads_list = [
+                    [False, True, True],
+                    [False, False, False],
+                    [False, True, True],
+                    [False, False, False]
+                    ]
+
         for i in range(4):
             if self.roads[i] is None:
-                roads_list[i] = None
+                roads_list[i] = [None, None, None]
         return roads_list
 
 
