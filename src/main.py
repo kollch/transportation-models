@@ -69,20 +69,19 @@ class InvisibleHand():
             vehicle.dest = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
+        self.new_vehicles.sort(key=lambda o: o['entry'])
 
     def sort_new_vehicles(self):
         """Takes vehicles from new_vehicles and appends to cavs/hvs
-            respectively where entry time < current frame.
+            respectively where entry time <= current frame.
         """
-        for x in self.new_vehicles:
-            if x["entry"]/1000 <= self.current_frame:
-                if x["vehicle"].autonomous == True:
-                    if x["vehicle"] not in self.cavs:
-                        self.cavs.append(x["vehicle"])
-                else:
-                    if x["vehicle"] not in self.hvs:
-                        self.hvs.append(x["vehicle"])
-
+        while self.new_vehicles:
+            if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
+                break
+            if self.new_vehicles[0]["vehicle"].autonomous == True:
+                self.cavs.append(self.new_vehicles.pop(0))
+                continue
+            self.hvs.append(self.new_vehicles.pop(0))
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
