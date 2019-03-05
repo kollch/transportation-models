@@ -1,0 +1,70 @@
+%\documentclass[titlepage]{article}
+\documentclass[letterpaper, 10 pt, conference, draftclsnofoot, onecolumn]{ieeeconf}  
+
+\usepackage[utf8]{inputenc}
+\usepackage[letterpaper]{geometry}
+\usepackage[noadjust]{cite}
+\bibliographystyle{IEEEtran}
+
+\begin{titlepage}
+\title{Tech Review--Autonomous Vehicle Routing in Congested Transportation Networks}
+\author{Eytan Brodsky, Group 43}
+\end{titlepage}
+\begin{document}
+\maketitle
+\section{Introduction}
+My role in the project is a software developer. The goal of my review is to explore techniques of routing, optimizing and using various machine learning algorithms to improve the quality of our system.	This project offers a practical solution to the inclusion of autonomous vehicles into transportation network models and discusses how they will not only create optimal paths but coexist with human driven vehicles. By pairing connected autonomous vehicles (CAVs) with a Q-learning algorithm, vehicle autonomy and the overall infrastructure of transportation may be restructured positively to include multiple intelligent agents. Additionally, this project will explore the impact of CAVs relative to transportation congestion, using a Python based framework and vehicle models to create data on how CAVs behave on a transportation network. This project will define the problem that autonomous vehicles present in the infrastructure we have already built and live in, as well as consider how navigation among other intelligent vehicles will be handled.
+\section{Routing Algorithms}
+One of the key elements in this project is figuring out how to optimally route vehicles in order to minimize delay for vehicles to reach their destinations. This is a combinatorial optimization and integer programming problem, and is a known problem in computer science asking “what is the optimal set of routes for a fleet of vehicles to traverse in order to deliver to a given set of customers?” Changing this slightly to “...fleet of vehicles to traverse in order to get to a given set of destinations” and asserting that each vehicle has its own specific target, we get a problem that is equivalent to our own.
+	
+	Determining the solution to this problem is NP-hard, since this is a combinatorial optimization problem and the size of the problem can be fairly large. Because of this fact, most commercial solvers use heuristics to approximate an optimal solution. There are several main approaches to calculating these based on shortest path algorithms. These include Dijkstra’s algorithm, A* search, geometric containers, and several others. 
+	
+    \begin{itemize}
+	
+	\item Dijkstra’s algorithm for this problem would maintain a priority queue of vertices ordered by distance from the current location of a vehicle. This would then calculate the shortest path through a typical DIjkstra’s algorithm run for each vehicle and call that the overall optimal solution to the routing problem. The running time of this algorithm depends on the priority queue used, and is O((V + A)logV) with binary heaps as an example. An alternative, yet somewhat similar way to calculate a shortest path, is using the Bellman-Ford algorithm, which scans all vertices whose distance labels have improved after iterative runs. Another alternative is the Floyd-Warshall algorithm, which computes the distances between all pairs of vertices in O(v3) time. For larger graphs, this can be faster than Dijkstra’s algorithm\cite{lit_doc}.
+	
+	\item A* search uses a heuristic using a potential function on vertices, which is a lower bound on the distance from a vertex u to a vertex t. It’s essentially a modified Dijkstra’s algorithm where the priority of a vertex is calculated differently from a normal Dijkstra’s algorithm run. For road networks--which is our specific application-- we can modify the geographical distance between a vertex u and a vertex t by calculating it to be the distance divided by the maximum travel speed (or maybe the expected travel speed based on data) for a path. However, the lower bounds generated through the potential function are not stellar, and the performance gain is negligible\cite{lit_doc}.
+	
+	\item Another technique is called geometric containers, which--similar to A* search-- is a goal-directed method. It pre-computes for each edge in the map a set of vertices whose shortest path from the starting point begins with themselves individually. More research needs to be done into this method, but a disadvantage of it is that its preprocessing requires an all-pairs shortest path computation, which is very costly\cite{lit_doc}.
+	\end{itemize}
+	
+\section{Libraries for Q Learning}
+	Implementing the Q learning algorithm from scratch is unnecessary, since there are numerous libraries and packages that already have optimized versions of this technique. Some of these include even more reinforcement learning algorithms for different purposes and applications, so it would be wise to take advantage of these libraries.
+	
+	\begin{itemize}
+	\item One library is Tensorflow, which is one of the most popular machine learning and deep learning libraries for python, which is going to be our primary language. Tensorflow is created by the Google Brain Team, and is very efficient with its reinforcement learning algorithms. Other similar libraries are Caffe and PyTorch, which can also be used in Python after downloading and also have a high degree of success and optimization like TensorFlow. 
+	
+	What sets TensorFlow aside from the other frameworks is that TensorFlow focuses more on a deep-learning view of problems by thinking of neural networks as graphs. Its design allows for more modularity, as it treats different nodes in the neural network graph as smaller objects of tensor operations, which makes it more scalable and easier to use. An advantage of using Tensorflow is that there are many tutorials and explanations available, and it’s a very well-documented framework.
+	
+	Another advantage of Tensorflow over other frameworks is Tensorboard, which allows for easy visualization of neural networks. Tensorboard allows you to display model graphs, plot scalars, visualize distributions and histograms, visualize images, visualize embeddings, and play audio--though that might not be relevant for this project.
+	
+	\item With Pytorch, there are some different advantages that are not found in Tensorflow. PyTorch is very Python-specific, and is oriented towards research or if our non-functional requirements are not very demanding. PyTorch has an easier debugging experience as well, which might come in handy when initially developing, training and testing a model for our autonomous routing system. Another benefit is that those of us who have taken machine learning and data mining during Spring 2018 have experience using PyTorch to set up a neural network architecture and train a model from an assignment, so the learning curve could potentially be smoother. Since PyTorch is much more heavily Python-related than any of the other frameworks and since our project focuses heavily on Python, it could be a viable choice for a framework.
+	\end{itemize}
+	
+	Ultimately it doesn’t really matter which choice we make with our machine learning library, since for the purpose of a prototype we’re not going to encounter any significant differences between these libraries’ different implementation of certain algorithms. Since all of these libraries and frameworks are based in--or at least can be implemented in--Python, and since we should all be comfortable with Python, it’s only a matter of choice. We choose something like PyTorch or Tensorflow and work on our model in that framework for simplicity.
+
+
+\section{Performance Boosting}
+
+While Python is a very convenient and easy-to-use language, it comes at the cost of not being very efficient. Normally, Python is used to design prototypes of software components which would then be rewritten into a more powerful language like C or C++ depending on the application. In our case where we want to have essentially real-time routing of autonomous vehicles, we will need to squeeze out every single bit of performance and optimization out of our system to ensure optimal performance. Some ways to do this are to just switch to C++, use Cython, or use a neural network inference optimizer.
+	\begin{itemize}
+	\item Switching to C++ seems to be the easiest choice at first, but of course there is a tradeoff. While C++ is closer to the hardware at its core but accessible and object-oriented, it’s still not the easiest language in the world to use and can be a challenge when dealing with unfamiliar libraries. Using Tensorflow--as an example-- would become more difficult as looking up documentation and tracing back code and debugging would become trickier and more convoluted, since C++ is either intentionally or unintentionally more convoluted by nature. The benefits of this of course are faster performance and in our case where we’re performing heavy computations to get optimal routes for autonomous vehicles, we need as much computational efficiency as possible. A potential balance is to write the basis of the system in Python and then switch the core of the system to C++, but there are easier ways of handling compatibility issues.
+	
+	\item Cython is a solution that can combine the efficiency of C++ and the ease-of-use of Python. It’s a superset of Python that compiles to C, which can yield large performance boosts depending on our task. For work that’s bound by Python’s native object types, the speedups won’t be large, but for numerical operations or any operations not involving Python’s internals, the performance gain can be very noticeable. Assuming we decide on a deep Q-learning model, this will involve extensive matrix operations which are computationally expensive and would benefit from being done in C or C++ rather than having to be bottlenecked by Python’s inefficient numerical operations. Python code directly calls into C modules, which are either generic C libraries or C libraries build specifically for Python. Cython generates C libraries that talk to Python’s C internals, allowing bundling with existing Python code. With Cython, we can begin with an existing Python application and make spot changes to code rather than rewriting the entire application from the start.
+	
+	\item Another approach that’s less likely to be adopted but is still a viable option is to use a neural network inference optimizer. By treating the image of the map with cars and intersection light patterns, we can use tools like Intel’s OpenVINO--which is available partially in open source--to optimize our network’s execution. This uses features like Winograd convolutions and various accelerators and strategic precision reductions to increase performance and throughput of frames put into a deep neural network. This can be used together with other optimization techniques such as Cython to boost the performance even further, but will likely not be necessary at the beginning stages of the project. Once the autonomous vehicle routing system has been implemented, we can start looking at ways to optimize neural network throughput to increase real-time performance. 
+    \end{itemize}
+\section{Conclusion}
+    There are many factors to consider when creating a system to route autonomous vehicles. Besides the obvious route calculation and somewhat subtle deep learning aspects that can be used to improve performance, optimization of our system is important to ensure proper functionality. Fast matrix multiplications, fast computation and ease of development are extremely important in developing a functional system, and we need to look at some of the options available to create a smooth and clear development process.
+\begin{thebibliography}{9}
+
+\bibitem{lit_doc}
+Hannah Bast, Daniel Delling, Andrew Goldberg, Matthias Müller-Hannemann, Thomas Pajor, Peter Sanders, Dorothea Wagner, Renato F. Werneck
+  \textit{
+Route Planning in Transportation Networks,
+arXiv:1504.05140 [cs.DS]}
+
+
+\end{thebibliography}
+
+\end{document}
