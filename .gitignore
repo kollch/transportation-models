@@ -2,3 +2,4 @@ gl-matrix.js
 __pycache__
 cert
 .idea
+.DS_Store
