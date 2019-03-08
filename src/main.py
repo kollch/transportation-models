@@ -23,6 +23,7 @@ class InvisibleHand():
         self.cavs = []
         self.hvs = []
         self.set_parameters()
+        self.current_frame = 0
 
     def init_vehicle_dir(self, vehicle):
         """Initialize vehicle direction based on which road it's on"""
@@ -68,6 +69,19 @@ class InvisibleHand():
             vehicle.dest = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
+        self.new_vehicles.sort(key=lambda o: o['entry'])
+
+    def sort_new_vehicles(self):
+        """Takes vehicles from new_vehicles and appends to cavs/hvs
+            respectively where entry time <= current frame.
+        """
+        while self.new_vehicles:
+            if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
+                break
+            if self.new_vehicles[0]["vehicle"].autonomous == True:
+                self.cavs.append(self.new_vehicles.pop(0))
+                continue
+            self.hvs.append(self.new_vehicles.pop(0))
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
@@ -93,6 +107,8 @@ class InvisibleHand():
         """
         for i in range(6):
             frame = get_frame_data("testframes.json", i)
+            self.current_frame = i
+            self.sort_new_vehicles()
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
