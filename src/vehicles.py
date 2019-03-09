@@ -183,7 +183,8 @@ class CAV(Vehicle):
     def decide_move(self):
         """Uses available information and determines move"""
         if not self.route or self.at_intersection():
-            self.route = self.dijkstras(self.location, self.destination)
+            self.route = self.dijkstras(self.loc, self.dest)
+
 
 
 class HV(Vehicle):
