@@ -33,9 +33,12 @@ class Vehicle():
         raise NotImplementedError
 
     def at_intersection(self):
-        """Determines if vehicle is at an intersection; probably should
-        be based on proximity to center of intersection
-        """
+        """Determines if vehicle is at an intersection;
+        based on proximity to center of intersection"""
+        for x in self.world.infrastructure.intersections:
+            # proximity currently set at 50 ft, may be changed
+            if self.dist_to(x.location) < 50:
+                return True
         return False
 
     def dist_to(self, loc):
@@ -179,7 +182,8 @@ class CAV(Vehicle):
     def decide_move(self):
         """Uses available information and determines move"""
         if not self.route or self.at_intersection():
-            self.route = self.dijkstras(self.location, self.destination)
+            self.route = self.dijkstras(self.loc, self.dest)
+
 
 
 class HV(Vehicle):
