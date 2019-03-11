@@ -13,56 +13,49 @@ def read_road():
     road_end = []
     with open('data.json', 'r') as f:
         data = json.load(f)
-
     for item in data['roads']:
-        try:
-            #create start point coords
+        #create start point coords
+        if type(item['ends'][0]) != int:
             if item['ends'][0]['x'] == 0:
-                road.append([0,item['ends'][0]['y'] - 6])
+                road.append([0,item['ends'][0]['y'] + 6])
             elif item['ends'][0]['x'] == 1600:
-                road.append([1600,item['ends'][0]['y'] + 6])
+                road.append([1600,item['ends'][0]['y'] - 6])
             elif item['ends'][0]['y'] == 0:
-                road.append([item['ends'][0]['x'] + 6,0])
+                road.append([item['ends'][0]['x'] - 6,0])
             elif item['ends'][0]['y'] == 1600:
-                road.append([item['ends'][0]['x'] - 6,1600])
-        except TypeError:
-            try:
-                if item['ends'][1]['x'] == 0:
-                    road.append([0,item['ends'][1]['y'] - 6])
-                elif item['ends'][1]['x'] == 1600:
-                    road.append([1600,item['ends'][1]['y'] + 6])
-                elif item['ends'][1]['y'] == 0:
-                    road.append([item['ends'][1]['x'] + 6,0])
-                elif item['ends'][1]['y'] == 1600:
-                    road.append([item['ends'][1]['x'] - 6,1600])
-            except TypeError:
-                continue
+                road.append([item['ends'][0]['x'] + 6,1600])
+        if type(item['ends'][1]) != int:
+            if item['ends'][1]['x'] == 0:
+                road.append([0,item['ends'][1]['y'] + 6])
+            elif item['ends'][1]['x'] == 1600:
+                road.append([1600,item['ends'][1]['y'] - 6])
+            elif item['ends'][1]['y'] == 0:
+                road.append([item['ends'][1]['x'] - 6,0])
+            elif item['ends'][1]['y'] == 1600:
+                road.append([item['ends'][1]['x'] + 6,1600])
 
     for item in data['roads']:
         #create end points coords
-        try:
+        if type(item['ends'][0]) != int:
             if item['ends'][0]['x'] == 0:
-                road_end.append([0,item['ends'][0]['y']+6])
+                road_end.append([0,item['ends'][0]['y']-6])
             elif item['ends'][0]['x'] == 1600:
-                road_end.append([1600,item['ends'][0]['y']-6])
+                road_end.append([1600,item['ends'][0]['y']+6])
             elif item['ends'][0]['y'] == 0:
-                road_end.append([item['ends'][0]['x']-6,0])
+                road_end.append([item['ends'][0]['x']+6,0])
             elif item['ends'][0]['y'] == 1600:
-                road_end.append([item['ends'][0]['x']+6,1600])
-        except TypeError:
-            try:
-                if item['ends'][1]['x'] == 0:
-                    road_end.append([0,item['ends'][1]['y']+6])
-                elif item['ends'][1]['x'] == 1600:
-                    road_end.append([1600,item['ends'][1]['y'] - 6])
-                elif item['ends'][1]['y'] == 0:
-                    road_end.append([item['ends'][1]['x'] - 6,0])
-                elif item['ends'][1]['y'] == 1600:
-                    road_end.append([item['ends'][1]['x'] + 6,1600])
-            except TypeError:
-                continue
-
-    return (road, road_end)
+                road_end.append([item['ends'][0]['x']-6,1600])
+        if type(item['ends'][1]) != int:
+            if item['ends'][1]['x'] == 0:
+                road_end.append([0,item['ends'][1]['y']-6])
+            elif item['ends'][1]['x'] == 1600:
+                road_end.append([1600,item['ends'][1]['y'] + 6])
+            elif item['ends'][1]['y'] == 0:
+                road_end.append([item['ends'][1]['x'] + 6,0])
+            elif item['ends'][1]['y'] == 1600:
+                road_end.append([item['ends'][1]['x'] - 6,1600])
+    print(road);
+    return road, road_end;
 
 #takes 1 parameter: number of vehicles through command line
 def generated_vehicles(roads,roads_end):
@@ -86,12 +79,12 @@ def generated_vehicles(roads,roads_end):
                 'x': roads_end[rand_end][0],
                 'y': roads_end[rand_end][1]
             },
-            'entry_time': random.randint(0,50) * 100  # in milliseconds
+            'entry_time': random.randint(0,5000)  # in milliseconds
         })
 
     with open('generated_vehicles.json', 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
 if __name__== "__main__":
-  roads = read_road()
-  generated_vehicles(roads[0],roads[1])
+  roads, roads_end = read_road()
+  generated_vehicles(roads,roads_end)
