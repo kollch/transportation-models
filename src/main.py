@@ -86,6 +86,10 @@ class InvisibleHand():
                 continue
             self.hvs.append(vehicle)
 
+    def test_code(self):
+        for i in range(11):
+            print(self.infrastructure.roads[i].coords())
+
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
         Parameters: num_frames, vehicle positions, infrastructure setup
@@ -102,6 +106,7 @@ class InvisibleHand():
                         break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
+        self.test_code()
 
     def stats_to_json(self):
         """Sends vehicle stats to a json file."""
