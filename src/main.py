@@ -1,5 +1,4 @@
 """This is the primary component of the backend."""
-import math
 import asyncio
 import ssl
 import json
@@ -51,8 +50,8 @@ class InvisibleHand():
                         if intersection.intersection_id == ends[i]:
                             ends[i] = intersection
                             break
-            roads.append(Road(item['id'], item['two_way'],
-                              item['lanes'], (ends[0], ends[1])))
+            roads.append(Road(item['id'], (item['two_way'], item['lanes'],
+                                           (ends[0], ends[1]))))
         return roads
 
     def init_vehicles(self):
@@ -66,7 +65,7 @@ class InvisibleHand():
                 raise ValueError
             vehicle.vehicle_id = item['id']
             vehicle.loc = (item['start_loc']['x'], item['start_loc']['y'])
-            vehicle.dest = (item['end_loc']['x'], item['end_loc']['y'])
+            vehicle.plan[0] = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
         self.new_vehicles.sort(key=lambda o: o['entry'])
@@ -78,7 +77,7 @@ class InvisibleHand():
         while self.new_vehicles:
             if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
                 break
-            if self.new_vehicles[0]["vehicle"].autonomous == True:
+            if self.new_vehicles[0]["vehicle"].autonomous:
                 self.cavs.append(self.new_vehicles.pop(0))
                 continue
             self.hvs.append(self.new_vehicles.pop(0))
@@ -95,8 +94,8 @@ class InvisibleHand():
                     continue
                 for road in roads:
                     if road_id == road.road_id:
-                       intersection.roads[i] = road
-                       break
+                        intersection.roads[i] = road
+                        break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
@@ -114,9 +113,6 @@ class InvisibleHand():
         await self.gui.send_frame(None)
         return
 
-    def norm(self, p1, p2):
-        return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
-
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
         location
@@ -124,7 +120,7 @@ class InvisibleHand():
         return [
             vehicle
             for vehicle in self.cavs
-            if 0 < self.norm(location, vehicle.loc) <= length
+            if 0 < vehicle.dist_to(location) <= length
         ]
 
 
@@ -132,6 +128,7 @@ class Connection():
     """Handles a connection with the GUI"""
     def __init__(self, websocket, path):
         self.websocket = websocket
+        self.path = path
         self.addr = websocket.remote_address
         self.infrastructure = None
         self.vehicles = None

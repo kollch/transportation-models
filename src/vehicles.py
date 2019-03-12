@@ -1,3 +1,4 @@
+"""This determines everything to do with the vehicles."""
 import random
 import math
 
@@ -15,14 +16,14 @@ class Vehicle():
         """
         self.world = world
         self.vehicle_id = attribs[0]
-        self.length = attribs[1]
-        self.width = attribs[2]
-        self.direction = attribs[3]
-        self.speed = speed[0]
+        # (Vehicle length, width)
+        self.size = (attribs[1], attribs[2])
+        # (Vehicle speed, direction)
+        self.veloc = [speed[0], attribs[3]]
         self.accel = speed[1]
         self.loc = locs[0]
-        self.dest = locs[1]
-        self.route = []
+        # (Destination, route)
+        self.plan = [locs[1], []]
 
     def angle(self, loc):
         """Compute angle from vehicle to location"""
@@ -34,10 +35,11 @@ class Vehicle():
 
     def at_intersection(self):
         """Determines if vehicle is at an intersection;
-        based on proximity to center of intersection"""
-        for x in self.world.infrastructure.intersections:
+        based on proximity to center of intersection
+        """
+        for intersection in self.world.infrastructure.intersections:
             # proximity currently set at 50 ft, may be changed
-            if self.dist_to(x.location) < 50:
+            if self.dist_to(intersection.loc) < 50:
                 return True
         return False
 
@@ -46,20 +48,22 @@ class Vehicle():
         location"""
         return math.hypot(loc[0] - self.loc[0], loc[1] - self.loc[1])
 
-    def can_see(self, infrastructure, cavs, hvs):
+    def can_see(self, cavs, hvs):
         """Returns a list of everything that the vehicle can see"""
         in_vision = []
         for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v.loc)):
             if vehicle is self:
                 continue
             angle = vehicle.angle_edges(self)
-            def leq(a, b):
+
+            def leq(a_1, a_2):
                 """Finds if angle a is less than angle b.
                 Needed because of wrapping at pi = -pi"""
-                if math.atan2(math.sin(a - b), math.cos(a - b)) <= 0:
+                if math.atan2(math.sin(a_1 - a_2), math.cos(a_1 - a_2)) <= 0:
                     return True
                 return False
-            def is_visible(angle_end_val=None):
+
+            def is_visible(angle, angle_end_val=None):
                 """Returns true if vehicle is visible, false
                 otherwise"""
                 for item in in_vision:
@@ -76,19 +80,19 @@ class Vehicle():
                             return False
                         angle_end = item[1][1]
                         if angle_end_val is None:
-                            return is_visible(angle_end)
+                            return is_visible(angle, angle_end)
                 return True
-            if is_visible():
+            if is_visible(angle):
                 in_vision.append((vehicle, angle))
         return [i[0] for i in in_vision]
 
     def angle_edges(self, vehicle):
         """Returns the outermost seen angles of the vehicle from
         the given vehicle"""
-        lsin = self.length / 2 * math.sin(self.direction)
-        lcos = self.length / 2 * math.cos(self.direction)
-        wsin = self.width / 2 * math.sin(self.direction)
-        wcos = self.width / 2 * math.cos(self.direction)
+        lsin = self.size[0] / 2 * math.sin(self.veloc[1])
+        lcos = self.size[0] / 2 * math.cos(self.veloc[1])
+        wsin = self.size[1] / 2 * math.sin(self.veloc[1])
+        wcos = self.size[1] / 2 * math.cos(self.veloc[1])
         points = [(self.loc[0] + lcos + wsin, self.loc[1] + lsin - wcos),
                   (self.loc[0] - lcos - wsin, self.loc[1] + wcos - lsin),
                   (self.loc[0] + lcos - wsin, self.loc[1] + lsin + wcos),
@@ -107,13 +111,14 @@ class CAV(Vehicle):
     Connect, decide action, move
     """
     autonomous = True
+    react_factor = 0
 
     def __str__(self):
         return ("{CAV " + str(self.vehicle_id)
                 + "\n   Loc: " + str(self.loc)
-                + "\n  Dest: " + str(self.dest)
-                + "\n  Size: " + str(self.length) + " x " + str(self.width)
-                + "\n Angle: " + str(self.direction) + "\n}")
+                + "\n  Dest: " + str(self.plan[0])
+                + "\n  Size: " + str(self.size[0]) + " x " + str(self.size[1])
+                + "\n Angle: " + str(self.veloc[1]) + "\n}")
 
     def __repr__(self):
         return "(CAV " + str(self.vehicle_id) + ")"
@@ -122,12 +127,12 @@ class CAV(Vehicle):
         """Gets info from CAVs within range"""
         return [
             v.give_info()
-            for v in self.world.cavs_in_range(self.location, 3000)
+            for v in self.world.cavs_in_range(self.loc, 3000)
         ]
 
     def give_info(self):
         """Returns info regarding vehicle location and speed"""
-        return [self.location, self.speed, self.accel]
+        return [self.loc, self.veloc[0], self.accel]
 
     def react_time(self):
         """Randomly-generated time it will take to react - for CAVs
@@ -135,7 +140,7 @@ class CAV(Vehicle):
         program should account for the small amount of reaction time
         CAVs have
         """
-        return 0
+        return 0 * self.react_factor
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
@@ -181,9 +186,8 @@ class CAV(Vehicle):
 
     def decide_move(self):
         """Uses available information and determines move"""
-        if not self.route or self.at_intersection():
-            self.route = self.dijkstras(self.loc, self.dest)
-
+        if not self.plan[1] or self.at_intersection():
+            self.plan[1] = self.dijkstras(self.loc, self.plan[0])
 
 
 class HV(Vehicle):
@@ -191,27 +195,28 @@ class HV(Vehicle):
     Decide action, move
     """
     autonomous = False
+    react_factor = 1
 
     def __str__(self):
         return ("{HV " + str(self.vehicle_id)
                 + "\n   Loc: " + str(self.loc)
-                + "\n  Dest: " + str(self.dest)
-                + "\n  Size: " + str(self.length) + " x " + str(self.width)
-                + "\n Angle: " + str(self.direction) + "\n}")
+                + "\n  Dest: " + str(self.plan[0])
+                + "\n  Size: " + str(self.size[0]) + " x " + str(self.size[1])
+                + "\n Angle: " + str(self.veloc[1]) + "\n}")
 
     def __repr__(self):
         return "(HV " + str(self.vehicle_id) + ")"
 
     def react_time(self):
         """Randomly-generated time it will take to react"""
-        mu = 0.5
-        sigma = 1
-        r_time = random.gauss(mu, sigma)
+        mean = 0.5
+        std_dev = 1
+        r_time = random.gauss(mean, std_dev)
 
-        # r_time is randomly number but sometimes it will have negative number
+        # Could be a negative number; if so, retry
         while r_time <= 0:
-            r_time = random.gauss(mu, sigma)
-        return r_time
+            r_time = random.gauss(mean, std_dev)
+        return r_time * self.react_factor
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
@@ -256,5 +261,5 @@ class HV(Vehicle):
 
     def decide_move(self):
         """Looks in immediate vicinity and determines move"""
-        if not self.route:
-            self.route = self.dijkstras(self.location, self.destination)
+        if not self.plan[1]:
+            self.plan[1] = self.dijkstras(self.loc, self.plan[0])
