@@ -1,0 +1,106 @@
+[
+    {
+        "id": 0,
+        "start_loc": {
+            "x": 1094,
+            "y": 1600
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 906,
+            "y": 0
+        },
+        "entry_time": 2125
+    },
+    {
+        "id": 1,
+        "start_loc": {
+            "x": 394,
+            "y": 1600
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 0,
+            "y": 506
+        },
+        "entry_time": 4788
+    },
+    {
+        "id": 2,
+        "start_loc": {
+            "x": 0,
+            "y": 994
+        },
+        "type": 1,
+        "end_loc": {
+            "x": 0,
+            "y": 506
+        },
+        "entry_time": 4069
+    },
+    {
+        "id": 3,
+        "start_loc": {
+            "x": 0,
+            "y": 494
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 1600,
+            "y": 594
+        },
+        "entry_time": 1460
+    },
+    {
+        "id": 4,
+        "start_loc": {
+            "x": 906,
+            "y": 0
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 1600,
+            "y": 594
+        },
+        "entry_time": 1627
+    },
+    {
+        "id": 5,
+        "start_loc": {
+            "x": 906,
+            "y": 0
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 0,
+            "y": 506
+        },
+        "entry_time": 596
+    },
+    {
+        "id": 6,
+        "start_loc": {
+            "x": 0,
+            "y": 994
+        },
+        "type": 1,
+        "end_loc": {
+            "x": 406,
+            "y": 1600
+        },
+        "entry_time": 1707
+    },
+    {
+        "id": 7,
+        "start_loc": {
+            "x": 1600,
+            "y": 606
+        },
+        "type": 1,
+        "end_loc": {
+            "x": 0,
+            "y": 994
+        },
+        "entry_time": 833
+    }
+]
