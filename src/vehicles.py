@@ -217,7 +217,7 @@ class CAV(Vehicle):
     def make_move(self, t):
         """Updates location coordinates depending on passed time
         and direction"""
-        movement = float(self.veloc[0]) * (time.time() - t)
+        movement = float(self.veloc[0]) * 0.1
         
         #if moving East
         if(self.veloc[1] == 0):
