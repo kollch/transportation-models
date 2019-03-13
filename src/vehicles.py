@@ -44,6 +44,19 @@ class Vehicle():
                 return True
         return False
 
+    def nearest_intersection(self, pos, intersections):
+        """Take coordinate location of a vehicle and returns
+            an intersection object that is closest"""
+        min_distance = 100000
+        nearest = 0
+        for intersection in intersections:
+            distance = math.hypot(intersection.loc[0] - pos[0], intersection.loc[1] - pos[1])
+
+            if min_distance > distance:
+                nearest = intersection
+                min_distance = distance
+        return nearest
+
     def get_road(self):
         """Returns road vehicle is currently on"""
         for road in self.world.infrastructure.roads:
@@ -149,7 +162,7 @@ class CAV(Vehicle):
     def give_info(self):
         """Returns info regarding vehicle location and speed"""
         return [self.loc, self.veloc[0], self.accel]
-    
+
     def react_time(self):
         """Randomly-generated time it will take to react - for CAVs
         this should be instantaneous because the timesteps in this
@@ -157,11 +170,11 @@ class CAV(Vehicle):
         CAVs have
         """
         return 0 * self.react_factor
-    
+
     def decide_accel(self):
         """Based on code from
         https://github.com/titaneric/trafficModel
-            
+
         Decides acceleration based on car following or approach to
         intersections; **needs to be completed to insert check for
         closest car being in front of self
@@ -177,9 +190,9 @@ class CAV(Vehicle):
             if self.veloc[0] == self.get_road().speed:
                 return 0
             return 60
-        
+
         dist_to_intersection = self.dist_to(self.plan[1][0].loc)
-        
+
         #set values for acceleration(a) and deceleration(b)
         a = 0.3
         b = 3
@@ -197,14 +210,14 @@ class CAV(Vehicle):
         #coefficient if car following
         follow_coeff = (safe_dist_follow / self.dist_to(closest.loc)) ** 2 \
             if closest is not None else 0
-        
+
         safe_dist_intersection = 1 + t_gap + self.veloc[0] ** 2 / (2 * b)
         intersection_coeff = ((safe_dist_intersection / dist_to_intersection) ** 2) \
             if dist_to_intersection != 0 else 0
         coeff = (1 - free_coeff) if closest is None \
             else 1 - free_coeff - follow_coeff - intersection_coeff
         return self.accel * coeff
-        
+
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
@@ -213,10 +226,11 @@ class CAV(Vehicle):
         Returns list of intersections from source to destination
         Clone of dijkstras() in HV until we use a different algorithm
         """
+        nodes = set(self.world.infrastructure.intersections)
+        source = self.nearest_intersection(src,nodes)
+        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-
-        nodes = set(self.world.infrastructure.intersections)
 
         while nodes:
             min_node = None
@@ -293,10 +307,11 @@ class HV(Vehicle):
 
         Returns list of intersections from source to destination
         """
+        nodes = set(self.world.infrastructure.intersections)
+        source = self.nearest_intersection(src,nodes)
+        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-
-        nodes = set(self.world.infrastructure.intersections)
 
         while nodes:
             min_node = None
