@@ -23,6 +23,7 @@ class InvisibleHand():
         self.hvs = []
         self.set_parameters()
         self.current_frame = 0
+        self.frame_number = 0
 
     def init_vehicle_dir(self, vehicle):
         """Initialize vehicle direction based on which road it's on"""
@@ -155,16 +156,7 @@ class InvisibleHand():
         self.data_to_json()
 
         # send frame
-        frame = get_frame_data("frame.json", i)
-        await self.gui.send_frame(frame)
-        '''
-        for i in range(6):
-            frame = get_frame_data("testframes.json", i)
-            await self.gui.send_frame(frame)
-        # Specify end of frames
-        await self.gui.send_frame(None)
-        return
-        '''
+         await self.gui.send_frame("frame.json")
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
@@ -213,7 +205,7 @@ async def main(websocket, path):
     run = InvisibleHand(connect)
     await run.build_frames()
 
-
+'''
 def get_frame_data(file_name, frame):
     """Temporary function to read json from a file;
     should be deleted soon
@@ -221,7 +213,7 @@ def get_frame_data(file_name, frame):
     with open(file_name) as json_file:
         data = json.load(json_file)
         return data[frame]
-
+'''
 
 # Start server with or without ssl
 if SECURE:
