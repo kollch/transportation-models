@@ -119,6 +119,16 @@ class Vehicle():
             return [max_angle, min_angle]
         return [min_angle, max_angle]
 
+    def calc_stop_dist(self):
+        """Calculates a safe stopping distance for a vehicle dependent
+        on its reaction time and its speed"""
+        #based on reaction distance formula: d = (s * r) / 3.6
+        reaction_dist =  (self.veloc * self.react_factor) / 3.6
+        #based on braking distance formula: d = s^2 / (250 * f)
+        braking_dist = pow(self.veloc,2)/(250*.08)
+        #stopping distance = reaction + braking
+        stopping_dist = reaction_dist + braking_dist
+        return stopping_dist
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
