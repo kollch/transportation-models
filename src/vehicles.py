@@ -42,6 +42,19 @@ class Vehicle():
             if self.dist_to(intersection.loc) < 50:
                 return True
         return False
+    
+    def nearest_intersection(self, pos, intersections):
+        """Take coordinate location of a vehicle and returns
+            an intersection object that is closest"""
+        min_distance = 100000
+        nearest = 0
+        for intersection in intersections:
+            distance = math.hypot(intersection.loc[0] - pos[0], intersection.loc[1] - pos[1])
+
+            if min_distance > distance:
+                nearest = intersection
+                min_distance = distance
+        return nearest
 
     def dist_to(self, loc):
         """Returns the distance between the vehicle and a given
@@ -149,11 +162,12 @@ class CAV(Vehicle):
         Returns list of intersections from source to destination
         Clone of dijkstras() in HV until we use a different algorithm
         """
+        nodes = set(self.world.infrastructure.intersections)
+        source = self.nearest_intersection(src,nodes)
+        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-
-        nodes = set(self.world.infrastructure.intersections)
-
+        
         while nodes:
             min_node = None
             for node in nodes:
@@ -165,7 +179,6 @@ class CAV(Vehicle):
 
             if min_node is None or min_node is dest:
                 break
-
             nodes.remove(min_node)
             curr_weight = visited[min_node]
 
@@ -188,7 +201,6 @@ class CAV(Vehicle):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             self.plan[1] = self.dijkstras(self.loc, self.plan[0])
-
 
 class HV(Vehicle):
     """Human-driven vehicles
@@ -224,11 +236,12 @@ class HV(Vehicle):
 
         Returns list of intersections from source to destination
         """
+        nodes = set(self.world.infrastructure.intersections)
+        source = self.nearest_intersection(src,nodes)
+        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-
-        nodes = set(self.world.infrastructure.intersections)
-
+        
         while nodes:
             min_node = None
             for node in nodes:
