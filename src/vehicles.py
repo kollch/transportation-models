@@ -5,7 +5,6 @@ import time
 
 class Vehicle():
     """Includes CAVs and HVs"""
-    safe_decel = -3.40909
     def __init__(self, world, attribs=(None, 20, 8, 0),
                  speed=(0, 0), locs=(None, None)):
         """Almost all parameters are grouped into sets of tuples:
@@ -272,36 +271,6 @@ class CAV(Vehicle):
 
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-
-    def make_move(self, t):
-        """Updates location coordinates depending on passed time
-        and direction"""
-        movement = float(self.veloc[0]) * (time.time() - t)
-
-        #if moving East
-        if(self.veloc[1] == 0):
-            new_x = self.loc[0]
-            new_x += movement
-            y = self.loc[1]
-            self.loc = (new_x, y)
-        #if moving West
-        if(self.veloc[1] == 180):
-            new_x = self.loc[0]
-            new_x -= movement
-            y = self.loc[1]
-            self.loc = (new_x, y)
-        #if moving North
-        if(self.veloc[1] == 90):
-            x = self.loc[0]
-            new_y = self.loc[1]
-            new_y += movement
-            self.loc = (new_x, y)
-        #if moving South
-        if(self.veloc[1] == 270):
-            x = self.loc[0]
-            new_y = self.loc[1]
-            new_y -= movement
-            self.loc = (new_x, y)
 
 
 class HV(Vehicle):
