@@ -5,7 +5,7 @@ import time
 
 class Vehicle():
     """Includes CAVs and HVs"""
-    safe_decel = -3.40909
+    safe_decel = -7.636364
     def __init__(self, world, attribs=(None, 20, 8, 0),
                  speed=(0, 0), locs=(None, None)):
         """Almost all parameters are grouped into sets of tuples:
@@ -123,9 +123,9 @@ class Vehicle():
         """Calculates a safe stopping distance for a vehicle dependent
         on its reaction time and its speed"""
         #based on reaction distance formula: d = (s * r) / 3.6
-        reaction_dist =  (self.veloc * self.react_factor) / 3.6
+        reaction_dist =  (self.veloc[0] * 1) / 3.6
         #based on braking distance formula: d = s^2 / (250 * f)
-        braking_dist = pow(self.veloc,2)/(250*.08)
+        braking_dist = pow(self.veloc[0],2)/(250*.08)
         #stopping distance = reaction + braking
         stopping_dist = reaction_dist + braking_dist
         return stopping_dist
@@ -208,7 +208,7 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def decide_move(self, t):
+    def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             self.plan[1] = self.dijkstras(self.loc, self.plan[0])
