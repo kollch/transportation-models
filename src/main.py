@@ -156,7 +156,7 @@ class InvisibleHand():
         self.data_to_json()
 
         # send frame
-         await self.gui.send_frame("frame.json")
+        await self.gui.send_frame("frame.json")
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
