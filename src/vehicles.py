@@ -236,13 +236,13 @@ class CAV(Vehicle):
             x = self.loc[0]
             new_y = self.loc[1]
             new_y += movement
-            self.loc = (new_x, y)
+            self.loc = (x, new_y)
         #if moving South
         if(self.veloc[1] == 270):
             x = self.loc[0]
             new_y = self.loc[1]
             new_y -= movement
-            self.loc = (new_x, y)
+            self.loc = (x, new_y)
 
 
 
