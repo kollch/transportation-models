@@ -260,7 +260,7 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def decide_move(self, t):
+    def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
