@@ -98,6 +98,26 @@ class InvisibleHand():
                         break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
+    
+    def stats_to_json(self):
+        stats = {}
+        stats['vehicles'] = []
+        for i in range(len(self.cavs)):
+            stats['vehicles'].append({
+                'id': self.cavs[i].vehicle_id,
+                'velocity': self.cavs[i].veloc,
+                'acceleration': self.cavs[i].accel
+                })
+
+        for i in range(len(self.hvs)):
+            stats['vehicles'].append({
+                'id': self.hvs[i].vehicle_id,
+                'velocity': self.hvs[i].veloc,
+                'acceleration': self.hvs[i].accel
+                })
+        
+        with open('vehicle_stats.json', 'w') as outfile:
+            json.dump(stats, outfile, indent=4)
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
