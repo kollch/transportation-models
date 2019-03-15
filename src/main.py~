@@ -23,6 +23,7 @@ class InvisibleHand():
         self.hvs = []
         self.set_parameters()
         self.current_frame = 0
+        self.road_open_list = [[], [], [], []]
         
 
     def init_vehicle_dir(self, vehicle):

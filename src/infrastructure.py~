@@ -62,7 +62,7 @@ class Intersection():
         roads_list = [[], [], [], []]
         if casenumber == 1:
             roads_list = [
-                [False, True, True],
+                [False, True, True]ssss
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
