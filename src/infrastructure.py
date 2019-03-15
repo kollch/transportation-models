@@ -39,7 +39,6 @@ class Intersection():
         self.vehicles_on = []
         self.vehicles_passed = 0
         self.counter = 0
-        
 
     def adjacent(self):
         """Gets intersections adjacent to the current one;
@@ -55,7 +54,7 @@ class Intersection():
                     # If end is an intersection and is not current one
                     results.append((end, road))
         return results
-    
+
     def road_open(self, casenumber):
         """Create the list of road vehicles allowed to move on that direction.
         The corresponding value is: turn left, go straight, turn right.
@@ -63,14 +62,13 @@ class Intersection():
         """
         self.counter += 1
         roads_list = [[], [], [], []]
-         
         if currentf % 40 >= 1 and currentf % 40 <= 10:
-           roads_list = [
+            roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
-            ] 
+            ]
         elif currentf % 40 >= 11 and currentf % 40 <= 20:
             roads_list = [
                 [False, False, False],
@@ -92,13 +90,11 @@ class Intersection():
                 [False, True, True],
                 [False, False, False]
             ]
-        
         for i in range(4):
             if self.roads[i] is None:
                 roads_list[i] = [None, None, None]
         return roads_list
-        
-        
+
 class Road():
     """Connect intersections together and vehicles drive on them"""
     def __init__(self, road_id, size, speed=60):
