@@ -114,18 +114,6 @@ class InvisibleHand():
         await self.gui.send_frame(None)
         return
     
-    def light_change(self):
-        """Change light by frames, per 10 frams light will change"""
-        currentf = self.current_frame
-        if currentf % 40 >= 1 and currentf % 40 <= 10:
-            road_open(1)
-        elif currentf % 40 >= 11 and currentf % 40 <= 20:
-            road_open(2)
-        elif currentf % 40 >= 21 and currentf % 40 <= 30:
-            road_open(3)
-        elif currentf % 40 >= 31 and currentf % 40 <= 40:    
-            road_open(4)
-            
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
         location
