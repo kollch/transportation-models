@@ -23,7 +23,6 @@ class InvisibleHand():
         self.hvs = []
         self.set_parameters()
         self.current_frame = 0
-        
 
     def init_vehicle_dir(self, vehicle):
         """Initialize vehicle direction based on which road it's on"""
@@ -113,7 +112,7 @@ class InvisibleHand():
         # Specify end of frames
         await self.gui.send_frame(None)
         return
-    
+
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
         location
