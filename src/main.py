@@ -65,20 +65,13 @@ class InvisibleHand():
             vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
-
-    def test_code(self):
-        for i in range(11):
-            print(self.infrastructure.roads[i].coords())
-
+            
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
         intersections = self.init_intersections()
         roads = self.init_roads(intersections)
-        self.infrastructure = Infrastructure(intersections, roads)
-        self.init_vehicles()
-        self.test_code()
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
