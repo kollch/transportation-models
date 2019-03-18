@@ -77,10 +77,17 @@ class InvisibleHand():
         while self.new_vehicles:
             if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
                 break
-            if self.new_vehicles[0]["vehicle"].autonomous:
-                self.cavs.append(self.new_vehicles.pop(0))
+            vehicle_obj = self.new_vehicles.pop(0)
+            vehicle = vehicle_obj["vehicle"]
+            for road in self.infrastructure.roads:
+                if road.has_point(vehicle.loc):
+                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
+                    road.vehicles_on.append(vehicle)
+                    break
+            if vehicle.autonomous:
+                self.cavs.append(vehicle)
                 continue
-            self.hvs.append(self.new_vehicles.pop(0))
+            self.hvs.append(vehicle)
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
