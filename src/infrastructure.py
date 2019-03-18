@@ -95,6 +95,7 @@ class Intersection():
                 roads_list[i] = [None, None, None]
         return roads_list
 
+
 class Road():
     """Connect intersections together and vehicles drive on them"""
     def __init__(self, road_id, size, speed=60):
