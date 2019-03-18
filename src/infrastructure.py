@@ -62,28 +62,28 @@ class Intersection():
         """
         self.counter += 1
         roads_list = [[], [], [], []]
-        if currentf % 40 >= 1 and currentf % 40 <= 10:
+        if self.counter % 40 >= 1 and self.counter % 40 <= 10:
             roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
             ]
-        elif currentf % 40 >= 11 and currentf % 40 <= 20:
+        elif self.counter % 40 >= 11 and self.counter % 40 <= 20:
             roads_list = [
                 [False, False, False],
                 [False, True, True],
                 [False, False, False],
                 [False, True, True]
             ]
-        elif currentf % 40 >= 21 and currentf % 40 <= 30:
+        elif self.counter % 40 >= 21 and self.counter % 40 <= 30:
             roads_list = [
                 [True, False, False],
                 [False, False, True],
                 [True, False, False],
                 [False, False, True]
             ]
-        elif currentf % 40 >= 31 and currentf % 40 <= 40:
+        elif self.counter % 40 >= 31 and self.counter % 40 <= 40:
             roads_list = [
                 [False, True, True],
                 [False, False, False],
