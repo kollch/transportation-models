@@ -1,7 +1,7 @@
 """This determines everything to do with the vehicles."""
 import random
 import math
-import time
+
 
 class Vehicle():
     """Includes CAVs and HVs"""
@@ -225,11 +225,10 @@ class CAV(Vehicle):
         Returns list of intersections from source to destination
         Clone of dijkstras() in HV until we use a different algorithm
         """
-        nodes = set(self.world.infrastructure.intersections)
-        source = self.nearest_intersection(source,nodes)
-        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
+
+        nodes = set(self.world.infrastructure.intersections)
 
         while nodes:
             min_node = None
@@ -265,13 +264,10 @@ class CAV(Vehicle):
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
-            print("source:", source.intersection_id)
-            print("dest", dest.intersection_id)
             self.plan[1] = self.dijkstras(source, dest)
 
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-
 
 class HV(Vehicle):
     """Human-driven vehicles
@@ -307,11 +303,10 @@ class HV(Vehicle):
 
         Returns list of intersections from source to destination
         """
-        nodes = set(self.world.infrastructure.intersections)
-        source = self.nearest_intersection(src,nodes)
-        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
+
+        nodes = set(self.world.infrastructure.intersections)
 
         while nodes:
             min_node = None
