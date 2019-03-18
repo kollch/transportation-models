@@ -8,6 +8,21 @@ class Infrastructure():
         self.intersections = intersections
         self.roads = roads
 
+    def closest_intersection(self, pos):
+        """Returns the intersection that is closest to the given
+        location
+        """
+        min_distance = 100000
+        nearest = 0
+        for intersection in self.intersections:
+            loc = intersection.loc
+            distance = math.hypot(loc[0] - pos[0], loc[1] - pos[1])
+
+            if min_distance > distance:
+                nearest = intersection
+                min_distance = distance
+        return nearest
+
     def intersection_efficiency(self):
         """Determine how many vehicles have passed through all
         intersections so far
