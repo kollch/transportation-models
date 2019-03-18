@@ -133,6 +133,15 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
+    def make_move(self):
+        """Updates location coordinates depending on passed time and
+        direction
+        """
+        movement = self.veloc[0] * 528 / 3600
+        d_x = movement * math.cos(math.radians(self.veloc[1]))
+        d_y = movement * math.sin(math.radians(self.veloc[1]))
+        self.loc = (d_x + self.loc[0], d_y + self.loc[1])
+
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
