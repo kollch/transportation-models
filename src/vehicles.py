@@ -118,6 +118,15 @@ class Vehicle():
         stopping_dist = reaction_dist + braking_dist
         return stopping_dist
 
+    def make_move(self):
+        """Updates location coordinates depending on passed time and
+        direction
+        """
+        movement = self.veloc[0] * 528 / 3600
+        d_x = movement * math.cos(math.radians(self.veloc[1]))
+        d_y = movement * math.sin(math.radians(self.veloc[1]))
+        self.loc = (d_x + self.loc[0], d_y + self.loc[1])
+
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
@@ -202,36 +211,6 @@ class CAV(Vehicle):
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
-
-    def make_move(self):
-        """Updates location coordinates depending on passed time
-        and direction"""
-        movement = float(self.veloc[0]) * 0.1
-
-        # if moving East
-        if self.veloc[1] == 0:
-            new_x = self.loc[0]
-            new_x += movement
-            y = self.loc[1]
-            self.loc = (new_x, y)
-        # if moving West
-        if self.veloc[1] == 180:
-            new_x = self.loc[0]
-            new_x -= movement
-            y = self.loc[1]
-            self.loc = (new_x, y)
-        # if moving North
-        if self.veloc[1] == 90:
-            x = self.loc[0]
-            new_y = self.loc[1]
-            new_y += movement
-            self.loc = (x, new_y)
-        # if moving South
-        if self.veloc[1] == 270:
-            x = self.loc[0]
-            new_y = self.loc[1]
-            new_y -= movement
-            self.loc = (x, new_y)
 
 
 class HV(Vehicle):
