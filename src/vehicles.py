@@ -1,11 +1,12 @@
 """This determines everything to do with the vehicles."""
 import random
 import math
-import time
+
 
 class Vehicle():
     """Includes CAVs and HVs"""
     safe_decel = -7.636364
+
     def __init__(self, world, attribs=(None, 20, 8, 0),
                  speed=(0, 0), locs=(None, None)):
         """Almost all parameters are grouped into sets of tuples:
@@ -43,19 +44,6 @@ class Vehicle():
             if self.dist_to(intersection.loc) < 50:
                 return True
         return False
-    
-    def nearest_intersection(self, pos, intersections):
-        """Take coordinate location of a vehicle and returns
-            an intersection object that is closest"""
-        min_distance = 100000
-        nearest = 0
-        for intersection in intersections:
-            distance = math.hypot(intersection.loc[0] - pos[0], intersection.loc[1] - pos[1])
-
-            if min_distance > distance:
-                nearest = intersection
-                min_distance = distance
-        return nearest
 
     def dist_to(self, loc):
         """Returns the distance between the vehicle and a given
@@ -122,13 +110,14 @@ class Vehicle():
     def calc_stop_dist(self):
         """Calculates a safe stopping distance for a vehicle dependent
         on its reaction time and its speed"""
-        #based on reaction distance formula: d = (s * r) / 3.6
-        reaction_dist =  (self.veloc[0] * 1) / 3.6
-        #based on braking distance formula: d = s^2 / (250 * f)
-        braking_dist = pow(self.veloc[0],2)/(250*.08)
-        #stopping distance = reaction + braking
+        # Based on reaction distance formula: d = (s * r) / 3.6
+        reaction_dist = (self.veloc[0] * 1) / 3.6
+        # Based on braking distance formula: d = s^2 / (250 * f)
+        braking_dist = self.veloc[0] ** 2 / (250 * .08)
+        # Stopping distance = reaction + braking
         stopping_dist = reaction_dist + braking_dist
         return stopping_dist
+
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
@@ -173,12 +162,11 @@ class CAV(Vehicle):
         Returns list of intersections from source to destination
         Clone of dijkstras() in HV until we use a different algorithm
         """
-        nodes = set(self.world.infrastructure.intersections)
-        source = self.nearest_intersection(source,nodes)
-        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-        
+
+        nodes = set(self.world.infrastructure.intersections)
+
         while nodes:
             min_node = None
             for node in nodes:
@@ -211,39 +199,39 @@ class CAV(Vehicle):
     def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
-            self.plan[1] = self.dijkstras(self.loc, self.plan[0])
-        
+            source = self.world.infrastructure.closest_intersection(self.loc)
+            dest = self.world.infrastructure.closest_intersection(self.plan[0])
+            self.plan[1] = self.dijkstras(source, dest)
 
-    def make_move(self, t):
+    def make_move(self):
         """Updates location coordinates depending on passed time
         and direction"""
         movement = float(self.veloc[0]) * 0.1
-        
-        #if moving East
-        if(self.veloc[1] == 0):
+
+        # if moving East
+        if self.veloc[1] == 0:
             new_x = self.loc[0]
             new_x += movement
             y = self.loc[1]
             self.loc = (new_x, y)
-        #if moving West
-        if(self.veloc[1] == 180):
+        # if moving West
+        if self.veloc[1] == 180:
             new_x = self.loc[0]
             new_x -= movement
             y = self.loc[1]
             self.loc = (new_x, y)
-        #if moving North
-        if(self.veloc[1] == 90):
+        # if moving North
+        if self.veloc[1] == 90:
             x = self.loc[0]
             new_y = self.loc[1]
             new_y += movement
             self.loc = (x, new_y)
-        #if moving South
-        if(self.veloc[1] == 270):
+        # if moving South
+        if self.veloc[1] == 270:
             x = self.loc[0]
             new_y = self.loc[1]
             new_y -= movement
             self.loc = (x, new_y)
-
 
 
 class HV(Vehicle):
@@ -280,12 +268,11 @@ class HV(Vehicle):
 
         Returns list of intersections from source to destination
         """
-        nodes = set(self.world.infrastructure.intersections)
-        source = self.nearest_intersection(src,nodes)
-        dest = self.nearest_intersection(dest,nodes)
         visited = {source: 0}
         path = {}
-        
+
+        nodes = set(self.world.infrastructure.intersections)
+
         while nodes:
             min_node = None
             for node in nodes:
@@ -319,4 +306,6 @@ class HV(Vehicle):
     def decide_move(self):
         """Looks in immediate vicinity and determines move"""
         if not self.plan[1]:
-            self.plan[1] = self.dijkstras(self.loc, self.plan[0])
+            source = self.world.infrastructure.closest_intersection(self.loc)
+            dest = self.world.infrastructure.closest_intersection(self.plan[0])
+            self.plan[1] = self.dijkstras(source, dest)
