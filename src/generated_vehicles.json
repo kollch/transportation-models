@@ -2,105 +2,105 @@
     {
         "id": 0,
         "start_loc": {
-            "x": 894,
+            "x": 906,
             "y": 0
         },
         "type": 1,
         "end_loc": {
-            "x": 0,
-            "y": 494
+            "x": 1106,
+            "y": 1600
         },
-        "entry_time": 3719
+        "entry_time": 700
     },
     {
         "id": 1,
         "start_loc": {
-            "x": 894,
-            "y": 0
+            "x": 1094,
+            "y": 1600
         },
         "type": 1,
         "end_loc": {
             "x": 1600,
-            "y": 1006
+            "y": 594
         },
-        "entry_time": 2195
+        "entry_time": 600
     },
     {
         "id": 2,
         "start_loc": {
-            "x": 1106,
+            "x": 0,
+            "y": 494
+        },
+        "type": 0,
+        "end_loc": {
+            "x": 406,
             "y": 1600
         },
-        "type": 1,
-        "end_loc": {
-            "x": 1600,
-            "y": 1006
-        },
-        "entry_time": 3183
+        "entry_time": 4000
     },
     {
         "id": 3,
         "start_loc": {
-            "x": 406,
-            "y": 1600
+            "x": 0,
+            "y": 994
         },
         "type": 0,
         "end_loc": {
-            "x": 1094,
+            "x": 1106,
             "y": 1600
         },
-        "entry_time": 137
+        "entry_time": 1500
     },
     {
         "id": 4,
         "start_loc": {
-            "x": 1600,
-            "y": 994
+            "x": 0,
+            "y": 494
         },
-        "type": 1,
+        "type": 0,
         "end_loc": {
-            "x": 1094,
+            "x": 406,
             "y": 1600
         },
-        "entry_time": 2645
+        "entry_time": 900
     },
     {
         "id": 5,
         "start_loc": {
+            "x": 1600,
+            "y": 606
+        },
+        "type": 1,
+        "end_loc": {
             "x": 1106,
             "y": 1600
         },
-        "type": 0,
-        "end_loc": {
-            "x": 0,
-            "y": 994
-        },
-        "entry_time": 3061
+        "entry_time": 2700
     },
     {
         "id": 6,
         "start_loc": {
-            "x": 1600,
-            "y": 594
-        },
-        "type": 0,
-        "end_loc": {
             "x": 1094,
             "y": 1600
         },
-        "entry_time": 1692
+        "type": 1,
+        "end_loc": {
+            "x": 894,
+            "y": 0
+        },
+        "entry_time": 3300
     },
     {
         "id": 7,
         "start_loc": {
+            "x": 1600,
+            "y": 606
+        },
+        "type": 0,
+        "end_loc": {
             "x": 0,
             "y": 1006
         },
-        "type": 1,
-        "end_loc": {
-            "x": 1600,
-            "y": 1006
-        },
-        "entry_time": 1767
+        "entry_time": 2900
     }
 ]
