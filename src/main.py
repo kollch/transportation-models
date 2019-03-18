@@ -1,11 +1,10 @@
 """This is the primary component of the backend."""
-import math
 import asyncio
 import ssl
 import json
 import websockets
 
-from vehicles import Vehicle, CAV, HV
+from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
 
 SECURE = False
@@ -19,38 +18,86 @@ class InvisibleHand():
         """Allow class to pass to GUI via Connection class"""
         self.gui = connection
         self.infrastructure = None
+        self.new_vehicles = []
+        self.cavs = []
+        self.hvs = []
         self.set_parameters()
+        self.current_frame = 0
 
-    def set_parameters(self):
-        """Set parameters pulled from GUI, aka initializing simulation
-        Parameters: num_frames, vehicle positions, infrastructure setup
-        """
-        # Create intersections
-        intersections = [
+    def init_vehicle_dir(self, vehicle):
+        """Initialize vehicle direction based on which road it's on"""
+
+    def init_intersections(self):
+        """Initialize intersections"""
+        return [
             Intersection(item['id'],
                          item['connects_roads'],
                          (item['loc']['x'], item['loc']['y']))
             for item in self.gui.infrastructure['intersections']
         ]
-        # Create roads
-        roads = [
-            Road(item['id'],
-                 item['two_way'],
-                 item['lanes'],
-                 (item['ends'][0], item['ends'][1]))
-            for item in self.gui.infrastructure['roads']
-        ]
-        # Convert road endpoints to tuples if they're coordinates
-        for road in roads:
-            new_ends = [road.ends[0], road.ends[1]]
+
+    def init_roads(self, intersections):
+        """Initialize roads"""
+        roads = []
+        for item in self.gui.infrastructure['roads']:
+            ends = [item['ends'][0], item['ends'][1]]
+            # Convert road endpoints to tuples if they're coordinates
             for i in range(2):
                 try:
-                    new_ends[i] = (new_ends[i]['x'], new_ends[i]['y'])
+                    ends[i] = (ends[i]['x'], ends[i]['y'])
                 except TypeError:
-                    pass
-            road.ends = (new_ends[0], new_ends[1])
-        # Create infrastructure
+                    for intersection in intersections:
+                        if intersection.intersection_id == ends[i]:
+                            ends[i] = intersection
+                            break
+            roads.append(Road(item['id'], (item['two_way'], item['lanes'],
+                                           (ends[0], ends[1]))))
+        return roads
+
+    def init_vehicles(self):
+        """Initialize vehicles"""
+        for item in self.gui.vehicles:
+            if item['type'] == 0:
+                vehicle = HV(self)
+            elif item['type'] == 1:
+                vehicle = CAV(self)
+            else:
+                raise ValueError
+            vehicle.vehicle_id = item['id']
+            vehicle.loc = (item['start_loc']['x'], item['start_loc']['y'])
+            vehicle.plan[0] = (item['end_loc']['x'], item['end_loc']['y'])
+            self.new_vehicles.append({'entry': item['entry_time'],
+                                      'vehicle': vehicle})
+        self.new_vehicles.sort(key=lambda o: o['entry'])
+
+    def sort_new_vehicles(self):
+        """Takes vehicles from new_vehicles and appends to cavs/hvs
+            respectively where entry time <= current frame.
+        """
+        while self.new_vehicles:
+            if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
+                break
+            if self.new_vehicles[0]["vehicle"].autonomous:
+                self.cavs.append(self.new_vehicles.pop(0))
+                continue
+            self.hvs.append(self.new_vehicles.pop(0))
+
+    def set_parameters(self):
+        """Set parameters pulled from GUI, aka initializing simulation
+        Parameters: num_frames, vehicle positions, infrastructure setup
+        """
+        intersections = self.init_intersections()
+        roads = self.init_roads(intersections)
+        for intersection in intersections:
+            for i, road_id in enumerate(intersection.roads):
+                if road_id is None:
+                    continue
+                for road in roads:
+                    if road_id == road.road_id:
+                        intersection.roads[i] = road
+                        break
         self.infrastructure = Infrastructure(intersections, roads)
+        self.init_vehicles()
 
     async def build_frames(self):
         """Run simulation for certain number of frames;
@@ -59,33 +106,29 @@ class InvisibleHand():
         """
         for i in range(6):
             frame = get_frame_data("testframes.json", i)
+            self.current_frame = i
+            self.sort_new_vehicles()
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
         return
 
     def cavs_in_range(self, location, length):
-        """Gives list of CAVs within distance of length (in meters) of
+        """Gives list of CAVs within distance of length (in feet) of
         location
         """
-        x_1 = location[0]
-        y_1 = location[1]
-        in_range_cavs = []
-
-        for single_vehicle in self.cavs:
-            x_2 = single_vehicle.location[0]
-            y_2 = single_vehicle.location[1]
-            if x_2 - x_1 != 0 or y_2 - y_1 != 0:
-                dist = math.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2)
-                if dist <= length:
-                    in_range_cavs.append(single_vehicle)
-        return in_range_cavs
+        return [
+            vehicle
+            for vehicle in self.cavs
+            if 0 < vehicle.dist_to(location) <= length
+        ]
 
 
 class Connection():
     """Handles a connection with the GUI"""
     def __init__(self, websocket, path):
         self.websocket = websocket
+        self.path = path
         self.addr = websocket.remote_address
         self.infrastructure = None
         self.vehicles = None
@@ -108,6 +151,7 @@ class Connection():
         data = json.dumps(json_data)
         await self.websocket.send(data)
 
+
 async def main(websocket, path):
     """Start the program with a connected frontend"""
     connect = Connection(websocket, path)
@@ -124,6 +168,7 @@ def get_frame_data(file_name, frame):
     with open(file_name) as json_file:
         data = json.load(json_file)
         return data[frame]
+
 
 # Start server with or without ssl
 if SECURE:
