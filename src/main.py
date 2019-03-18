@@ -86,29 +86,6 @@ class InvisibleHand():
                 continue
             self.hvs.append(vehicle)
 
-    def sort_new_vehicles(self):
-        """Takes vehicles from new_vehicles and appends to cavs/hvs
-            respectively where entry time <= current frame.
-        """
-        while self.new_vehicles:
-            if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
-                break
-            vehicle_obj = self.new_vehicles.pop(0)
-            vehicle = vehicle_obj["vehicle"]
-            for road in self.infrastructure.roads:
-                if road.has_point(vehicle.loc):
-                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
-                    road.vehicles_on.append(vehicle)
-                    break
-            if vehicle.autonomous:
-                self.cavs.append(vehicle)
-                continue
-            self.hvs.append(vehicle)
-
-    def test_code(self):
-        for i in range(11):
-            print(self.infrastructure.roads[i].coords())
-
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
         Parameters: num_frames, vehicle positions, infrastructure setup
@@ -125,7 +102,6 @@ class InvisibleHand():
                         break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
-        self.test_code()
 
     def stats_to_json(self):
         """Sends vehicle stats to a json file."""
