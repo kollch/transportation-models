@@ -6,13 +6,39 @@ import random
 #this is currently entirely random and would require the user to specify an infrastructure so that vehicles can start
 #on a road instead of a random place on the map
 
+def init_roads(data):
+    """Initialize roads"""
+    roads = []
+    for item in data['roads']:
+        ends = [item['ends'][0], item['ends'][1]]
+        # Convert road endpoints to tuples if they're coordinates
+        for i in range(2):
+            try:
+                ends[i] = (ends[i]['x'], ends[i]['y'])
+            except TypeError:
+                for intersection in data['intersections']:
+                    if intersection['id'] == ends[i]:
+                        ends[i] = intersection
+                        break
+        roads.append((ends[0], ends[1]))
+    return roads
+
 def read_road():
     """Select roads which are on the screen edges"""
     data = {}
     road = []
     road_end = []
+    all_roads = []
     with open('data.json', 'r') as f:
         data = json.load(f)
+
+    all_roads = init_roads(data)
+    for i in range(2):
+        try:
+            print(all_roads[0][i].loc)
+        except AttributeError:
+            print(all_roads[0][i])
+
 
     for item in data['roads']:
         try:
