@@ -5,7 +5,6 @@ import math
 
 class Vehicle():
     """Includes CAVs and HVs"""
-    safe_decel = -7.636364
 
     def __init__(self, world, attribs=(None, 20, 8, 0),
                  speed=(0, 0), locs=(None, None)):
@@ -53,10 +52,10 @@ class Vehicle():
     def can_see(self, cavs, hvs):
         """Returns a list of everything that the vehicle can see"""
         in_vision = []
-        for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v.loc)):
+        for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v['vehicle'].loc)):
             if vehicle is self:
                 continue
-            angle = vehicle.angle_edges(self)
+            angle = vehicle['vehicle'].angle_edges(self)
 
             def leq(a_1, a_2):
                 """Finds if angle a is less than angle b.
@@ -107,17 +106,6 @@ class Vehicle():
             return [max_angle, min_angle]
         return [min_angle, max_angle]
 
-    def calc_stop_dist(self):
-        """Calculates a safe stopping distance for a vehicle dependent
-        on its reaction time and its speed"""
-        # Based on reaction distance formula: d = (s * r) / 3.6
-        reaction_dist = (self.veloc[0] * 1) / 3.6
-        # Based on braking distance formula: d = s^2 / (250 * f)
-        braking_dist = self.veloc[0] ** 2 / (250 * .08)
-        # Stopping distance = reaction + braking
-        stopping_dist = reaction_dist + braking_dist
-        return stopping_dist
-
     def make_move(self):
         """Updates location coordinates depending on passed time and
         direction
@@ -155,7 +143,7 @@ class CAV(Vehicle):
     def give_info(self):
         """Returns info regarding vehicle location and speed"""
         return [self.loc, self.veloc[0], self.accel]
-
+    
     def react_time(self):
         """Randomly-generated time it will take to react - for CAVs
         this should be instantaneous because the timesteps in this
@@ -163,6 +151,44 @@ class CAV(Vehicle):
         CAVs have
         """
         return 0 * self.react_factor
+    
+    def decide_accel(self, all):
+        """Based on code from
+        https://github.com/titaneric/trafficModel
+            
+        Decides acceleration based on car following or approach to
+        intersections; **needs to be completed to insert check for
+        closest car being in front of self
+        """
+        all.sort(key=lambda v: self.dist_to(v['vehicle'].loc))
+        closest = all[0]['vehicle']
+        dist_to_intersection = self.dist_to(self.plan[1][0].loc)
+        
+        #set values for acceleration(a) and deceleration(b)
+        a = 0.3
+        b = 3
+        delta_speed = (self.veloc[0] - closest.veloc[0]) \
+            if closest is not None else 0
+        #coefficient if no car in front
+        free_coeff = (self.veloc[0] / 60) ** 4
+        #distance gap
+        d_gap = 2
+        #time gap
+        t_gap = self.veloc[0] + 1.5
+        #braking gap
+        b_gap = self.veloc[0] * delta_speed / (2 * math.sqrt(a * b))
+        safe_dist_follow = d_gap + t_gap + b_gap
+        #coefficient if car following
+        follow_coeff = (safe_dist_follow / self.dist_to(closest.loc)) ** 2 \
+            if closest is not None else 0
+        
+        safe_dist_intersection = 1 + t_gap + self.veloc[0] ** 2 / (2 * b)
+        intersection_coeff = ((safe_dist_intersection / dist_to_intersection) ** 2) \
+            if dist_to_intersection != 0 else 0
+        coeff = (1 - free_coeff) if closest is None \
+            else 1 - free_coeff - follow_coeff - intersection_coeff
+        return self.accel * coeff
+        
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
@@ -205,12 +231,15 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def decide_move(self):
+    def decide_move(self, seen_cavs, all):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
+
+        self.accel = self.decide_accel(all)
+        self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
 
 
 class HV(Vehicle):
