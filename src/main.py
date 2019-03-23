@@ -77,72 +77,41 @@ class InvisibleHand():
         self.init_vehicles()
 
     def data_to_json(self):
-        # takes data from vehicle array and puts into a json file as a new frame.
-
-        # TODO: Needs modification in vehicles.py to match json keys. Currently testframes
-        # and the attributes in the Vehicle class are not exactly the same.
+        """Takes data from vehicle list and puts into a json file as a
+        new frame.
+        """
         data = {}
         data['frameid'] = self.frame_number
         data['vehicles'] = []
-        for i in range(len(self.cavs)):
+        for vehicle in self.cavs + self.hvs:
             data['vehicles'].append({
-                'id': self.cavs[i].vehicle_id,
+                'id': vehicle.vehicle_id,
                 'loc': {
-                    'x': self.cavs[i].location['x'],
-                    'y': self.cavs[i].location['y']
+                    'x': vehicle.loc[0],
+                    'y': vehicle.loc[1]
                 },
-                'destination': {
-                    'x': self.cavs[i].destination['x'],
-                    'y': self.cavs[i].destination['y']
-                }
+                'direction': vehicle.veloc[1]
             })
+        return data
 
-        for i in range(len(self.hvs)):
-            data['vehicles'].append({
-                'id': self.hvs[i].vehicle_id,
-                'loc': {
-                    'x': self.hvs[i].location['x'],
-                    'y': self.hvs[i].location['y']
-                },
-                'destination': {
-                    'x': self.hvs[i].destination['x'],
-                    'y': self.hvs[i].destination['y']
-                }
-            })
-        # dump the data into json
-        with open('frame.json', 'w') as outfile:
-            json.dump(data, outfile, indent=4)
-
-
-    async def build_frames(self):
+    async def build_frames(self, num_frames=100):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        # decide each vehicle's move.
-        #TODO decide_move should change the attributes in the
-        # HV and CAV classes
+        for frame in range(num_frames):
+            self.frame_number += 1
+            for vehicle in self.cavs + self.hvs:
+                vehicle.decide_move()
 
-        for cav in self.cavs:
-            cav.decide_move()
-
-        for hv in self.hvs:
-            hv.decide_move()
-
-        # vehicle locations should have been changed now. call data_to_json to build a new frame
-        self.data_to_json()
-
-        # send frame
-        frame = get_frame_data("frame.json", i)
-        await self.gui.send_frame(frame)
-        '''
-        for i in range(6):
-            frame = get_frame_data("testframes.json", i)
+            # Vehicle locations should have been changed now.
+            # Build a new frame of JSON.
+            frame = self.data_to_json()
+            # Send frame
+            print("Sending frame #" + str(self.frame_number))
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        return
-        '''
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in meters) of
@@ -205,7 +174,6 @@ def get_frame_data(file_name, frame):
     with open(file_name) as json_file:
         data = json.load(json_file)
         return data[frame]
-
 
 
 # Start server with or without ssl
