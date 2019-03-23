@@ -223,13 +223,13 @@ const main = (frames, infrastructure) => {
     const currFrame = Math.floor(frame);
     then = now;
 
-    // Clear the canvas before drawing
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
     if (currFrame >= numFrames) {
-      gl.viewport(0, 0, 0, 0);
+      //gl.viewport(0, 0, 0, 0);
       return;
     }
+
+    // Clear the canvas before drawing
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     drawInfr(gl, programInfo, infrBuf, infrNum);
     drawVehicles(gl, now, frame % 1, programInfo, rectBuf, frames, currFrame);

@@ -3,6 +3,11 @@ import json
 import sys
 import random
 
+#this is currently entirely random and would require the user to specify an infrastructure so that vehicles can start
+#on a road instead of a random place on the map
+
+#takes 1 parameter: number of vehicles through command line
+
 numVehicles = int(sys.argv[1])
 data = {}
 data['vehicles'] = []

@@ -1,0 +1,122 @@
+\documentclass[letterpaper,10pt,draftclsnofoot,onecolumn]{IEEEtran} % changes the margin
+\usepackage[margin=0.75in]{geometry}
+\usepackage{url}
+\begin{document}
+\author{Samantha Estrada}
+\title{Tech and Literature Review}
+\maketitle
+
+\begin{abstract}
+    With this review, my team and I aim to acquire insight as to which told will aid us in gaining positive results from the
+discussion of how they autonomous vehicles will create optimal paths as well as how they coexist with human driven
+vehicles. As a researcher and developer, my role within the team will be to pair connected autonomous vehicles
+(CAVs) with a Q-learning algorithm, and we hope to identify vehicle autonomy and their behavior within the overall
+infrastructure of transportation, perhaps leading us to a conclusion that their inclusion is beneficial to traffic
+congestion. Using a framework and vehicle models to create data on how CAVs behave on a transportation network,
+this project will define the problem that autonomous vehicles present in the infrastructure we have already built and
+live in.
+\end{abstract}
+\pagebreak
+\begin{section}{Agent Based Modeling}
+Firstly, we must identify what we will need to build our means of agent based modeling. We would like something
+both easy to use and easy to create a UI with later on if we are able to. This framework sits at the foundation of our
+project, as it will be used to test our autonomous vehicle models in a grid network manner.
+Our first reaction was to create a Python based framework for our agent based modeling. There currently exists a
+framework, “Mesa”\cite{Mesa}
+, that is specialized to this exact usage. This tool is also useful as it provides analysis modules to
+we can utilize to capture data collection for when our simulation models are run. Additionally, it houses visualization
+modules, which we may use to create the UI if we reach that point by pairing it with JavaScript to render the model.
+This may be a viable option if we come to a conclusion that we would like to use a framework that is already built for
+us, and this framework appears to be one that is versatile and malleable.
+Referring to a piece of literature within our team, there is also a developed platform called “MAgent”\cite{MAgent}specifically
+created to handle a multitude of intelligent agents, as well as control the amount of intelligent agents active during a
+given simulation. This seems useful to our project in the scope of assessing the threshold at which intelligent agents
+become beneficial or even detrimental to traffic congestion. This platform uses network sharing, which is important
+to us as we would like the vehicles to be connected. MAgent also provides a rendering capability with a sliding scope
+for simulations, run on a C++ engine, which appears effective when assigning states and attributes for each agent. The
+interface itself is in python and all rewards, actions, and agent symbols can be manipulated using a description
+language the team who has built this platform has developed. Based on a Boolean style description of events, this
+platform seems useful and straightforward for simple tasks that our vehicle models will be faced with. However, it
+does seem that it will need a bit of modification, as it focuses on benefits that come from competitive “prey/predator”
+style simulations. However, this model is interesting as it introduces the concept that agents can become more
+intelligent working in parallel, which is a concept we have touched on when discussing how connected these connected
+vehicles would or could truly be. This platform offers an added insight as to how the agents involved would behave
+both individually as societally, which could be interesting to analyze, but not directly necessary at this point in time.
+\end{section}
+
+\begin{section}{Traffic Congestion Alleviation}
+Secondly, we hope to introduce an effective and integrated method of alleviating traffic congestion. While the purpose
+of this project is mainly to simulate and create a behavior of how each autonomous vehicle navigates in a normal
+traffic infrastructure, we are also interested in ways to use the vehicles to decrease the amount of traffic congestion.
+One technique we may introduce is the implementation of adaptive traffic signal control, introduced in the literature
+“An Agent Based Learning Towards Decentralized and Coordinated Signal control”. In this paper, it offers the
+inclusion of Q-learning controlled traffic signals, rather than the pre-timed optimized signal control popular today.
+This inclusion of reinforcement learning into the traffic signals can offer a level of reaction not commonly used, where
+the signals themselves will respond to the fluctuations of traffic flow. This creates a relationship between the signals
+and its environment to enable it to act as its own agent, in turn assessing an optimal mapping between states and
+actions. This could be beneficial to our project specifically as we hope to create a system that works cognitively with
+its environment, using not only individual vehicle agents but the infrastructure as a whole. This literature introduces
+some drawbacks as well, such as the fact that implementing a model such as this will create a massive set of possible
+number of states for each traffic signal.
+Additionally, this paper offers 3 states that a traffic signal through. The first state defines a point in time
+where vehicles are approaching the current “green” light direction and the current queue length of those at the “red”
+light direction. This state holds a vector of N components, each component representing a “phase”; one vector
+component represents the maximum arrivals, while other components are the maximum queue lengths for a given lane. The second state uses queue length to represent delay, creating a vector of N components of maximum queue
+lengths. Lastly, the third phase represents the vehicle cumulative delay, which is determined by a vehicle’s total time
+spent in a queue. This simplistic model could be useful to integrate as it will offer us another method of data collection
+to ensure autonomous vehicles will not experience a heavy delay when interacting with traffic signals. If we do
+implement this model, it is possible that it could alleviate traffic congestion by prioritizing reward (low time delay)
+whenever and wherever possible.
+With the use of these traffic signals, this paper also suggests a decentralized system in which each intersection
+represents its own system. Therefore, it displays total reward as taking two points and summing all total cumulative
+delays of all vehicles in the current system, the assessing their difference. Vehicles are defined as leaving the system
+when they cross the stop line. Therefore, reward may be defined quantitatively as positive or negative. Again, this
+type of reward analysis using traffic signals as a data collection device could be something useful in the system we
+will be building, as we are interested in the numerical data and the ability to assess autonomous vehicle’s performance
+in terms of congestion or traffic delay.
+\end{section}
+
+\begin{section}{Vehicle Routing Within Congestion}
+Lastly, we intend to cater a routing algorithm to not only find the most optimal route but work beneficially
+in congested areas. A literature review on the paper “Routing Autonomous Vehicles in Congested Transportation
+Networks: Structural Properties and Coordination Algorithms”
+\cite{Routing:2016} offers the concept of re-balancing the vehicles to
+ensure given areas will not be overpopulated with intelligent agents. Within this paper, the scenario is presented that
+the agents are providing a taxi type service, in which they re-balance themselves into regions of a given area in order
+to properly cater to service requests. Our scenario is more individualized, as we seek to model privately owned
+autonomous vehicles. Still, this topic of re-balancing raises an important point, as one method of avoiding congestion
+is simply to avoid a given area that is becoming overcrowded. The algorithm proposed in the paper utilizes the same
+reinforcement learning we've seen and discussed before, using rewards such as fuel usage and maximum maintained
+speed to determine the cost of a given route. If the cost of a given route is deemed more beneficial than another, the
+vehicle may choose to re-balance itself to that location, even if the distance is greater. Re-balancing also provides the
+opportunity for congested areas to become clear, as the volume of traffic does not continue to pile up. This is a viable
+point to include when we are considering how to build our algorithm, as we must add this factor of “faster” routes
+costing more when they are lacking the right traffic flow.
+It is also important to define how our model will recognize when congestion is occurring. This paper also
+introduces their own method of allowing their grid network to self-diagnose congestion as soon as it becomes apparent.
+Using classical traffic flow theory, this model compares vehicle density on a given road with the free flow phase of
+traffic. If the flow of vehicles on the road (determined by the product of vehicle density and speed) reaches a
+determined maximum, the vehicles travelling reduce their speeds and the road is flagged for congestion. This is another
+important detail we must consider, as we wish for the vehicles to be connected and therefore share data on where and
+when congestion occurs so that they may avoid it.
+\end{section}	
+\pagebreak
+
+\begin{thebibliography}{999}
+\bibitem{Mesa}
+Project Mesa Team,
+"Mesa: Agent-based modeling in Python 3+",
+2016,
+\url{https://mesa.readthedocs.io/en/master/index.html}
+
+\bibitem{MAgent}
+L. Zheng, J. Yang, H. Cai, W. Zhang, J. Wang, and Y. Yu,
+“MAgent: A Many-Agent Reinforcement
+Learning Platform for Artificial Collective Intelligence.”
+
+\bibitem{Routing:2016}
+R. Zhang, F. Rossi, and M. Pavone,
+“Routing Autonomous Vehicles in Congested Transportation Networks: Structural Properties and Coordination Algorithms", Robotics: Science and Systems XII, Jul. 2016.
+\end{thebibliography}
+
+\end{document}

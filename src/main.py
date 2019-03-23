@@ -1,5 +1,4 @@
 """This is the primary component of the backend."""
-import math
 import asyncio
 import ssl
 import json
@@ -20,10 +19,10 @@ class InvisibleHand():
         self.gui = connection
         self.infrastructure = None
         self.new_vehicles = []
-        self.set_parameters()
         self.cavs = []
         self.hvs = []
-        self.frame_number = 0
+        self.set_parameters()
+        self.current_frame = 0
 
     def init_intersections(self):
         """Initialize intersections"""
@@ -48,24 +47,44 @@ class InvisibleHand():
                         if intersection.intersection_id == ends[i]:
                             ends[i] = intersection
                             break
-            roads.append(Road(item['id'], item['two_way'],
-                              item['lanes'], (ends[0], ends[1])))
+            roads.append(Road(item['id'], (item['two_way'], item['lanes'],
+                                           (ends[0], ends[1]))))
         return roads
 
     def init_vehicles(self):
         """Initialize vehicles"""
         for item in self.gui.vehicles:
             if item['type'] == 0:
-                vehicle = HV()
+                vehicle = HV(self)
             elif item['type'] == 1:
-                vehicle = CAV()
+                vehicle = CAV(self)
             else:
                 raise ValueError
-            vehicle.id = item['id']
-            vehicle.location = (item['start_loc']['x'], item['start_loc']['y'])
-            vehicle.destination = (item['end_loc']['x'], item['end_loc']['y'])
+            vehicle.vehicle_id = item['id']
+            vehicle.loc = (item['start_loc']['x'], item['start_loc']['y'])
+            vehicle.plan[0] = (item['end_loc']['x'], item['end_loc']['y'])
             self.new_vehicles.append({'entry': item['entry_time'],
                                       'vehicle': vehicle})
+        self.new_vehicles.sort(key=lambda o: o['entry'])
+
+    def sort_new_vehicles(self):
+        """Takes vehicles from new_vehicles and appends to cavs/hvs
+            respectively where entry time <= current frame.
+        """
+        while self.new_vehicles:
+            if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
+                break
+            vehicle_obj = self.new_vehicles.pop(0)
+            vehicle = vehicle_obj["vehicle"]
+            for road in self.infrastructure.roads:
+                if road.has_point(vehicle.loc):
+                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
+                    road.vehicles_on.append(vehicle)
+                    break
+            if vehicle.autonomous:
+                self.cavs.append(vehicle)
+                continue
+            self.hvs.append(vehicle)
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
@@ -73,6 +92,14 @@ class InvisibleHand():
         """
         intersections = self.init_intersections()
         roads = self.init_roads(intersections)
+        for intersection in intersections:
+            for i, road_id in enumerate(intersection.roads):
+                if road_id is None:
+                    continue
+                for road in roads:
+                    if road_id == road.road_id:
+                        intersection.roads[i] = road
+                        break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
@@ -81,7 +108,7 @@ class InvisibleHand():
         new frame.
         """
         data = {}
-        data['frameid'] = self.frame_number
+        data['frameid'] = self.current_frame
         data['vehicles'] = []
         for vehicle in self.cavs + self.hvs:
             data['vehicles'].append({
@@ -100,7 +127,8 @@ class InvisibleHand():
         call "await self.gui.send_frame(json)".
         """
         for frame in range(num_frames):
-            self.frame_number += 1
+            self.current_frame += 1
+            self.sort_new_vehicles()
             for vehicle in self.cavs + self.hvs:
                 vehicle.decide_move()
 
@@ -114,27 +142,21 @@ class InvisibleHand():
         await self.gui.send_frame(None)
 
     def cavs_in_range(self, location, length):
-        """Gives list of CAVs within distance of length (in meters) of
+        """Gives list of CAVs within distance of length (in feet) of
         location
         """
-        x_1 = location[0]
-        y_1 = location[1]
-        in_range_cavs = []
-
-        for single_vehicle in self.cavs:
-            x_2 = single_vehicle.location[0]
-            y_2 = single_vehicle.location[1]
-            if x_2 - x_1 != 0 or y_2 - y_1 != 0:
-                dist = math.sqrt((x_2 - x_1) ** 2 + (y_2 - y_1) ** 2)
-                if dist <= length:
-                    in_range_cavs.append(single_vehicle)
-        return in_range_cavs
+        return [
+            vehicle
+            for vehicle in self.cavs
+            if 0 < vehicle.dist_to(location) <= length
+        ]
 
 
 class Connection():
     """Handles a connection with the GUI"""
     def __init__(self, websocket, path):
         self.websocket = websocket
+        self.path = path
         self.addr = websocket.remote_address
         self.infrastructure = None
         self.vehicles = None
