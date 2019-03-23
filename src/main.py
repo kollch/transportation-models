@@ -105,14 +105,14 @@ class InvisibleHand():
         for i in range(len(self.cavs)):
             stats['vehicles'].append({
                 'id': self.cavs[i].vehicle_id,
-                'velocity': self.cavs[i].veloc,
+                'velocity': self.cavs[i].veloc[0],
                 'acceleration': self.cavs[i].accel
                 })
 
         for i in range(len(self.hvs)):
             stats['vehicles'].append({
                 'id': self.hvs[i].vehicle_id,
-                'velocity': self.hvs[i].veloc,
+                'velocity': self.hvs[i].veloc[0],
                 'acceleration': self.hvs[i].accel
                 })
         
