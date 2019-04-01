@@ -98,8 +98,9 @@ class InvisibleHand():
                         break
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
-    
+
     def stats_to_json(self):
+        """ends stats to a json file."""
         stats = {}
         stats['vehicles'] = []
         for i in range(len(self.cavs)):
@@ -115,7 +116,7 @@ class InvisibleHand():
                 'velocity': self.hvs[i].veloc[0],
                 'acceleration': self.hvs[i].accel
                 })
-        
+
         with open('vehicle_stats.json', 'w') as outfile:
             json.dump(stats, outfile, indent=4)
 
