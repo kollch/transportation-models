@@ -103,19 +103,13 @@ class InvisibleHand():
         """ends stats to a json file."""
         stats = {}
         stats['vehicles'] = []
-        for i in range(len(self.cavs)):
-            stats['vehicles'].append({
-                'id': self.cavs[i].vehicle_id,
-                'velocity': self.cavs[i].veloc[0],
-                'acceleration': self.cavs[i].accel
-                })
 
-        for i in range(len(self.hvs)):
+        for vehicle in self.cavs + self.hvs:
             stats['vehicles'].append({
-                'id': self.hvs[i].vehicle_id,
-                'velocity': self.hvs[i].veloc[0],
-                'acceleration': self.hvs[i].accel
-                })
+                'id': vehicle.vehicle_id,
+                'velocity': vehicle.veloc[0],
+                'acceleration': vehicle.accel
+            })
 
         with open('vehicle_stats.json', 'w') as outfile:
             json.dump(stats, outfile, indent=4)
