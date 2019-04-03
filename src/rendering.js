@@ -212,6 +212,8 @@ const main = (frames, infrastructure) => {
 
   var time = 0;
   var numFrames = frames.length;
+  // Duplicate last frame so that interpolation always has two frames to use
+  frames.push(frames[frames.length - 1]);
   var then = performance.now();
   // Draw the scene repeatedly
   const render = now => {
@@ -223,17 +225,14 @@ const main = (frames, infrastructure) => {
     const currFrame = Math.floor(frame);
     then = now;
 
-    if (currFrame >= numFrames) {
-      //gl.viewport(0, 0, 0, 0);
-      return;
-    }
-
     // Clear the canvas before drawing
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     drawInfr(gl, programInfo, infrBuf, infrNum);
     drawVehicles(gl, now, frame % 1, programInfo, rectBuf, frames, currFrame);
-    requestAnimationFrame(render);
+    if (currFrame < numFrames) {
+      requestAnimationFrame(render);
+    }
   };
 
   requestAnimationFrame(render);
