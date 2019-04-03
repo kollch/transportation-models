@@ -103,6 +103,21 @@ class InvisibleHand():
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
+    def stats_to_json(self):
+        """Sends vehicle stats to a json file."""
+        stats = {}
+        stats['vehicles'] = []
+
+        for vehicle in self.cavs + self.hvs:
+            stats['vehicles'].append({
+                'id': vehicle.vehicle_id,
+                'velocity': vehicle.veloc[0],
+                'acceleration': vehicle.accel
+            })
+
+        with open('vehicle_stats.json', 'w') as outfile:
+            json.dump(stats, outfile, indent=4)
+
     def data_to_json(self):
         """Takes data from vehicle list and puts into a json file as a
         new frame.
