@@ -43,19 +43,6 @@ class Vehicle():
                 return True
         return False
 
-    def nearest_intersection(self, pos, intersections):
-        """Take coordinate location of a vehicle and returns
-            an intersection object that is closest"""
-        min_distance = 100000
-        nearest = 0
-        for intersection in intersections:
-            distance = math.hypot(intersection.loc[0] - pos[0], intersection.loc[1] - pos[1])
-
-            if min_distance > distance:
-                nearest = intersection
-                min_distance = distance
-        return nearest
-
     def get_road(self):
         """Returns road vehicle is currently on"""
         for road in self.world.infrastructure.roads:
@@ -170,43 +157,6 @@ class CAV(Vehicle):
         """
         return 0 * self.react_factor
 
-    def decide_accel(self, all):
-        """Based on code from
-        https://github.com/titaneric/trafficModel
-
-        Decides acceleration based on car following or approach to
-        intersections; **needs to be completed to insert check for
-        closest car being in front of self
-        """
-        all.sort(key=lambda v: self.dist_to(v['vehicle'].loc))
-        closest = all[0]['vehicle']
-        dist_to_intersection = self.dist_to(self.plan[1][0].loc)
-
-        #set values for acceleration(a) and deceleration(b)
-        a = 0.3
-        b = 3
-        delta_speed = (self.veloc[0] - closest.veloc[0]) \
-            if closest is not None else 0
-        #coefficient if no car in front
-        free_coeff = (self.veloc[0] / 60) ** 4
-        #distance gap
-        d_gap = 2
-        #time gap
-        t_gap = self.veloc[0] + 1.5
-        #braking gap
-        b_gap = self.veloc[0] * delta_speed / (2 * math.sqrt(a * b))
-        safe_dist_follow = d_gap + t_gap + b_gap
-        #coefficient if car following
-        follow_coeff = (safe_dist_follow / self.dist_to(closest.loc)) ** 2 \
-            if closest is not None else 0
-
-        safe_dist_intersection = 1 + t_gap + self.veloc[0] ** 2 / (2 * b)
-        intersection_coeff = ((safe_dist_intersection / dist_to_intersection) ** 2) \
-            if dist_to_intersection != 0 else 0
-        coeff = (1 - free_coeff) if closest is None \
-            else 1 - free_coeff - follow_coeff - intersection_coeff
-        return self.accel * coeff
-
     def decide_accel(self):
         """Based on code from
         https://github.com/titaneric/trafficModel
@@ -296,16 +246,17 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def decide_move(self, seen_cavs, all):
+    def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
+            print("source:", source.intersection_id)
+            print("dest", dest.intersection_id)
             self.plan[1] = self.dijkstras(source, dest)
 
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-
 
 class HV(Vehicle):
     """Human-driven vehicles
