@@ -44,6 +44,12 @@ class Vehicle():
                 return True
         return False
 
+    def get_road(self):
+        """Returns road vehicle is currently on"""
+        for road in self.world.infrastructure.roads:
+            if road.has_point(self.loc) == True:
+                return road
+
     def dist_to(self, loc):
         """Returns the distance between the vehicle and a given
         location"""
@@ -152,7 +158,7 @@ class CAV(Vehicle):
         """
         return 0 * self.react_factor
     
-    def decide_accel(self, all):
+    def decide_accel(self):
         """Based on code from
         https://github.com/titaneric/trafficModel
             
@@ -160,8 +166,18 @@ class CAV(Vehicle):
         intersections; **needs to be completed to insert check for
         closest car being in front of self
         """
+        all = self.can_see(self.world.cavs, self.world.hvs)
         all.sort(key=lambda v: self.dist_to(v['vehicle'].loc))
+        #remove first element, as it is our current vehicle
+        all.pop(0)
         closest = all[0]['vehicle']
+        #if vehicle that is closest is further than 60 feet away, move freely
+        if self.dist_to(closest.loc) > 60:
+            #if vehicle is going speed limit, do not accelerate
+            if self.veloc[0] == self.get_road().speed:
+                return 0
+            return 60
+        
         dist_to_intersection = self.dist_to(self.plan[1][0].loc)
         
         #set values for acceleration(a) and deceleration(b)
@@ -231,16 +247,17 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def decide_move(self, seen_cavs, all):
+    def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
+            print("source:", source.intersection_id)
+            print("dest", dest.intersection_id)
             self.plan[1] = self.dijkstras(source, dest)
 
-        self.accel = self.decide_accel(all)
+        self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-
 
 class HV(Vehicle):
     """Human-driven vehicles
