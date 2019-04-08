@@ -24,9 +24,6 @@ class InvisibleHand():
         self.set_parameters()
         self.current_frame = 0
 
-    def init_vehicle_dir(self, vehicle):
-        """Initialize vehicle direction based on which road it's on"""
-
     def init_intersections(self):
         """Initialize intersections"""
         return [
@@ -77,10 +74,17 @@ class InvisibleHand():
         while self.new_vehicles:
             if self.new_vehicles[0]["entry"] / 100 > self.current_frame:
                 break
-            if self.new_vehicles[0]["vehicle"].autonomous:
-                self.cavs.append(self.new_vehicles.pop(0))
+            vehicle_obj = self.new_vehicles.pop(0)
+            vehicle = vehicle_obj["vehicle"]
+            for road in self.infrastructure.roads:
+                if road.has_point(vehicle.loc):
+                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
+                    road.vehicles_on.append(vehicle)
+                    break
+            if vehicle.autonomous:
+                self.cavs.append(vehicle)
                 continue
-            self.hvs.append(self.new_vehicles.pop(0))
+            self.hvs.append(vehicle)
 
     def set_parameters(self):
         """Set parameters pulled from GUI, aka initializing simulation
@@ -99,19 +103,59 @@ class InvisibleHand():
         self.infrastructure = Infrastructure(intersections, roads)
         self.init_vehicles()
 
-    async def build_frames(self):
+    def stats_to_json(self):
+        """Sends vehicle stats to a json file."""
+        stats = {}
+        stats['vehicles'] = []
+
+        for vehicle in self.cavs + self.hvs:
+            stats['vehicles'].append({
+                'id': vehicle.vehicle_id,
+                'velocity': vehicle.veloc[0],
+                'acceleration': vehicle.accel
+            })
+
+        with open('vehicle_stats.json', 'w') as outfile:
+            json.dump(stats, outfile, indent=4)
+
+    def data_to_json(self):
+        """Takes data from vehicle list and puts into a json file as a
+        new frame.
+        """
+        data = {}
+        data['frameid'] = self.current_frame
+        data['vehicles'] = []
+        for vehicle in self.cavs + self.hvs:
+            data['vehicles'].append({
+                'id': vehicle.vehicle_id,
+                'loc': {
+                    'x': vehicle.loc[0],
+                    'y': vehicle.loc[1]
+                },
+                'direction': vehicle.veloc[1]
+            })
+        return data
+
+    async def build_frames(self, num_frames=100):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        for i in range(6):
-            frame = get_frame_data("testframes.json", i)
-            self.current_frame = i
+        for frame in range(num_frames):
+            self.current_frame += 1
             self.sort_new_vehicles()
+            for vehicle in self.cavs + self.hvs:
+                vehicle.decide_move()
+
+            # Vehicle locations should have been changed now.
+            # Build a new frame of JSON.
+            frame = self.data_to_json()
+            # Send frame
+            print("Sending frame #" + str(self.current_frame))
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        return
+        print("Finished sending frames")
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of

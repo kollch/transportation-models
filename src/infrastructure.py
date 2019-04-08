@@ -53,6 +53,7 @@ class Intersection():
         self.loc = location
         self.vehicles_on = []
         self.vehicles_passed = 0
+        self.counter = 0
 
     def adjacent(self):
         """Gets intersections adjacent to the current one;
@@ -70,41 +71,40 @@ class Intersection():
         return results
 
     def road_open(self, casenumber):
-        """
-        Create the list of road vehicles allowed to move on that direction.
+        """Create the list of road vehicles allowed to move on that direction.
         The corresponding value is: turn left, go straight, turn right.
+        Each 10 frame, the intersection light will change.
         """
+        self.counter += 1
         roads_list = [[], [], [], []]
-
-        if casenumber == 1:
+        if self.counter % 40 >= 1 and self.counter % 40 <= 10:
             roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
             ]
-        elif casenumber == 2:
+        elif self.counter % 40 >= 11 and self.counter % 40 <= 20:
             roads_list = [
                 [False, False, False],
                 [False, True, True],
                 [False, False, False],
                 [False, True, True]
             ]
-        elif casenumber == 3:
+        elif self.counter % 40 >= 21 and self.counter % 40 <= 30:
             roads_list = [
                 [True, False, False],
                 [False, False, True],
                 [True, False, False],
                 [False, False, True]
             ]
-        elif casenumber == 4:
+        elif self.counter % 40 >= 31 and self.counter % 40 <= 40:
             roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
             ]
-
         for i in range(4):
             if self.roads[i] is None:
                 roads_list[i] = [None, None, None]
