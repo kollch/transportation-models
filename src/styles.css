@@ -31,6 +31,7 @@ body {
 .group {
   display: flex;
   flex-direction: column;
+  padding: 5vh 0;
 }
 
 .subitem {
@@ -43,12 +44,16 @@ body {
     flex-direction: column;
   }
 
-  #userInput {
+  #controls {
     height: auto;
     width: 90vw;
     padding: 0;
     border-left: 0;
     border-top: 2px solid #aaa;
+  }
+
+  .group {
+    padding: 0;
   }
 }
 
