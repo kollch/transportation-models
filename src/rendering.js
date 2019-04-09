@@ -220,7 +220,7 @@ const main = (frames, infrastructure) => {
 
   const playBtn = document.getElementById("play");
   const pauseBtn = document.getElementById("pause");
-  const restartBtn = document.getElementById("restart");
+  const replayBtn = document.getElementById("replay");
 
   var paused = false;
   var time = 0;
@@ -269,7 +269,7 @@ const main = (frames, infrastructure) => {
       paused = true;
     }
   }
-  restartBtn.onclick = () => {
+  replayBtn.onclick = () => {
     playBtn.style.display = "initial";
     pauseBtn.style.display = "initial";
     time = 0;
@@ -279,7 +279,7 @@ const main = (frames, infrastructure) => {
   playBtn.disabled = true;
   playBtn.style.display = "initial";
   pauseBtn.style.display = "initial";
-  restartBtn.style.display = "initial";
+  replayBtn.style.display = "initial";
 };
 
 const setupCamera = (gl, programInfo, viewDims, zoom, screenLoc) => {
