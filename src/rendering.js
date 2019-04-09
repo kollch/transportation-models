@@ -211,7 +211,7 @@ const main = (frames, infrastructure) => {
     screenLoc.x = setScreenLoc("x");
     screenLoc.y = setScreenLoc("y");
 
-    setupCamera(gl, programInfo, zoom, screenLoc);
+    setupCamera(gl, programInfo, viewDims, zoom, screenLoc);
   });
 
   // Set up the infrastructure buffer
