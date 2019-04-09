@@ -46,17 +46,11 @@ class Vehicle():
 
     def get_road(self):
         """Returns road vehicle is currently on"""
-<<<<<<< HEAD
-        for road in self.world.infrastructure.roads:
-            if road.has_point(self.loc) == True:
-                return road
-=======
         print("self",self)
         for road in self.world.infrastructure.roads:
             if self in road.vehicles_on:
                 return road
         return None
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 
     def dist_to(self, loc):
         """Returns the distance between the vehicle and a given
@@ -69,12 +63,7 @@ class Vehicle():
         for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v['vehicle'].loc)):
             if vehicle is self:
                 continue
-<<<<<<< HEAD
-            angle = vehicle['vehicle'].angle_edges(self)
-
-=======
             angle = vehicle.angle_edges(self)
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
             def leq(a_1, a_2):
                 """Finds if angle a is less than angle b.
                 Needed because of wrapping at pi = -pi"""
@@ -124,9 +113,6 @@ class Vehicle():
             return [max_angle, min_angle]
         return [min_angle, max_angle]
 
-<<<<<<< HEAD
-    def make_move(self):
-=======
     def decide_accel(self):
         """Based on code from
             https://github.com/titaneric/trafficModel
@@ -183,7 +169,6 @@ class Vehicle():
         return self.accel * coeff
 
     def update_coords(self):
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
         """Updates location coordinates depending on passed time and
         direction
         """
@@ -192,7 +177,6 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
-<<<<<<< HEAD
     def turning_point(self, vehicle):
         #turing point
         tp = []
@@ -300,9 +284,7 @@ class Vehicle():
         x3 = road_endloc[1][0]
         y3 = road_endloc[1][1]
         """
-=======
 
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 class CAV(Vehicle):
     """Connected autonomous vehicles
     Connect, decide action, move
@@ -433,14 +415,6 @@ class CAV(Vehicle):
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
-<<<<<<< HEAD
-            print("source:", source.intersection_id)
-            print("dest", dest.intersection_id)
-            self.plan[1] = self.dijkstras(source, dest)
-
-        self.accel = self.decide_accel()
-        self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-=======
             self.plan[1] = self.dijkstras(source, dest)
         #left
         if -45 < self.get_road().lane_direction(self.loc) < 45:
@@ -448,7 +422,6 @@ class CAV(Vehicle):
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
         self.update_coords()
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 
 class HV(Vehicle):
     """Human-driven vehicles
@@ -525,9 +498,6 @@ class HV(Vehicle):
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
-<<<<<<< HEAD
-=======
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
         self.update_coords()
->>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
