@@ -7,7 +7,7 @@ class Vehicle():
     """Includes CAVs and HVs"""
 
     def __init__(self, world, attribs=(None, 20, 8, 0),
-                 speed=(0, 0), locs=(None, None)):
+                 speed=(60, 0), locs=(None, None)):
         """Almost all parameters are grouped into sets of tuples:
         world:   InvisibleHand class.
                  Needed for things like cavs_in_range()
@@ -46,9 +46,17 @@ class Vehicle():
 
     def get_road(self):
         """Returns road vehicle is currently on"""
+<<<<<<< HEAD
         for road in self.world.infrastructure.roads:
             if road.has_point(self.loc) == True:
                 return road
+=======
+        print("self",self)
+        for road in self.world.infrastructure.roads:
+            if self in road.vehicles_on:
+                return road
+        return None
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 
     def dist_to(self, loc):
         """Returns the distance between the vehicle and a given
@@ -61,8 +69,12 @@ class Vehicle():
         for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v['vehicle'].loc)):
             if vehicle is self:
                 continue
+<<<<<<< HEAD
             angle = vehicle['vehicle'].angle_edges(self)
 
+=======
+            angle = vehicle.angle_edges(self)
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
             def leq(a_1, a_2):
                 """Finds if angle a is less than angle b.
                 Needed because of wrapping at pi = -pi"""
@@ -112,7 +124,66 @@ class Vehicle():
             return [max_angle, min_angle]
         return [min_angle, max_angle]
 
+<<<<<<< HEAD
     def make_move(self):
+=======
+    def decide_accel(self):
+        """Based on code from
+            https://github.com/titaneric/trafficModel
+
+            Decides acceleration based on car following or approach to
+            intersections; **needs to be completed to insert check for
+            closest car being in front of self
+            """
+        all = self.can_see(self.world.cavs, self.world.hvs)
+        if not all:
+            return self.get_road().speed
+        in_front = None
+        #sort array by angle relativity to current vehicle
+        all.sort(key=lambda v: self.veloc[1] - math.degrees(self.angle(v.loc)))
+        if -1 < self.veloc[1] - math.degrees(self.angle(all[0].loc)) < 1:
+            in_front = all[0]
+            print(in_front)
+        if in_front == None:
+            return self.get_road().speed
+        #if vehicle that is in front is further than 60 feet away, move freely
+        if self.dist_to(in_front.loc) > 60:
+            #if vehicle is going speed limit, do not accelerate
+            if self.get_road() == None:
+                return 60
+            if self.veloc[0] == self.get_road().speed:
+                return 0
+            return self.get_road().speed
+
+        dist_to_intersection = self.dist_to(self.plan[1][0].loc)
+
+        #set values for acceleration(a) and deceleration(b)
+        a = 1.632963
+        b = 3.735684
+        delta_speed = (self.veloc[0] - in_front.veloc[0]) \
+            if in_front is not None else 0
+        #coefficient if no car in front
+        free_coeff = (self.veloc[0] / 60) ** 4
+        #distance gap
+        d_gap = 2
+        #time gap
+        t_gap = self.veloc[0] + 1.5
+        #braking gap
+        b_gap = self.veloc[0] * delta_speed / (2 * math.sqrt(a * b))
+        safe_dist_follow = d_gap + t_gap + b_gap
+        #coefficient if car following
+        follow_coeff = (safe_dist_follow / self.dist_to(in_front.loc)) ** 2 \
+            if in_front is not None else 0
+
+        safe_dist_intersection = 1 + t_gap + self.veloc[0] ** 2 / (2 * b)
+        intersection_coeff = ((safe_dist_intersection / dist_to_intersection) ** 2) \
+            if dist_to_intersection != 0 else 0
+        coeff = (1 - free_coeff) if in_front is None \
+            else 1 - free_coeff - follow_coeff - intersection_coeff
+        return self.accel * coeff
+
+    def update_coords(self):
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
         """Updates location coordinates depending on passed time and
         direction
         """
@@ -121,6 +192,7 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
+<<<<<<< HEAD
     def turning_point(self, vehicle):
         #turing point
         tp = []
@@ -228,6 +300,9 @@ class Vehicle():
         x3 = road_endloc[1][0]
         y3 = road_endloc[1][1]
         """
+=======
+
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 class CAV(Vehicle):
     """Connected autonomous vehicles
     Connect, decide action, move
@@ -358,12 +433,22 @@ class CAV(Vehicle):
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
+<<<<<<< HEAD
             print("source:", source.intersection_id)
             print("dest", dest.intersection_id)
             self.plan[1] = self.dijkstras(source, dest)
 
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
+=======
+            self.plan[1] = self.dijkstras(source, dest)
+        #left
+        if -45 < self.get_road().lane_direction(self.loc) < 45:
+            coord = self.world.infrastructure.closest_intersection(self.loc).loc
+        self.accel = self.decide_accel()
+        self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
+        self.update_coords()
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
 
 class HV(Vehicle):
     """Human-driven vehicles
@@ -440,3 +525,9 @@ class HV(Vehicle):
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
+<<<<<<< HEAD
+=======
+        self.accel = self.decide_accel()
+        self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
+        self.update_coords()
+>>>>>>> da8f32415f665d2311df16c3df9eb4204f242ee0
