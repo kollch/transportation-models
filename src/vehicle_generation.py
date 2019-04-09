@@ -1,11 +1,10 @@
+"""Generates a JSON file of randomly generated vehicles."""
+
 import math
 import json
 import sys
 import random
 
-
-# this is currently entirely random and would require the user to specify an infrastructure so that vehicles can start
-# on a road instead of a random place on the map
 
 def init_roads(data):
     """Initialize roads"""
@@ -26,38 +25,49 @@ def init_roads(data):
 
 
 def init_ends(roads):
+    """Initialize endpoints"""
     ends = []
     useful_ends = []
-    for item in range(len(roads)):
+    for i in range(len(roads)):
         ends.append([])
-        for i in range(2):
+        for j in range(2):
             try:
-                ends[item].append((roads[item][i]['loc']['x'], roads[item][i]['loc']['y']))
+                ends[i].append((roads[i][j]['loc']['x'],
+                                roads[i][j]['loc']['y']))
             except TypeError:
-                ends[item].append((roads[item][i][0], roads[item][i][1]))
-    for i in range(len(ends)):
-        if ends[i][0][0] == 0 or ends[i][0][0] == 1600 or ends[i][0][1] == 0 or ends[i][0][1] == 1600 or ends[i][1][
-            0] == 0 or 1600 == ends[i][1][0] or ends[i][1][1] == 0 or ends[i][1][1] == 1600:
-            useful_ends.append(ends[i])
+                ends[i].append((roads[i][j][0], roads[i][j][1]))
+    for end in ends:
+        for i in range(2):
+            for j in range(2):
+                if end[i][j] == 0 or end[i][j] == 1600:
+                    useful_ends.append(end)
+                    break
+            else:
+                continue
+            break
     return useful_ends
 
 
 def lane_direction(roads_ends):
+    """Find the angle of a lane"""
     angles = []
-    for i in range(len(roads_ends)):
-        d_x = roads_ends[i][0][0] - roads_ends[i][1][0]
-        d_y = roads_ends[i][0][1] - roads_ends[i][1][1]
+    for road_end in roads_ends:
+        d_x = road_end[0][0] - road_end[1][0]
+        d_y = road_end[0][1] - road_end[1][1]
         angles.append(abs(math.atan2(d_y, d_x)))
     return angles
 
 
 def edge_ends(roads_ends):
-    edge_ends = []
+    """Find endpoints of the road"""
+    edge_endpoints = []
     for item in roads_ends:
         for i in range(2):
-            if item[i][0] == 0 or item[i][0] == 1600 or item[i][1] == 0 or item[i][1] == 1600:
-                edge_ends.append(item[i])
-    return edge_ends
+            for j in range(2):
+                if item[i][j] == 0 or item[i][j] == 1600:
+                    edge_endpoints.append(item[i])
+                    break
+    return edge_endpoints
 
 
 def read_road():
@@ -65,8 +75,8 @@ def read_road():
     road = []
     road_end = []
     center_dist = []
-    with open('data.json', 'r') as f:
-        data = json.load(f)
+    with open('data.json', 'r') as infrastructure_file:
+        data = json.load(infrastructure_file)
 
     all_roads = init_roads(data)
     roads_ends = init_ends(all_roads)
@@ -106,8 +116,9 @@ def read_road():
     return (road, road_end)
 
 
-# takes 1 parameter: number of vehicles through command line
+# Takes 1 parameter: number of vehicles through command line
 def generated_vehicles(roads, roads_end):
+    """Generates vehicles"""
     num_vehicles = int(sys.argv[1])
     data = []
     for i in range(num_vehicles):
@@ -135,5 +146,5 @@ def generated_vehicles(roads, roads_end):
 
 
 if __name__ == "__main__":
-    roads = read_road()
-    generated_vehicles(roads[0], roads[1])
+    ROAD_LIST = read_road()
+    generated_vehicles(ROAD_LIST[0], ROAD_LIST[1])
