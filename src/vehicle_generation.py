@@ -92,7 +92,7 @@ def read_road():
         elif edge[i][1] == 0:
             road.append([edge[i][0] + center_dist[i], 0])
         elif edge[i][1] == 1600:
-            road.append([edge[i][0] - center_dist[i], 0])
+            road.append([edge[i][0] - center_dist[i], 1600])
 
     for i in range(len(roads_ends)):
         if edge[i][0] == 0:
@@ -102,7 +102,7 @@ def read_road():
         elif edge[i][1] == 0:
             road_end.append([edge[i][0] - center_dist[i], 0])
         elif edge[i][1] == 1600:
-            road_end.append([edge[i][0] + center_dist[i], 0])
+            road_end.append([edge[i][0] + center_dist[i], 1600])
     return (road, road_end)
 
 
