@@ -234,7 +234,7 @@ const main = (frames, infrastructure) => {
     if (now > then) {
       time += now - then;
     }
-    const frame = time / 1000 + 1;
+    const frame = time / 100 + 1;
     const currFrame = Math.floor(frame);
     then = now;
 
