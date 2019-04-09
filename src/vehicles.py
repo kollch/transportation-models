@@ -112,17 +112,15 @@ class Vehicle():
         if math.degrees(min_angle) < -90 and math.degrees(max_angle) > 90:
             return [max_angle, min_angle]
         return [min_angle, max_angle]
-
     
     def decide_accel(self):
         """Based on code from
             https://github.com/titaneric/trafficModel
-            
+
             Decides acceleration based on car following or approach to
             intersections; **needs to be completed to insert check for
             closest car being in front of self
             """
-        
         all = self.can_see(self.world.cavs, self.world.hvs)
         if not all:
             return self.get_road().speed
@@ -142,9 +140,9 @@ class Vehicle():
             if self.veloc[0] == self.get_road().speed:
                 return 0
             return self.get_road().speed
-        
+
         dist_to_intersection = self.dist_to(self.plan[1][0].loc)
-        
+
         #set values for acceleration(a) and deceleration(b)
         a = 1.632963
         b = 3.735684
@@ -162,15 +160,14 @@ class Vehicle():
         #coefficient if car following
         follow_coeff = (safe_dist_follow / self.dist_to(in_front.loc)) ** 2 \
             if in_front is not None else 0
-        
+
         safe_dist_intersection = 1 + t_gap + self.veloc[0] ** 2 / (2 * b)
         intersection_coeff = ((safe_dist_intersection / dist_to_intersection) ** 2) \
             if dist_to_intersection != 0 else 0
         coeff = (1 - free_coeff) if in_front is None \
             else 1 - free_coeff - follow_coeff - intersection_coeff
         return self.accel * coeff
-    
-    
+
     def update_coords(self):
         """Updates location coordinates depending on passed time and
         direction
