@@ -119,13 +119,13 @@ def generated_vehicles(roads, roads_end):
         data.append({
             'id': i,
             'start_loc': {
-                'x': roads[rand_start][0],
-                'y': roads[rand_start][1]
+                'x': math.floor(roads[rand_start][0]),
+                'y': math.floor(roads[rand_start][1])
             },
             'type': rand_type,
             'end_loc': {
-                'x': roads_end[rand_end][0],
-                'y': roads_end[rand_end][1]
+                'x': math.floor(roads_end[rand_end][0]),
+                'y': math.floor(roads_end[rand_end][1])
             },
             'entry_time': random.randint(0, 50) * 100  # in milliseconds
         })
