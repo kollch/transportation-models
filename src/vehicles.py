@@ -176,9 +176,11 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
-    def turning_point(self, vehicle):
-        #turing point
-        tp = []
+    def turning_point(self):
+        """This function used to find the turning lane middle point
+        """
+        #turning point
+        turning_point = []
         #find intersection location and id
         inter1_id = 0
         inter2_id = 0
@@ -190,9 +192,8 @@ class Vehicle():
         inter2_roads = []
         #connecting road id with next intersection
         connect_rid = 0
-        road_endloc = []
         for intersection in self.world.infrastructure.intersections:
-            if self.dist_to(intersection.loc) < 50 :
+            if self.dist_to(intersection.loc) < 50:
                 inter1_id = intersection.id
                 v_road_id = self.get_road().id
                 inter1_loc = intersection.loc
@@ -213,15 +214,9 @@ class Vehicle():
         for i in inter1_roads:
             if i in inter2_roads:
                 connect_rid = i
-        """
-        #find road end loc
-        for road in self.world.infrastructure.roads:
-            if connect_rid == road.id:
-                road_endloc = road.ends
-        """
         #determine turn left or turn right by two road id order in intersection, 0 -- left, 1 -- right
         turn_d = 0
-        jj = 0
+        lane_side = 0
         for i in range(4):
             if v_road_id == inter1_roads[i]:
                 for j in range(4):
@@ -236,54 +231,47 @@ class Vehicle():
                                 turn_d = 0
                             else:
                                 turn_d = 1
-                        jj = j
+                        lane_side = j
         #find the road line width
-        x1 = inter1.loc[0]
-        y1 = inter1.loc[1]
-        x2 = inter2.loc[0]
-        y2 = inter2.loc[1]
-        xle = x2 - x1
-        yle = y2 - y1
+        x_1 = inter1_loc[0]
+        y_1 = inter1_loc[1]
+        x_2 = inter2_loc[0]
+        y_2 = inter2_loc[1]
+        xle = x_2 - x_1
+        yle = y_2 - y_1
         zle = math.sqrt(xle ** 2 + yle ** 2)
         if yle != 0:
-            lw = 6 * zle / yle
+            lane_w = 6 * zle / yle
         if yle == 0:
-            lw = 12
-        #find turning middle point 
+            lane_w = 12
+        #find turning middle point
         if turn_d == 0:
-            if jj == 0:
-                tp[0] = inter1.loc[0] + lw / 2
-                tp[1] = inter1.loc[1] + 12
-            if jj == 1:
-                tp[0] = inter1.loc[0] + 12
-                tp[1] = inter1.loc[1] - lw / 2
-            if jj == 2:
-                tp[0] = interl.loc[0] - lw / 2
-                tp[1] = interl.loc[1] - 12
-            if jj == 3:
-                tp[0] = interl.loc[0] - 12
-                tp[1] = interl.loc[1] + lw / 2
+            if lane_side == 0:
+                turning_point[0] = inter1_loc[0] + lane_w / 2
+                turning_point[1] = inter1_loc[1] + 12
+            if lane_side == 1:
+                turning_point[0] = inter1_loc[0] + 12
+                turning_point[1] = inter1_loc[1] - lane_w / 2
+            if lane_side == 2:
+                turning_point[0] = inter1_loc[0] - lane_w / 2
+                turning_point[1] = inter1_loc[1] - 12
+            if lane_side == 3:
+                turning_point[0] = inter1_loc[0] - 12
+                turning_point[1] = inter1_loc[1] + lane_w / 2
         if turn_d == 1:
-            if jj == 0:
-                tp[0] = interl.loc[0] + lw / 2 
-                tp[1] = interl.loc[1] + 12
-            if jj == 1:
-                tp[0] = interl.loc[0] + 12
-                tp[1] = interl.loc[1] - lw / 2
-            if jj == 2:
-                tp[0] = interl.loc[0] - lw / 2
-                tp[1] = interl.loc[1] - 12
-            if jj == 3:
-                tp[0] = interl.loc[0] - 12
-                tp[1] = interl.loc[1] + lw / 2
-        return tp
-        """
-        x2 = road_endloc[0][0]
-        y2 = road_endloc[0][1]
-        x3 = road_endloc[1][0]
-        y3 = road_endloc[1][1]
-        """
-
+            if lane_side == 0:
+                turning_point[0] = inter1_loc[0] + lane_w / 2
+                turning_point[1] = inter1_loc[1] + 12
+            if lane_side == 1:
+                turning_point[0] = inter1_loc[0] + 12
+                turning_point[1] = inter1_loc[1] - lane_w / 2
+            if lane_side == 2:
+                turning_point[0] = inter1_loc[0] - lane_w / 2
+                turning_point[1] = inter1_loc[1] - 12
+            if lane_side == 3:
+                turning_point[0] = inter1_loc[0] - 12
+                turning_point[1] = inter1_loc[1] + lane_w / 2
+        return turning_point
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
