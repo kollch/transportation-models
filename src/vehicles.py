@@ -176,46 +176,56 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
+    def get_side_road(self, rid):
+        """While vehicle turning direction, get road information on
+        one side
+        """
+        for road in self.world.infrastructure.roads:
+            if rid == road.id:
+                return road
+        return None
+
     def turning_point(self):
         """This function used to find the turning lane middle point
         """
-        #turning point
+        # turning point
         turning_point = []
-        #find intersection location and id
+        # find intersection location and id
         inter1_id = 0
         inter2_id = 0
         v_road_id = 0
         inter1_loc = []
         inter2_loc = []
-        #intersections connecting roads
+        # intersections connecting roads
         inter1_roads = []
         inter2_roads = []
-        #connecting road id with next intersection
+        # connecting road id with next intersection
         connect_rid = 0
         for intersection in self.world.infrastructure.intersections:
             if self.dist_to(intersection.loc) < 50:
                 inter1_id = intersection.id
                 v_road_id = self.get_road().id
                 inter1_loc = intersection.loc
-        #turn left or right need to find next intersection id
+        # turn left or right need to find next intersection id
         for i in range(len(self.plan)):
             if inter1_loc == self.plan[i]:
                 inter2_loc = self.plan[i+1]
         for intersection in self.world.infrastructure.intersections:
             if inter2_loc == intersection.loc:
                 inter2_id = intersection.id
-        #find two intersection roads list
+        # find two intersection roads list
         for intersection in self.world.infrastructure.intersections:
             if inter1_id == intersection.id:
                 inter1_roads = intersection.connects_roads
             if inter2_id == intersection.id:
                 inter2_roads = intersection.connects_roads
-        #find connecting road
+        # find connecting road
         for i in inter1_roads:
             if i in inter2_roads:
                 connect_rid = i
-        #determine turn left or turn right by two road id order in intersection, 0 -- left, 1 -- right
+        # determine turn left or turn right by two road id order in intersection, 0 -- left, 1 -- right
         turn_d = 0
+        # Entering lane
         lane_side = 0
         for i in range(4):
             if v_road_id == inter1_roads[i]:
@@ -232,7 +242,7 @@ class Vehicle():
                             else:
                                 turn_d = 1
                         lane_side = j
-        #find the road line width
+        # find the road line width later
         x_1 = inter1_loc[0]
         y_1 = inter1_loc[1]
         x_2 = inter2_loc[0]
@@ -240,37 +250,125 @@ class Vehicle():
         xle = x_2 - x_1
         yle = y_2 - y_1
         zle = math.sqrt(xle ** 2 + yle ** 2)
-        if yle != 0:
-            lane_w = 6 * zle / yle
-        if yle == 0:
-            lane_w = 12
-        #find turning middle point
-        if turn_d == 0:
-            if lane_side == 0:
-                turning_point[0] = inter1_loc[0] + lane_w / 2
-                turning_point[1] = inter1_loc[1] + 12
-            if lane_side == 1:
-                turning_point[0] = inter1_loc[0] + 12
-                turning_point[1] = inter1_loc[1] - lane_w / 2
-            if lane_side == 2:
-                turning_point[0] = inter1_loc[0] - lane_w / 2
-                turning_point[1] = inter1_loc[1] - 12
-            if lane_side == 3:
-                turning_point[0] = inter1_loc[0] - 12
-                turning_point[1] = inter1_loc[1] + lane_w / 2
-        if turn_d == 1:
-            if lane_side == 0:
-                turning_point[0] = inter1_loc[0] + lane_w / 2
-                turning_point[1] = inter1_loc[1] + 12
-            if lane_side == 1:
-                turning_point[0] = inter1_loc[0] + 12
-                turning_point[1] = inter1_loc[1] - lane_w / 2
-            if lane_side == 2:
-                turning_point[0] = inter1_loc[0] - lane_w / 2
-                turning_point[1] = inter1_loc[1] - 12
-            if lane_side == 3:
-                turning_point[0] = inter1_loc[0] - 12
-                turning_point[1] = inter1_loc[1] + lane_w / 2
+        # find another two sides width
+        road_id_1 = 0
+        road_id_2 = 0
+        degree_1 = 0
+        degree_2 = 0
+        # the biggest width about lanes on origin sides
+        ori_lane_width = 0
+        # the width about the lane on turning side
+        turn_lane_width = 0
+        sides_road_loc_1 = []
+        sides_road_loc_2 = []
+        # case turning to position 0 and 2
+        if lane_side == 0 or lane_side == 2:
+            road_id_1 = inter1_roads[1]
+            road_id_2 = inter1_roads[3]
+            for road in self.world.infrastructure.roads:
+                if road_id_1 == road.id:
+                    if road.ends[0][0] == inter1_loc[0] and road.ends[0][1] == inter1_loc[1]:
+                        sides_road_loc_1[0] = road.ends[1][0]
+                        sides_road_loc_1[1] = road.ends[1][1]
+                    if road.ends[1][0] == inter1_loc[0] and road.ends[1][1] == inter1_loc[1]:
+                        sides_road_loc_1[0] = road.ends[0][0]
+                        sides_road_loc_1[1] = road.ends[0][1]
+                    degree_1 = abs(get_side_road(road_id_1).lane_direction(sides_road_loc_1))
+                if road_id_2 == road.id:
+                    if road.ends[0][0] == inter1_loc[0] and road.ends[0][1] == inter1_loc[1]:
+                        sides_road_loc_2[0] = road.ends[1][0]
+                        sides_road_loc_2[1] = road.ends[1][1]
+                    if road.ends[1][0] == inter1_loc[0] and road.ends[1][1] == inter1_loc[1]:
+                        sides_road_loc_2[0] = road.ends[0][0]
+                        sides_road_loc_2[1] = road.ends[0][1]
+                    degree_2 = abs(get_side_road(road_id_2).lane_direction(sides_road_loc_2))
+            angle_1 = math.radians(degree_1 - 90)
+            angle_2 = math.radians(degree_2 - 90)
+            if (degree_1 % 90 != 0) and (degree_2 % 90 != 0):
+                if angle_1 < angle_2:
+                    ori_lane_width = 6 / math.sin(angle_1)
+                if angle_1 > angle_2:
+                    ori_lane_width = 6 / math.sin(angle_2)
+            if (degree_1 % 90 == 0) and (degree_2 % 90 != 0):
+                ori_lane_width = 6 / math.sin(angle_2)
+            if (degree_1 % 90 != 0) and (degree_2 % 90 == 0):
+                ori_lane_width = 6 / math.sin(angle_1)
+            if (degree_1 % 90 == 0) and (degree_2 % 90 == 0):
+                ori_lane_width = 6
+            # calculate turning lane width
+            if xle != 0:
+                turn_lane_width = 6 * zle / abs(xle)
+            if xle == 0:
+                turn_lane_width = 12
+            # find middle point
+            if turn_d == 0:
+                if lane_side == 0:
+                    turning_point[0] = inter1_loc[0] + turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] + ori_lane_width
+                if lane_side == 2:
+                    turning_point[0] = inter1_loc[0] - turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] - ori_lane_width
+            if turn_d == 1:
+                if lane_side == 0:
+                    turning_point[0] = inter1_loc[0] + turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] + ori_lane_width
+                if lane_side == 2:
+                    turning_point[0] = inter1_loc[0] - turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] - ori_lane_width
+        # case turning to pisition 1 and 3
+        if lane_side == 1 or lane_side == 3:
+            road_id_1 = inter1_roads[0]
+            road_id_2 = inter1_roads[2]
+            for road in self.world.infrastructure.roads:
+                if road_id_1 == road.id:
+                    if road.ends[0][0] == inter1_loc[0] and road.ends[0][1] == inter1_loc[1]:
+                        sides_road_loc_1[0] = road.ends[1][0]
+                        sides_road_loc_1[1] = road.ends[1][1]
+                    if road.ends[1][0] == inter1_loc[0] and road.ends[1][1] == inter1_loc[1]:
+                        sides_road_loc_1[0] = road.ends[0][0]
+                        sides_road_loc_1[1] = road.ends[0][1]
+                    degree_1 = abs(get_side_road(road_id_1).lane_direction(sides_road_loc_1))
+                if road_id_2 == road.id:
+                    if road.ends[0][0] == inter1_loc[0] and road.ends[0][1] == inter1_loc[1]:
+                        sides_road_loc_2[0] = road.ends[1][0]
+                        sides_road_loc_2[1] = road.ends[1][1]
+                    if road.ends[1][0] == inter1_loc[0] and road.ends[1][1] == inter1_loc[1]:
+                        sides_road_loc_2[0] = road.ends[0][0]
+                        sides_road_loc_2[1] = road.ends[0][1]
+                    degree_2 = abs(get_side_road(road_id_2).lane_direction(sides_road_loc_2))
+            angle_1 = math.radians(degree_1 - 90)
+            angle_2 = math.radians(degree_2 - 90)
+            if (degree_1 % 90 != 0) and (degree_2 % 90 != 0):
+                if angle_1 < angle_2:
+                    ori_lane_width = 6 / math.sin(angle_1)
+                if angle_1 > angle_2:
+                    ori_lane_width = 6 / math.sin(angle_2)
+            if (degree_1 % 90 == 0) and (degree_2 % 90 != 0):
+                ori_lane_width = 6 / math.sin(angle_2)
+            if (degree_1 % 90 != 0) and (degree_2 % 90 == 0):
+                ori_lane_width = 6 / math.sin(angle_1)
+            if (degree_1 % 90 == 0) and (degree_2 % 90 == 0):
+                ori_lane_width = 6
+            # calculate turning lane width
+            if yle != 0:
+                turn_lane_width = 6 * zle / abs(yle)
+            if yle == 0:
+                turn_lane_width = 12
+            # find middle point
+            if turn_d == 0:
+                if lane_side == 1:
+                    turning_point[0] = inter1_loc[0] + turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] - ori_lane_width
+                if lane_side == 3:
+                    turning_point[0] = inter1_loc[0] - turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] + ori_lane_width
+            if turn_d == 1:
+                if lane_side == 1:
+                    turning_point[0] = inter1_loc[0] + turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] - ori_lane_width
+                if lane_side == 3:
+                    turning_point[0] = inter1_loc[0] - turn_lane_width / 2
+                    turning_point[1] = inter1_loc[1] + ori_lane_width
         return turning_point
 
 class CAV(Vehicle):
