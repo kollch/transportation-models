@@ -34,6 +34,8 @@ in the environment.
 * `make python=python3`
 (Be sure to replace `python3` with the corresponding command)
 * In the browser:
-Select _data.json_ under the _src_ directory for the infrastructure file
-Select _vehicle\_layout.json_ under the _src_ directory for the vehicles file
-Click the _Build_ button
+Select _data.json_ under the _src_ directory for the infrastructure file.
+
+Select _vehicle\_layout.json_ under the _src_ directory for the vehicles file.
+
+Click the _Build_ button.
