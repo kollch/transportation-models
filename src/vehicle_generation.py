@@ -6,145 +6,106 @@ import sys
 import random
 
 
-def init_roads(data):
-    """Initialize roads"""
+def get_roads(data):
+    """Find roads which connect with the edge of the canvas"""
     roads = []
-    for item in data['roads']:
-        ends = [item['ends'][0], item['ends'][1]]
-        # Convert road endpoints to tuples if they're coordinates
-        for i in range(2):
-            try:
-                ends[i] = (ends[i]['x'], ends[i]['y'])
-            except TypeError:
-                for intersection in data['intersections']:
-                    if intersection['id'] == ends[i]:
-                        ends[i] = intersection
-                        break
-        roads.append((ends[0], ends[1]))
+    for road in data['roads']:
+        for end in road['ends']:
+            if type(end) != int:
+                # The road hits an edge, so add to results and move on to the
+                # next road
+                roads.append(road['ends'])
+                break
     return roads
 
-
-def init_ends(roads):
-    """Initialize endpoints"""
+def coords(data, road):
+    """Get coordinates of the endpoints of the given road"""
     ends = []
-    useful_ends = []
-    for i in range(len(roads)):
-        ends.append([])
-        for j in range(2):
-            try:
-                ends[i].append((roads[i][j]['loc']['x'],
-                                roads[i][j]['loc']['y']))
-            except TypeError:
-                ends[i].append((roads[i][j][0], roads[i][j][1]))
-    for end in ends:
-        for i in range(2):
-            for j in range(2):
-                if end[i][j] == 0 or end[i][j] == 1600:
-                    useful_ends.append(end)
+    for i in range(2):
+        try:
+            ends.append((road[i]['x'], road[i]['y']))
+        except TypeError:
+            for intersection in data['intersections']:
+                if intersection['id'] == road[i]:
+                    inter_coords = intersection['loc']
+                    ends.append((inter_coords['x'], inter_coords['y']))
                     break
-            else:
-                continue
-            break
-    return useful_ends
+    return (ends[0], ends[1])
 
-
-def lane_direction(roads_ends):
-    """Find the angle of a lane"""
-    angles = []
-    for road_end in roads_ends:
-        d_x = road_end[0][0] - road_end[1][0]
-        d_y = road_end[0][1] - road_end[1][1]
-        angles.append(abs(math.atan2(d_y, d_x)))
-    return angles
-
-
-def edge_ends(roads_ends):
-    """Find endpoints of the road"""
-    edge_endpoints = []
-    for item in roads_ends:
-        for i in range(2):
-            for j in range(2):
-                if item[i][j] == 0 or item[i][j] == 1600:
-                    edge_endpoints.append(item[i])
-                    break
-    return edge_endpoints
-
-
-def read_road():
-    """Select roads which are on the screen edges"""
-    road = []
-    road_end = []
-    center_dist = []
-    with open('data.json', 'r') as infrastructure_file:
-        data = json.load(infrastructure_file)
-
-    all_roads = init_roads(data)
-    roads_ends = init_ends(all_roads)
-    edge = edge_ends(roads_ends)
-    angles = lane_direction(roads_ends)
-    for i in range(len(roads_ends)):
-        if math.degrees(angles[i]) < 45 or math.degrees(angles[i]) > 135:
-            try:
-                center_dist.append(abs((12 / math.cos(angles[i])) / 2))
-            except ZeroDivisionError:
-                center_dist.append(6)
+def io_coords(data):
+    """Get coordinate points for the starting location of vehicles"""
+    inputs = []
+    outputs = []
+    roads = get_roads(data)
+    for road in roads:
+        road_coords = coords(data, road)
+        d_y = road_coords[1][1] - road_coords[0][1]
+        d_x = road_coords[1][0] - road_coords[0][0]
+        angle = math.atan2(d_y, d_x)
+        vertical = False
+        # Which end of the road is on the edge of the canvas
+        canvas_edge = 1
+        if abs(math.degrees(angle)) > 45 and abs(math.degrees(angle)) < 135:
+            offset = (int(round(6 / math.sin(angle))), 0)
+            vertical = True
         else:
-            try:
-                center_dist.append(abs((12 / math.sin(angles[i])) / 2))
-            except ZeroDivisionError:
-                center_dist.append(6)
+            offset = (0, int(round(6 / math.cos(angle))))
+        try:
+            end = (road[0]['x'], road[0]['y'])
+        except TypeError:
+            end = (road[1]['x'], road[1]['y'])
+            canvas_edge = 2
+        if canvas_edge == 1 and not vertical or canvas_edge == 2 and vertical:
+            inputs.append((end[0] - offset[0], end[1] - offset[1]))
+            outputs.append((end[0] + offset[0], end[1] + offset[1]))
+        else:
+            inputs.append((end[0] + offset[0], end[1] + offset[1]))
+            outputs.append((end[0] - offset[0], end[1] - offset[1]))
+    return (inputs, outputs)
 
-    for i in range(len(roads_ends)):
-        if edge[i][0] == 0:
-            road.append([0, edge[i][1] - center_dist[i]])
-        elif edge[i][0] == 1600:
-            road.append([1600, edge[i][1] + center_dist[i]])
-        elif edge[i][1] == 0:
-            road.append([edge[i][0] + center_dist[i], 0])
-        elif edge[i][1] == 1600:
-            road.append([edge[i][0] - center_dist[i], 1600])
+def main(argv):
+    """The main function of the program."""
+    if len(argv) != 4:
+        print("Wrong number of arguments!")
+        errmsg = "Usage: python3 " + argv[0]
+        errmsg += " <infrastructure file name> <# of vehicles> <% CAVS>"
+        sys.exit(errmsg)
 
-    for i in range(len(roads_ends)):
-        if edge[i][0] == 0:
-            road_end.append([0, edge[i][1] + center_dist[i]])
-        elif edge[i][0] == 1600:
-            road_end.append([1600, edge[i][1] - center_dist[i]])
-        elif edge[i][1] == 0:
-            road_end.append([edge[i][0] - center_dist[i], 0])
-        elif edge[i][1] == 1600:
-            road_end.append([edge[i][0] + center_dist[i], 1600])
-    return (road, road_end)
+    with open(argv[1], 'r') as infrastructure_file:
+        infrastructure = json.load(infrastructure_file)
+    num_vehicles = int(argv[2])
+    num_cavs = int(round(num_vehicles * int(argv[3]) / 100))
 
+    points = io_coords(infrastructure)
 
-# Takes 1 parameter: number of vehicles through command line
-def generated_vehicles(roads, roads_end):
-    """Generates vehicles"""
-    num_vehicles = int(sys.argv[1])
     data = []
-    for i in range(num_vehicles):
-        rand_start = random.randint(0, len(roads) - 1)
-        rand_type = random.randint(0, 1)
-        rand_end = random.randint(0, len(roads_end) - 1)
-        while rand_end == rand_start:
-            rand_end = random.randint(0, len(roads_end) - 1)
+    for i in range(1, num_vehicles + 1):
+        start_loc_index = random.randrange(len(points[0]))
+        end_loc_index = random.randrange(len(points[1]))
+        while end_loc_index == start_loc_index:
+            end_loc_index = random.randrange(len(points[1]))
+        start_loc = points[0][start_loc_index]
+        end_loc = points[1][end_loc_index]
+        # 1 is autonomous, 0 is non-autonomous
+        vehicle_type = 1
+        if i > num_cavs:
+            vehicle_type = 0
+        # Each frame is 100 ms
+        entry_time = random.randrange(100) * 100
         data.append({
             'id': i,
             'start_loc': {
-                'x': math.floor(roads[rand_start][0]),
-                'y': math.floor(roads[rand_start][1])
+                'x': start_loc[0],
+                'y': start_loc[1]
             },
-            'type': rand_type,
+            'type': vehicle_type,
             'end_loc': {
-                'x': math.floor(roads_end[rand_end][0]),
-                'y': math.floor(roads_end[rand_end][1])
+                'x': end_loc[0],
+                'y': end_loc[1]
             },
-            'entry_time': random.randint(0, 50) * 100  # in milliseconds
+            'entry_time': entry_time
         })
-
-    with open('generated_vehicles.json', 'w') as outfile:
+    with open('vehicle_layout.json', 'w') as outfile:
         json.dump(data, outfile, indent=4)
 
-
-if __name__ == "__main__":
-    ROAD_LIST = read_road()
-    generated_vehicles(ROAD_LIST[0], ROAD_LIST[1])
+main(sys.argv)
