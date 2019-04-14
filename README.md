@@ -28,14 +28,15 @@ in the environment.
 * UNIX
 * Bash
 * Python (version >= 3.6)
+
 (Note: In this document, the assumed command in Bash is `python3`. If different on your machine, replace with the corresponding command.)
 
 ## Instructions to run AV Routing Project
 * `make python=python3`
 (Be sure to replace `python3` with the corresponding command)
-* In the browser:
-Select _data.json_ under the _src_ directory for the infrastructure file.
 
-Select _vehicle\_layout.json_ under the _src_ directory for the vehicles file.
+In the browser:
 
-Click the _Build_ button.
+* Select _data.json_ under the _src_ directory for the infrastructure file.
+* Select _vehicle\_layout.json_ under the _src_ directory for the vehicles file.
+* Click the _Build_ button.
