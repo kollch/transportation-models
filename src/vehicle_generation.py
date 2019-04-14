@@ -76,36 +76,36 @@ def main(argv):
     num_vehicles = int(argv[2])
     num_cavs = int(round(num_vehicles * int(argv[3]) / 100))
 
-points = io_coords(infrastructure)
+    points = io_coords(infrastructure)
 
-data = []
-for i in range(1, num_vehicles + 1):
-    start_loc_index = random.randrange(len(points[0]))
-    end_loc_index = random.randrange(len(points[1]))
-    while end_loc_index == start_loc_index:
+    data = []
+    for i in range(1, num_vehicles + 1):
+        start_loc_index = random.randrange(len(points[0]))
         end_loc_index = random.randrange(len(points[1]))
+        while end_loc_index == start_loc_index:
+            end_loc_index = random.randrange(len(points[1]))
         start_loc = points[0][start_loc_index]
         end_loc = points[1][end_loc_index]
         # 1 is autonomous, 0 is non-autonomous
         vehicle_type = 1
         if i > num_cavs:
             vehicle_type = 0
-    # Each frame is 100 ms
-    entry_time = random.randrange(100) * 100
+        # Each frame is 100 ms
+        entry_time = random.randrange(100) * 100
         data.append({
-                    'id': i,
-                    'start_loc': {
-                    'x': start_loc[0],
-                    'y': start_loc[1]
-                    },
-                    'type': vehicle_type,
-                    'end_loc': {
-                    'x': end_loc[0],
-                    'y': end_loc[1]
-                    },
-                    'entry_time': entry_time
-                    })
-with open('vehicle_layout.json', 'w') as outfile:
-    json.dump(data, outfile, indent=4)
+            'id': i,
+            'start_loc': {
+            'x': start_loc[0],
+            'y': start_loc[1]
+            },
+            'type': vehicle_type,
+            'end_loc': {
+            'x': end_loc[0],
+            'y': end_loc[1]
+            },
+            'entry_time': entry_time
+        })
+    with open('vehicle_layout.json', 'w') as outfile:
+        json.dump(data, outfile, indent=4)
 
 main(sys.argv)
