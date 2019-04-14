@@ -23,6 +23,7 @@ class InvisibleHand():
         self.hvs = []
         self.set_parameters()
         self.current_frame = 0
+        self.frame_number = 0
 
     def init_intersections(self):
         """Initialize intersections"""
@@ -204,7 +205,7 @@ async def main(websocket, path):
     run = InvisibleHand(connect)
     await run.build_frames()
 
-
+'''
 def get_frame_data(file_name, frame):
     """Temporary function to read json from a file;
     should be deleted soon
@@ -212,7 +213,7 @@ def get_frame_data(file_name, frame):
     with open(file_name) as json_file:
         data = json.load(json_file)
         return data[frame]
-
+'''
 
 # Start server with or without ssl
 if SECURE:
