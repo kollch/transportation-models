@@ -144,6 +144,8 @@ class InvisibleHand():
         for frame in range(num_frames):
             self.current_frame += 1
             self.sort_new_vehicles()
+            for intersection in self.infrastructure.intersections:
+                intersection.road_open()
             for vehicle in self.cavs + self.hvs:
                 vehicle.decide_move()
 

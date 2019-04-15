@@ -45,7 +45,6 @@ class Vehicle():
 
     def get_road(self):
         """Returns road vehicle is currently on"""
-        print("self",self)
         for road in self.world.infrastructure.roads:
             if self in road.vehicles_on:
                 return road
@@ -117,8 +116,7 @@ class Vehicle():
             https://github.com/titaneric/trafficModel
 
             Decides acceleration based on car following or approach to
-            intersections; **needs to be completed to insert check for
-            closest car being in front of self
+            intersections;
             """
         all = self.can_see(self.world.cavs, self.world.hvs)
         if not all:
@@ -167,6 +165,16 @@ class Vehicle():
             else 1 - free_coeff - follow_coeff - intersection_coeff
         return self.accel * coeff
 
+    ''' 0
+    3       1
+        2
+        '''
+    def can_go(self, turn):
+        curr_road = self.get_road().road_id
+        i = self.world.closest_intersection().roads.index(curr_road)
+        return self.closest_intersection().roads_list[i][turn]
+
+    
     def update_coords(self):
         """Updates location coordinates depending on passed time and
         direction
@@ -175,6 +183,18 @@ class Vehicle():
         d_x = movement * math.cos(math.radians(self.veloc[1]))
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
+
+    def turn_dir(self):
+        """Returns 0 for left turn, 1 for straight, 2 for right turn"""
+        curr_road = self.get_road()
+        inter_1 = self.plan[1][0]
+        inter_2 = self.plan[1][1]
+        road_index = inter_1.roads.index(curr_road.road_id)
+        for i, road_id in enumerate(inter_1.roads):
+            if road_id in inter_2.roads:
+                connecting_road_index = i
+                break
+        return (connecting_road_index + 4 - road_index) % 4 - 1
 
     def get_side_road(self, rid):
         """While vehicle turning direction, get road information on
@@ -526,9 +546,7 @@ class CAV(Vehicle):
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
-        #left
-        if -45 < self.get_road().lane_direction(self.loc) < 45:
-            coord = self.world.infrastructure.closest_intersection(self.loc).loc
+        
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
         self.update_coords()
