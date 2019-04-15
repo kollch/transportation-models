@@ -176,6 +176,18 @@ class Vehicle():
         d_y = movement * math.sin(math.radians(self.veloc[1]))
         self.loc = (d_x + self.loc[0], d_y + self.loc[1])
 
+    def turn_dir(self):
+        """Returns 0 for left turn, 1 for straight, 2 for right turn"""
+        curr_road = self.get_road()
+        inter_1 = self.plan[1][0]
+        inter_2 = self.plan[1][1]
+        road_index = inter_1.roads.index(curr_road.road_id)
+        for i, road_id in enumerate(inter_1.roads):
+            if road_id in inter_2.roads:
+                connecting_road_index = i
+                break
+        return (connecting_road_index + 4 - road_index) % 4 - 1
+
     def get_side_road(self, rid):
         """While vehicle turning direction, get road information on
         one side
