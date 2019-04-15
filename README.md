@@ -27,7 +27,7 @@ in the environment.
 ## Dependencies
 * UNIX
 * Bash
-* Python (version >= 3.6)
+* Python (version >= 3.6, with module venv)
 
 (Note: In this document, the assumed command in Bash is `python3`. If different on your machine, replace with the corresponding command.)
 
