@@ -45,7 +45,6 @@ class Vehicle():
 
     def get_road(self):
         """Returns road vehicle is currently on"""
-        print("self",self)
         for road in self.world.infrastructure.roads:
             if self in road.vehicles_on:
                 return road
@@ -117,8 +116,7 @@ class Vehicle():
             https://github.com/titaneric/trafficModel
 
             Decides acceleration based on car following or approach to
-            intersections; **needs to be completed to insert check for
-            closest car being in front of self
+            intersections;
             """
         all = self.can_see(self.world.cavs, self.world.hvs)
         if not all:
@@ -167,6 +165,16 @@ class Vehicle():
             else 1 - free_coeff - follow_coeff - intersection_coeff
         return self.accel * coeff
 
+    ''' 0
+    3       1
+        2
+        '''
+    def can_go(self, turn):
+        curr_road = self.get_road().road_id
+        i = self.world.closest_intersection().roads.index(curr_road)
+        return self.closest_intersection().roads_list[i][turn]
+
+    
     def update_coords(self):
         """Updates location coordinates depending on passed time and
         direction
@@ -459,9 +467,7 @@ class CAV(Vehicle):
             source = self.world.infrastructure.closest_intersection(self.loc)
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
-        #left
-        if -45 < self.get_road().lane_direction(self.loc) < 45:
-            coord = self.world.infrastructure.closest_intersection(self.loc).loc
+        
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
         self.update_coords()
