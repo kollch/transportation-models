@@ -136,7 +136,7 @@ class InvisibleHand():
             })
         return data
 
-    async def build_frames(self, num_frames=100):
+    async def build_frames(self, num_frames=500):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
@@ -144,17 +144,28 @@ class InvisibleHand():
         for frame in range(num_frames):
             self.current_frame += 1
             self.sort_new_vehicles()
+            for intersection in self.infrastructure.intersections:
+                intersection.road_open()
             for vehicle in self.cavs + self.hvs:
                 vehicle.decide_move()
+                if len(vehicle.plan[1]) < 2:
+                    if vehicle.autonomous:
+                        self.cavs.remove(vehicle)
+                    else:
+                        self.hvs.remove(vehicle)
 
             # Vehicle locations should have been changed now.
             # Build a new frame of JSON.
             frame = self.data_to_json()
             # Send frame
-            print("Sending frame #" + str(self.current_frame))
+#            print("Sending frame #" + str(self.current_frame))
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
+        print("vehicles going up:" )
+        for i in self.cavs:
+            if i.veloc[1] == 90:
+                print(i.vehicle_id)
         print("Finished sending frames")
 
     def cavs_in_range(self, location, length):
@@ -203,15 +214,6 @@ async def main(websocket, path):
     await connect.get_parameters("vehicles")
     run = InvisibleHand(connect)
     await run.build_frames()
-
-
-def get_frame_data(file_name, frame):
-    """Temporary function to read json from a file;
-    should be deleted soon
-    """
-    with open(file_name) as json_file:
-        data = json.load(json_file)
-        return data[frame]
 
 
 # Start server with or without ssl

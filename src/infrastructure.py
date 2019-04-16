@@ -7,6 +7,22 @@ class Infrastructure():
     def __init__(self, intersections, roads):
         self.intersections = intersections
         self.roads = roads
+    
+
+    def closest_intersection(self, pos):
+        """Returns the intersection that is closest to the given
+        location
+        """
+        min_distance = 100000
+        nearest = 0
+        for intersection in self.intersections:
+            loc = intersection.loc
+            distance = math.hypot(loc[0] - pos[0], loc[1] - pos[1])
+
+            if min_distance > distance:
+                nearest = intersection
+                min_distance = distance
+        return nearest
 
     def intersection_efficiency(self):
         """Determine how many vehicles have passed through all
@@ -39,6 +55,7 @@ class Intersection():
         self.vehicles_on = []
         self.vehicles_passed = 0
         self.counter = 0
+        self.roads_list = [[], [], [], []]
 
     def adjacent(self):
         """Gets intersections adjacent to the current one;
@@ -55,36 +72,35 @@ class Intersection():
                     results.append((end, road))
         return results
 
-    def road_open(self, casenumber):
+    def road_open(self):
         """Create the list of road vehicles allowed to move on that direction.
         The corresponding value is: turn left, go straight, turn right.
         Each 10 frame, the intersection light will change.
         """
         self.counter += 1
-        roads_list = [[], [], [], []]
         if self.counter % 40 >= 1 and self.counter % 40 <= 10:
-            roads_list = [
+            self.roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
             ]
         elif self.counter % 40 >= 11 and self.counter % 40 <= 20:
-            roads_list = [
+            self.roads_list = [
                 [False, False, False],
                 [False, True, True],
                 [False, False, False],
                 [False, True, True]
             ]
         elif self.counter % 40 >= 21 and self.counter % 40 <= 30:
-            roads_list = [
+            self.roads_list = [
                 [True, False, False],
                 [False, False, True],
                 [True, False, False],
                 [False, False, True]
             ]
         elif self.counter % 40 >= 31 and self.counter % 40 <= 40:
-            roads_list = [
+            self.roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
@@ -92,8 +108,40 @@ class Intersection():
             ]
         for i in range(4):
             if self.roads[i] is None:
-                roads_list[i] = [None, None, None]
-        return roads_list
+                self.roads_list[i] = [None, None, None]
+
+    def calc_stop_line(self, index):
+        #if approaching from top
+        stop_line = None
+        if index == 0:
+            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
+        #if approaching from right
+        if index == 1:
+            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
+        #if approaching from bottom
+        if index == 2:
+            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
+        #if approaching from left
+        if index == 3:
+            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
+        return stop_line
+
+    def turning_point(self, turn, index):
+        #if approaching from top
+        stop_line = None
+        if index == 0:
+            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
+        #if approaching from right
+        if index == 1:
+            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
+            #if approaching from bottom
+        if index == 2:
+            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
+        #if approaching from left
+        if index == 3:
+            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
+        return stop_line
+
 
 
 class Road():
