@@ -3,7 +3,9 @@ import asyncio
 import ssl
 import json
 import websockets
-
+import random
+import matplotlib.pyplot as plt
+plt.style.use('ggplot')
 from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
 
@@ -136,14 +138,40 @@ class InvisibleHand():
             })
         return data
 
+    def plot_stats(self, x, velocities):
+        for vehicle in self.cavs + self.hvs:
+            i = 0
+            print("Printing velocities")
+            print(velocities)
+            print(vehicle.veloc[0])
+            velocities[i].append(vehicle.veloc[0])
+            plt.plot(x, velocities[i])
+            i += 1
+        
+        plt.pause(0.5)
+        plt.show()
+        
     async def build_frames(self, num_frames=500):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
+
+        velocities = []
+        for i in range(100):
+            velocities.append([])
+        x = []
         for frame in range(num_frames):
+            x.append(frame)
             self.current_frame += 1
             self.sort_new_vehicles()
+            #print(len(self.cavs + self.hvs))
+            plt.ion()
+            #this is to keep the y and x axis the same length. every iteration, add a 'None' as the default value,
+            #and for the vehicle loop, if the vehicle id is present in the frame, it will delete the last 0 and 
+            #push the actual vehicle velocity, balancing out the y axis lengths to match the x axis.
+            for vlist in velocities:
+                vlist.append(None)
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
@@ -153,12 +181,17 @@ class InvisibleHand():
                         self.cavs.remove(vehicle)
                     else:
                         self.hvs.remove(vehicle)
+                velocities[vehicle.vehicle_id] = velocities[vehicle.vehicle_id][:-1]
+                velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
 
+                plt.plot(x, velocities[vehicle.vehicle_id])
+            plt.pause(0.05)
+            plt.draw()           
             # Vehicle locations should have been changed now.
             # Build a new frame of JSON.
             frame = self.data_to_json()
             # Send frame
-#            print("Sending frame #" + str(self.current_frame))
+            #print("Sending frame #" + str(self.current_frame))
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
@@ -167,6 +200,7 @@ class InvisibleHand():
             if i.veloc[1] == 90:
                 print(i.vehicle_id)
         print("Finished sending frames")
+        print(velocities)
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
