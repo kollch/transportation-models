@@ -24,7 +24,7 @@ body {
   border-left: 2px solid #aaa;
 }
 
-#play, #pause, #restart {
+#play, #pause, #replay {
   display: none;
 }
 

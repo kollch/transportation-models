@@ -70,7 +70,7 @@ def main(argv):
         errmsg = "Usage: python3 " + argv[0]
         errmsg += " <infrastructure file name> <# of vehicles> <% CAVS>"
         sys.exit(errmsg)
-    
+
     with open(argv[1], 'r') as infrastructure_file:
         infrastructure = json.load(infrastructure_file)
     num_vehicles = int(argv[2])
@@ -95,13 +95,13 @@ def main(argv):
         data.append({
             'id': i,
             'start_loc': {
-            'x': start_loc[0],
-            'y': start_loc[1]
+                'x': start_loc[0],
+                'y': start_loc[1]
             },
             'type': vehicle_type,
             'end_loc': {
-            'x': end_loc[0],
-            'y': end_loc[1]
+                'x': end_loc[0],
+                'y': end_loc[1]
             },
             'entry_time': entry_time
         })
