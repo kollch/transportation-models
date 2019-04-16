@@ -120,45 +120,61 @@ class Vehicle():
             Decides acceleration based on car following or approach to
             intersections;
             """
+        a = 12
+        b = 10.3
         all = self.can_see(self.world.cavs, self.world.hvs)
         if not all:
-            return self.get_road().speed
-        self.in_front = None
+            if self.veloc[0] < self.get_road().speed:
+                return a
+            else:
+                return 0
         #sort array by angle relativity to current vehicle
-        all.sort(key=lambda v: self.veloc[1] - math.degrees(self.angle(v.loc)))
-        if -1 < self.veloc[1] - math.degrees(self.angle(all[0].loc)) < 1:
+        all.sort(key=lambda v: abs(self.veloc[1] - math.degrees(self.angle(v.loc))))
+        for i in all:
+            if i.veloc[1] != self.veloc[1]:
+                all.remove(i)
+        
+        if not all:
+            if self.veloc[0] < self.get_road().speed:
+                return a
+            else:
+                return 0
+        
+        if -1 < self.veloc[1] - math.degrees(self.angle(all[0].loc)) < 1 and abs(self.veloc[1] - all[0].veloc[1]) < 45:
             self.in_front = all[0]
             self.following = True
+                
         if self.in_front == None:
-            return self.get_road().speed
+            self.following = False
+            if self.veloc[0] < 60:
+                return a
+            else:
+                return 0
         #if vehicle that is in front is further than 60 feet away, move freely
         if self.dist_to(self.in_front.loc) > 60:
             #if vehicle is going speed limit, do not accelerate
-            if self.veloc[0] == self.get_road().speed:
+            if self.veloc[0] >= self.get_road().speed:
                 return 0
-            return self.get_road().speed
+            return a
 
         dist_to_intersection = self.dist_to(self.plan[1][0].loc)
 
         #set values for acceleration(a) and deceleration(b)
-        a = 3.735684
         b = 3.735684
         coef = 0.74           # Stimulus Coefficient = 0.74
         deltat = 2.2          # Reaction Time = 2.2 s, Time gap between the decelerations.
         rate = -4.6           # Deceleration Rate of the First Vehicle (ft/s^2)
         hini = -114           # Initial Headway between each Vehicle = 114 ft
-    
-        if self.veloc[0] + self.accel * 0.1 > 0:
-            self.veloc[0]
-    
-    
-    
-    
+
+#        if self.veloc[0] + self.accel * 0.1 > 0:
+#            self.veloc[0]
+
+
+
         if self.in_front is not None:
             delta_speed = (self.veloc[0] - self.in_front.veloc[0])
         else:
             delta_speed = 0
-        print("delta:", delta_speed)
         #coefficient if no car in front
         free_coeff = (self.veloc[0] / 60) ** 4
         #distance gap
@@ -183,16 +199,15 @@ class Vehicle():
             coeff = (1 - free_coeff)
         else:
             coeff = 1 - free_coeff - follow_coeff - intersection_coeff
-        print("here:",self.accel * coeff)
         return self.accel * coeff
 
     def can_go(self, turn):
         """Returns True if direction passed is allowed through intersection,
             False if not.
         """
-        curr_road = self.get_road().road_id
-        i = self.world.closest_intersection().roads.index(curr_road)
-        return self.closest_intersection().roads_list[i][turn]
+        curr_road = self.get_road()
+        i = self.world.infrastructure.closest_intersection(self.loc).roads.index(curr_road)
+        return self.world.infrastructure.closest_intersection(self.loc).roads_list[i][turn]
 
     
     def update_coords(self):
@@ -209,7 +224,7 @@ class Vehicle():
         curr_road = self.get_road()
         inter_1 = self.plan[1][0]
         inter_2 = self.plan[1][1]
-        road_index = inter_1.roads.index(curr_road.road_id)
+        road_index = inter_1.roads.index(curr_road)
         for i, road_id in enumerate(inter_1.roads):
             if road_id in inter_2.roads:
                 connecting_road_index = i
@@ -231,73 +246,89 @@ class Vehicle():
         # turning point
         turning_point = [[],[]]
         # find intersection location and id
-        inter1_id = 0
-        inter2_id = 0
-        v_road_id = 0
-        inter1_loc = []
-        inter2_loc = []
+#        inter1_id = 0
+#        inter2_id = 0
+#        v_road_id = 0
+        curr_road = self.get_road()
+        inter_1 = self.plan[1][0]
+        if not self.plan[1][1]:
+            inter_2 = None
+        else:
+            inter_2 = self.plan[1][1]
+#        inter1_loc = []
+#        inter2_loc = []
         # intersections connecting roads
-        inter1_roads = []
-        inter2_roads = []
+#        inter1_roads = []
+#        inter2_roads = []
         # connecting road id with next intersection
-        connect_rid = 0
-        for intersection in self.world.infrastructure.intersections:
-            if self.dist_to(intersection.loc) < 30:
-                inter1_id = intersection.intersection_id
-                v_road_id = self.get_road().road_id
-                inter1_loc = intersection.loc
+        find_set = list(set(inter_1.roads).intersection(inter_2.roads))
+        inter_road = find_set[0]
+        print("current road:", curr_road.road_id)
+        print("heading towards:", inter_1.intersection_id)
+        print("turning towards:", inter_2.intersection_id)
+        print("onto road:", inter_road.road_id)
+        
+#        connect_rid = 0
+#        for intersection in self.world.infrastructure.intersections:
+#            if self.dist_to(intersection.loc) < 30:
+#                inter1_id = intersection.intersection_id
+#                v_road_id = self.get_road().road_id
+#                inter1_loc = intersection.loc
         # turn left or right need to find next intersection id
-        for i in range(len(self.plan[1])):
-            if inter1_loc == self.plan[1][i].loc:
-                inter2_loc = self.plan[1][i+1].loc
-        for intersection in self.world.infrastructure.intersections:
-            if inter2_loc == intersection.loc:
-                inter2_id = intersection.intersection_id
-        # find two intersection roads list
-        for intersection in self.world.infrastructure.intersections:
-            if inter1_id == intersection.intersection_id:
-                inter1_roads = intersection.roads
-            if inter2_id == intersection.intersection_id:
-                inter2_roads = intersection.roads
-        # find connecting road
-        for i in inter1_roads:
-            if i in inter2_roads:
-                connect_rid = i
+#        for i in range(len(self.plan[1])):
+#            if inter1_loc == self.plan[1][i].loc:
+#                inter2_loc = self.plan[1][i+1].loc
+#        for intersection in self.world.infrastructure.intersections:
+#            if inter2_loc == intersection.loc:
+#                inter2_id = intersection.intersection_id
+#        # find two intersection roads list
+#        for intersection in self.world.infrastructure.intersections:
+#            if inter1_id == intersection.intersection_id:
+#                inter1_roads = intersection.roads
+#            if inter2_id == intersection.intersection_id:
+#                inter2_roads = intersection.roads
+#        # find connecting road
+#        for i in inter1_roads:
+#            if i in inter2_roads:
+#                connect_rid = i
         # determine turn left or turn right by two road id order in intersection, 0 -- left, 1 -- right
-        turn_d = 0
-        # Entering lane
-        lane_side = 0
-        ori_lane_side = 0
-        # If vehicle go straight 0 -- no, 1 -- yes
-        straight = 0
-        for i in range(4):
-            if v_road_id == inter1_roads[i]:
-                for j in range(4):
-                    if connect_rid == inter1_roads[j]:
-                        if i != 3:
-                            if i == j - 1:
-                                turn_d = 0
-                            if i == j + 1:
-                                turn_d = 1
-                            else:
-                                straight = 1
-                        if i == 3:
-                            if j == 0:
-                                turn_d = 0
-                            if j == 2:
-                                turn_d = 1
-                            else:
-                                straight = 1
-                        ori_lane_side = i
-                        lane_side = j
+#        turn_d = 0
+#        # Entering lane
+#        lane_side = 0
+#        ori_lane_side = 0
+#        # If vehicle go straight 0 -- no, 1 -- yes
+#        straight = 0
+#        for i in range(4):
+#            if v_road_id == inter1_roads[i]:
+#                for j in range(4):
+#                    if connect_rid == inter1_roads[j]:
+#                        if i != 3:
+#                            if i == j - 1:
+#                                turn_d = 0
+#                            if i == j + 1:
+#                                turn_d = 1
+#                            else:
+#                                straight = 1
+#                        if i == 3:
+#                            if j == 0:
+#                                turn_d = 0
+#                            if j == 2:
+#                                turn_d = 1
+#                            else:
+#                                straight = 1
+#                        ori_lane_side = i
+#                        lane_side = j
         # find the road line width later
-        x_1 = inter1_loc[0]
-        y_1 = inter1_loc[1]
-        x_2 = inter2_loc[0]
-        y_2 = inter2_loc[1]
+        turn = self.turn_dir()
+        print("Turn:", turn)
+        x_1 = inter_1.loc[0]
+        y_1 = inter_1.loc[1]
+        x_2 = inter_2.loc[0]
+        y_2 = inter_2.loc[1]
         xle = x_2 - x_1
         yle = y_2 - y_1
         zle = math.sqrt(xle ** 2 + yle ** 2)
+        
         # find another two sides width
         road_id_1 = 0
         road_id_2 = 0
@@ -562,35 +593,60 @@ class CAV(Vehicle):
 
     def calc_stop_line(self):
         inter = self.world.infrastructure.closest_intersection(self.loc).loc
+        #if approaching from top
+        stop_line = None
         if -135 < self.veloc[1] < -45:
             stop_line = (inter[0] - 6, inter[1] + 20)
+        #if approaching from right
+        if 135 < self.veloc[1] or self.veloc[1] < -135:
+            stop_line = (inter[0] + 20, inter[1] + 6)
+        #if approaching from left
+        if -45 < self.veloc[1] < 45:
+            stop_line = (inter[0] - 20, inter[1] - 6)
+        #if approaching from bottom
+        if 45 < self.veloc[1] < 135:
+            stop_line = (inter[0] + 6, inter[1] - 20)
         return stop_line
 
     def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
             source = self.world.infrastructure.closest_intersection(self.loc)
-            dest = self.world.infrastructure.closest_intersection(self.plan[0])
+            for road in self.world.infrastructure.roads:
+                if road.has_point(self.plan[0]):
+                    on_road = road
+            for end in on_road.ends:
+                if end in self.world.infrastructure.intersections:
+                    dest = end
             self.plan[1] = self.dijkstras(source, dest)
-        
+
+        print("===========",self.vehicle_id,"============")
         self.veloc[1] = self.get_road().lane_direction(self.loc)
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
         
+        print("veloc for vehicle", self.vehicle_id, ":",self.veloc[0])
+        print("direction for vehicle", self.vehicle_id,":", self.veloc[1])
         if self.following:
+            print("is following", self.in_front)
             if self.dist_to(self.in_front.loc) < 30:
                 if self.in_front.veloc[0] == 0:
                     self.veloc[0] = 0
                     self.accel = 0
-                if self.in_front.veloc[0] > 0:
+                else:
                     self.accel = self.decide_accel()
                     self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-        
-        if self.dist_to(self.calc_stop_line()) < 40:
-            if not self.following:
-                self.veloc[0] = 0
-                self.accel = 0
-                self.loc = self.calc_stop_line()
+        if self.calc_stop_line() is not None:
+            if self.dist_to(self.calc_stop_line()) < 20:
+                #if light is green
+    #            if self.can_go(self.turn_dir()):
+    #                print(self.turning_point())
+                #if light is red
+    #            else:
+                if not self.following:
+                    self.veloc[0] = 0
+                    self.accel = 0
+                    self.loc = self.calc_stop_line()
 
         self.update_coords()
 
