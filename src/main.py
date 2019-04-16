@@ -138,20 +138,7 @@ class InvisibleHand():
             })
         return data
 
-    def plot_stats(self, x, velocities):
-        for vehicle in self.cavs + self.hvs:
-            i = 0
-            print("Printing velocities")
-            print(velocities)
-            print(vehicle.veloc[0])
-            velocities[i].append(vehicle.veloc[0])
-            plt.plot(x, velocities[i])
-            i += 1
-        
-        plt.pause(0.5)
-        plt.show()
-        
-    async def build_frames(self, num_frames=500):
+    async def build_frames(self, num_frames=300):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
@@ -166,9 +153,8 @@ class InvisibleHand():
             self.current_frame += 1
             self.sort_new_vehicles()
             #print(len(self.cavs + self.hvs))
-            plt.ion()
             #this is to keep the y and x axis the same length. every iteration, add a 'None' as the default value,
-            #and for the vehicle loop, if the vehicle id is present in the frame, it will delete the last 0 and 
+            #and for the vehicle loop, if the vehicle id is present in the frame, it will delete the last 0 and
             #push the actual vehicle velocity, balancing out the y axis lengths to match the x axis.
             for vlist in velocities:
                 vlist.append(None)
@@ -185,8 +171,6 @@ class InvisibleHand():
                 velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
 
                 plt.plot(x, velocities[vehicle.vehicle_id])
-            plt.pause(0.05)
-            plt.draw()           
             # Vehicle locations should have been changed now.
             # Build a new frame of JSON.
             frame = self.data_to_json()
@@ -195,12 +179,12 @@ class InvisibleHand():
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        print("vehicles going up:" )
+        #print("vehicles going up:" )
         for i in self.cavs:
             if i.veloc[1] == 90:
                 print(i.vehicle_id)
         print("Finished sending frames")
-        print(velocities)
+        plt.show()
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
