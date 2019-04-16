@@ -25,15 +25,13 @@ in the environment.
 * Data for the autonomous vehicles' behaviors, represented by graphs and tables.
 
 ## Dependencies
-* UNIX
+* Ubuntu (version >= 18.04)
 * Bash
-* Python (version >= 3.6, with module venv)
-
-(Note: In this document, the assumed command in Bash is `python3`. If different on your machine, replace with the corresponding command.)
 
 ## Instructions to run AV Routing Project
-* `make python=python3`
-(Be sure to replace `python3` with the corresponding command)
+* `make install`
+
+The makefile will install all dependencies, start a background server, and open the _index.html_ file in the default browser.
 
 In the browser:
 
