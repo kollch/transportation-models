@@ -5,6 +5,7 @@ import json
 import websockets
 import random
 import matplotlib.pyplot as plt
+matplotlib.use('agg')
 plt.style.use('ggplot')
 from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
