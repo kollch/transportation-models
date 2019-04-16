@@ -25,12 +25,16 @@ in the environment.
 * Data for the autonomous vehicles' behaviors, represented by graphs and tables.
 
 ## Dependencies
-* Must be running ay least Python 3.6
-* If pip is not already installed, download by entering ```curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py``` then run ```python get-pip.py```
-* Install websockets by running on command line: ```pip3 install websockets```
-* Download [GLmatrix.js](http://glmatrix.net/) (version 3.0 minimum)
+* Ubuntu (version >= 18.04)
+* Bash
+
 ## Instructions to run AV Routing Project
-* Begin running program with ```python main.py``` in the command line
-* Open index.html in your browser (preference given to Firefox or Safari)
-* Choose an infrastructure file and a vehicle file to load into the transportation network
-* Press Build
+* `make install`
+
+The makefile will install all dependencies, start a background server, and open the _index.html_ file in the default browser.
+
+In the browser:
+
+* Select _data.json_ under the _src_ directory for the infrastructure file.
+* Select _vehicle\_layout.json_ under the _src_ directory for the vehicles file.
+* Click the _Build_ button.

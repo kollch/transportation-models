@@ -55,6 +55,10 @@ const build = () => {
         // Ready to start sending
         /* Pass data to and from backend */
         const frames = [];
+
+        // Hide the build button
+        document.getElementById("build").style.display = "none";
+
         socket.onmessage = e => {
           const frame = JSON.parse(e.data);
           // If all simulation frames have been received
@@ -97,6 +101,10 @@ const getDimensions = infrastructure => {
   }
   return viewDims;
 };
+
+const playPause = pause => {
+  paused = pause;
+}
 
 const main = (frames, infrastructure) => {
   const canvas = document.querySelector("#glCanvas");
@@ -203,15 +211,22 @@ const main = (frames, infrastructure) => {
     screenLoc.x = setScreenLoc("x");
     screenLoc.y = setScreenLoc("y");
 
-    setupCamera(gl, programInfo, zoom, screenLoc);
+    setupCamera(gl, programInfo, viewDims, zoom, screenLoc);
   });
 
   // Set up the infrastructure buffer
   useBuffer(gl, programInfo, infrBuf);
   let infrNum = setupInfr(gl, infrastructure);
 
+  const playBtn = document.getElementById("play");
+  const pauseBtn = document.getElementById("pause");
+  const replayBtn = document.getElementById("replay");
+
+  var paused = false;
   var time = 0;
   var numFrames = frames.length;
+  // Duplicate last frame so that interpolation always has two frames to use
+  frames.push(frames[frames.length - 1]);
   var then = performance.now();
   // Draw the scene repeatedly
   const render = now => {
@@ -219,24 +234,52 @@ const main = (frames, infrastructure) => {
     if (now > then) {
       time += now - then;
     }
-    const frame = time / 1000 + 1;
+    const frame = time / 100 + 1;
     const currFrame = Math.floor(frame);
     then = now;
 
     // Clear the canvas before drawing
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    if (currFrame >= numFrames) {
-      gl.viewport(0, 0, 0, 0);
-      return;
-    }
-
     drawInfr(gl, programInfo, infrBuf, infrNum);
     drawVehicles(gl, now, frame % 1, programInfo, rectBuf, frames, currFrame);
-    requestAnimationFrame(render);
+    if (currFrame < numFrames && !paused) {
+      requestAnimationFrame(render);
+    }
+    if (currFrame >= numFrames) {
+      playBtn.style.display = "none";
+      pauseBtn.style.display = "none";
+    }
   };
 
   requestAnimationFrame(render);
+  playBtn.onclick = () => {
+    playBtn.disabled = true;
+    pauseBtn.disabled = false;
+    if (paused) {
+      paused = false;
+      then = performance.now();
+      requestAnimationFrame(render);
+    }
+  }
+  pauseBtn.onclick = () => {
+    playBtn.disabled = false;
+    pauseBtn.disabled = true;
+    if (!paused) {
+      paused = true;
+    }
+  }
+  replayBtn.onclick = () => {
+    playBtn.style.display = "initial";
+    pauseBtn.style.display = "initial";
+    time = 0;
+    then = performance.now();
+    requestAnimationFrame(render);
+  }
+  playBtn.disabled = true;
+  playBtn.style.display = "initial";
+  pauseBtn.style.display = "initial";
+  replayBtn.style.display = "initial";
 };
 
 const setupCamera = (gl, programInfo, viewDims, zoom, screenLoc) => {

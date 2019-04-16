@@ -12,16 +12,21 @@
 <body>
 
 <canvas id="glCanvas"></canvas>
-<div id="userInput">
-  <div class="group">
-    <label for="infrInput" class="subitem">Infrastructure</label>
-    <input type="file" id="infrInput" class="subitem" onchange="enableBuild()">
-  </div>
-  <div class="group">
-    <label for="vehicleInput" class="subitem">Vehicles</label>
-    <input type="file" id="vehicleInput" class="subitem" onchange="enableBuild()">
+<div id="controls">
+  <div id="parameters">
+    <div class="group">
+      <label for="infrInput" class="subitem">Infrastructure</label>
+      <input type="file" id="infrInput" class="subitem" onchange="enableBuild()">
+    </div>
+    <div class="group">
+      <label for="vehicleInput" class="subitem">Vehicles</label>
+      <input type="file" id="vehicleInput" class="subitem" onchange="enableBuild()">
+    </div>
   </div>
   <button type="button" id="build" disabled onclick="build()">Build</button>
+  <button type="button" id="play">Play</button>
+  <button type="button" id="pause">Pause</button>
+  <button type="button" id="replay">Replay</button>
 </div>
 
 </body>

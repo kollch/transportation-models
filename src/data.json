@@ -60,7 +60,7 @@
         1,
         {
           "x": 0,
-          "y": 500
+          "y": 400
         }
       ],
       "two_way": true,
@@ -94,7 +94,7 @@
         2
       ],
       "two_way": true,
-      "lanes": 4
+      "lanes": 2
     },
     {
       "id": 5,
@@ -115,7 +115,7 @@
         3
       ],
       "two_way": true,
-      "lanes": 4
+      "lanes": 2
     },
     {
       "id": 7,
@@ -139,7 +139,7 @@
         }
       ],
       "two_way": true,
-      "lanes": 4
+      "lanes": 2
     },
     {
       "id": 9,
@@ -147,8 +147,8 @@
         4,
         3
       ],
-      "two_way": false,
-      "lanes": 4
+      "two_way": true,
+      "lanes": 2
     },
     {
       "id": 10,
@@ -171,7 +171,7 @@
         },
         4
       ],
-      "two_way": false,
+      "two_way": true,
       "lanes": 2
     }
   ]
