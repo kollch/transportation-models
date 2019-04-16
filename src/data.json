@@ -5,7 +5,7 @@
       "connects_roads": [
         2,
         3,
-        null,
+        12,
         1
       ],
       "loc": {
@@ -170,6 +170,18 @@
           "y": 0
         },
         4
+      ],
+      "two_way": true,
+      "lanes": 2
+    },
+    {
+      "id": 12,
+      "ends": [
+        {
+          "x": 400,
+          "y": 0
+        },
+        1
       ],
       "two_way": true,
       "lanes": 2

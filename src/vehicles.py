@@ -26,6 +26,9 @@ class Vehicle():
         self.plan = [locs[1], []]
         self.following = False
         self.in_front = None
+        self.during_turn = False
+        self.turn = None
+        self.curr_road = None
 
     def angle(self, loc):
         """Compute angle from vehicle to location"""
@@ -205,7 +208,12 @@ class Vehicle():
             False if not.
         """
         curr_road = self.get_road()
-        i = self.world.infrastructure.closest_intersection(self.loc).roads.index(curr_road)
+        i = 0
+        for count, r in enumerate(self.world.infrastructure.closest_intersection(self.loc).roads):
+            if r is None:
+                continue
+            if curr_road.road_id == r.road_id:
+                i = count
         return self.world.infrastructure.closest_intersection(self.loc).roads_list[i][turn]
 
 
@@ -223,7 +231,12 @@ class Vehicle():
         curr_road = self.get_road()
         inter_1 = self.plan[1][0]
         inter_2 = self.plan[1][1]
-        road_index = inter_1.roads.index(curr_road)
+        road_index = 0
+        for count, r in enumerate(inter_1.roads):
+            if r is None:
+                continue
+            if curr_road.road_id == r.road_id:
+                road_index = count
         for i, road_id in enumerate(inter_1.roads):
             if road_id in inter_2.roads:
                 connecting_road_index = i
@@ -737,23 +750,6 @@ class CAV(Vehicle):
         solution.reverse()
         return solution
 
-    def calc_stop_line(self):
-        inter = self.world.infrastructure.closest_intersection(self.loc).loc
-        #if approaching from top
-        stop_line = None
-        if -135 < self.veloc[1] < -45:
-            stop_line = (inter[0] - 6, inter[1] + 20)
-        #if approaching from right
-        if 135 < self.veloc[1] or self.veloc[1] < -135:
-            stop_line = (inter[0] + 20, inter[1] + 6)
-        #if approaching from left
-        if -45 < self.veloc[1] < 45:
-            stop_line = (inter[0] - 20, inter[1] - 6)
-        #if approaching from bottom
-        if 45 < self.veloc[1] < 135:
-            stop_line = (inter[0] + 6, inter[1] - 20)
-        return stop_line
-
     def decide_move(self):
         """Uses available information and determines move"""
         if not self.plan[1] or self.at_intersection():
@@ -766,15 +762,11 @@ class CAV(Vehicle):
                     dest = end
             self.plan[1] = self.dijkstras(source, dest)
 
-        print("===========",self.vehicle_id,"============")
         self.veloc[1] = self.get_road().lane_direction(self.loc)
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
 
-        print("veloc for vehicle", self.vehicle_id, ":",self.veloc[0])
-        print("direction for vehicle", self.vehicle_id,":", self.veloc[1])
         if self.following:
-            print("is following", self.in_front)
             if self.dist_to(self.in_front.loc) < 30:
                 if self.in_front.veloc[0] == 0:
                     self.veloc[0] = 0
@@ -782,17 +774,53 @@ class CAV(Vehicle):
                 else:
                     self.accel = self.decide_accel()
                     self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-        if self.calc_stop_line() is not None:
-            if self.dist_to(self.calc_stop_line()) < 20:
-                #if light is green
-    #            if self.can_go(self.turn_dir()):
-    #                print(self.turning_point())
-                #if light is red
-    #            else:
+         
+        if not self.during_turn:
+            for count, r in enumerate(self.world.infrastructure.closest_intersection(self.loc).roads):
+                if r is None:
+                    continue
+                if self.get_road().road_id == r.road_id:
+                    self.curr_road = count
+            index = self.curr_road
+        points = [[(-6, 12), (6, 12)],[(12, 6), (12, -6)],[(6, -12),(-6, -12)],[(-12, -6),(-12, 6)]]
+        if self.during_turn:
+            if self.dist_to(points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10:
+                self.loc = points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc
+                if self.turn_dir() == 0:
+                    new_direct = self.veloc[1] + 45
+                    if new_direct > 180:
+                        new_direct -= 360
+                    self.veloc[1] = new_direct
+                if self.turn_dir() == 2:
+                    new_direct = self.veloc[1] - 45
+                    if new_direct < -180:
+                        new_direct += 360
+                    self.veloc[1] = new_direct
+                self.during_turn = False
+
+        if self.dist_to(self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)) < 10:
+#                if light is green
+            if self.can_go(self.turn_dir()):
+                self.turn = 1
+                if self.turn_dir != 1 and self.dist_to(points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10 and not self.during_turn:
+                        self.loc = points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc
+                        self.during_turn = True
+                        if self.turn_dir() == 0:
+                            new_direct = self.veloc[1] + 45
+                            if new_direct > 180:
+                                new_direct -= 360
+                            self.veloc[1] = new_direct
+                        if self.turn_dir() == 2:
+                            new_direct = self.veloc[1] - 45
+                        if new_direct < -180:
+                            new_direct += 360
+                        self.veloc[1] = new_direct
+#                if light is red
+            else:
                 if not self.following:
                     self.veloc[0] = 0
                     self.accel = 0
-                    self.loc = self.calc_stop_line()
+                    self.loc = self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)
 
         self.update_coords()
 
@@ -871,7 +899,65 @@ class HV(Vehicle):
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
 
+        
         self.veloc[1] = self.get_road().lane_direction(self.loc)
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
+        
+        if self.following:
+            if self.dist_to(self.in_front.loc) < 30:
+                if self.in_front.veloc[0] == 0:
+                    self.veloc[0] = 0
+                    self.accel = 0
+                else:
+                    self.accel = self.decide_accel()
+                    self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
+        
+        if not self.during_turn:
+            for count, r in enumerate(self.world.infrastructure.closest_intersection(self.loc).roads):
+                if r is None:
+                    continue
+                if self.get_road().road_id == r.road_id:
+                    self.curr_road = count
+            index = self.curr_road
+        points = [[(-6, 12), (6, 12)],[(12, 6), (12, -6)],[(6, -12),(-6, -12)],[(-12, -6),(-12, 6)]]
+        if self.during_turn:
+            if self.dist_to(points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10:
+                self.loc = points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc
+                if self.turn_dir() == 0:
+                    new_direct = self.veloc[1] + 45
+                    if new_direct > 180:
+                        new_direct -= 360
+                        self.veloc[1] = new_direct
+                        if self.turn_dir() == 2:
+                            new_direct = self.veloc[1] - 45
+                            if new_direct < -180:
+                                new_direct += 360
+                            self.veloc[1] = new_direct
+            self.during_turn = False
+
+        if self.dist_to(self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)) < 10:
+            #                if light is green
+            if self.can_go(self.turn_dir()):
+                self.turn = 1
+                if self.turn_dir != 1 and self.dist_to(points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10 and not self.during_turn:
+                    self.loc = points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc
+                    self.during_turn = True
+                    if self.turn_dir() == 0:
+                        new_direct = self.veloc[1] + 45
+                        if new_direct > 180:
+                            new_direct -= 360
+                            self.veloc[1] = new_direct
+                    if self.turn_dir() == 2:
+                        new_direct = self.veloc[1] - 45
+                        if new_direct < -180:
+                            new_direct += 360
+                    self.veloc[1] = new_direct
+        #                if light is red
+            else:
+                if not self.following:
+                    self.veloc[0] = 0
+                    self.accel = 0
+                    self.loc = self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)
+
         self.update_coords()

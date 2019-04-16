@@ -7,6 +7,7 @@ class Infrastructure():
     def __init__(self, intersections, roads):
         self.intersections = intersections
         self.roads = roads
+    
 
     def closest_intersection(self, pos):
         """Returns the intersection that is closest to the given
@@ -108,6 +109,38 @@ class Intersection():
         for i in range(4):
             if self.roads[i] is None:
                 self.roads_list[i] = [None, None, None]
+
+    def calc_stop_line(self, index):
+        #if approaching from top
+        stop_line = None
+        if index == 0:
+            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
+        #if approaching from right
+        if index == 1:
+            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
+        #if approaching from bottom
+        if index == 2:
+            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
+        #if approaching from left
+        if index == 3:
+            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
+        return stop_line
+
+    def turning_point(self, turn, index):
+        #if approaching from top
+        stop_line = None
+        if index == 0:
+            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
+        #if approaching from right
+        if index == 1:
+            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
+            #if approaching from bottom
+        if index == 2:
+            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
+        #if approaching from left
+        if index == 3:
+            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
+        return stop_line
 
 
 
