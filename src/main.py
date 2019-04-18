@@ -158,11 +158,10 @@ class InvisibleHand():
             # Build a new frame of JSON.
             frame = self.data_to_json()
             # Send frame
-#            print("Sending frame #" + str(self.current_frame))
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        print("vehicles going up:" )
+        print("vehicles going up:")
         for i in self.cavs:
             if i.veloc[1] == 90:
                 print(i.vehicle_id)

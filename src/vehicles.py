@@ -67,6 +67,7 @@ class Vehicle():
             if vehicle is self:
                 continue
             angle = vehicle.angle_edges(self)
+
             def leq(a_1, a_2):
                 """Finds if angle a is less than angle b.
                 Needed because of wrapping at pi = -pi"""
@@ -124,69 +125,68 @@ class Vehicle():
             """
         a = 12
         b = 10.3
-        all = self.can_see(self.world.cavs, self.world.hvs)
-        if not all:
+        closeby = self.can_see(self.world.cavs, self.world.hvs)
+        if not closeby:
             if self.veloc[0] < self.get_road().speed:
                 return a
-            else:
-                return 0
-        #sort array by angle relativity to current vehicle
-        all.sort(key=lambda v: abs(self.veloc[1] - math.degrees(self.angle(v.loc))))
-        for i in all:
+            return 0
+        # sort array by angle relativity to current vehicle
+        closeby.sort(key=lambda v: abs(self.veloc[1] - math.degrees(self.angle(v.loc))))
+        for i in closeby:
             if i.veloc[1] != self.veloc[1]:
-                all.remove(i)
+                closeby.remove(i)
 
-        if not all:
+        if not closeby:
             if self.veloc[0] < self.get_road().speed:
                 return a
-            else:
-                return 0
+            return 0
 
-        if -1 < self.veloc[1] - math.degrees(self.angle(all[0].loc)) < 1 and abs(self.veloc[1] - all[0].veloc[1]) < 45:
-            self.in_front = all[0]
+        if -1 < self.veloc[1] - math.degrees(self.angle(closeby[0].loc)) < 1 and abs(self.veloc[1] - closeby[0].veloc[1]) < 45:
+            self.in_front = closeby[0]
             self.following = True
 
-        if self.in_front == None:
+        if self.in_front is None:
             self.following = False
             if self.veloc[0] < 60:
                 return a
-            else:
-                return 0
-        #if vehicle that is in front is further than 60 feet away, move freely
+            return 0
+        # if vehicle that is in front is further than 60 feet away, move freely
         if self.dist_to(self.in_front.loc) > 60:
-            #if vehicle is going speed limit, do not accelerate
+            # if vehicle is going speed limit, do not accelerate
             if self.veloc[0] >= self.get_road().speed:
                 return 0
             return a
 
         dist_to_intersection = self.dist_to(self.plan[1][0].loc)
 
-        #set values for acceleration(a) and deceleration(b)
+        # set values for acceleration(a) and deceleration(b)
         b = 3.735684
-        coef = 0.74           # Stimulus Coefficient = 0.74
-        deltat = 2.2          # Reaction Time = 2.2 s, Time gap between the decelerations.
-        rate = -4.6           # Deceleration Rate of the First Vehicle (ft/s^2)
-        hini = -114           # Initial Headway between each Vehicle = 114 ft
+        # Stimulus Coefficient = 0.74
+        coef = 0.74
+        # Reaction Time = 2.2 s, Time gap between the decelerations.
+        deltat = 2.2
+        # Deceleration Rate of the First Vehicle (ft/s^2)
+        rate = -4.6
+        # Initial Headway between each Vehicle = 114 ft
+        hini = -114
 
-#        if self.veloc[0] + self.accel * 0.1 > 0:
-#            self.veloc[0]
-
-
+        # if self.veloc[0] + self.accel * 0.1 > 0:
+        #     self.veloc[0]
 
         if self.in_front is not None:
             delta_speed = (self.veloc[0] - self.in_front.veloc[0])
         else:
             delta_speed = 0
-        #coefficient if no car in front
+        # coefficient if no car in front
         free_coeff = (self.veloc[0] / 60) ** 4
-        #distance gap
+        # distance gap
         d_gap = 2
-        #time gap
+        # time gap
         t_gap = self.veloc[0] + 1.5
-        #braking gap
+        # braking gap
         b_gap = self.veloc[0] * delta_speed / (2 * math.sqrt(a * b))
         safe_dist_follow = d_gap + t_gap + b_gap
-        #coefficient if car following
+        # coefficient if car following
         if self.in_front is not None:
             follow_coeff = (safe_dist_follow / self.dist_to(self.in_front.loc)) ** 2
         else:
@@ -215,7 +215,6 @@ class Vehicle():
             if curr_road.road_id == r.road_id:
                 i = count
         return self.world.infrastructure.closest_intersection(self.loc).roads_list[i][turn]
-
 
     def update_coords(self):
         """Updates location coordinates depending on passed time and
@@ -256,7 +255,7 @@ class Vehicle():
         """This function used to find the turning lane middle point
         """
         # turning point
-        turning_point = [[],[]]
+        turning_point = [[], []]
         # find intersection location and id
         inter1_id = 0
         inter2_id = 0
@@ -283,7 +282,7 @@ class Vehicle():
         # turn left or right need to find next intersection id
         for i in range(len(self.plan[1])):
             if inter1_loc == self.plan[1][i].loc:
-                inter2_loc = self.plan[1][i+1].loc
+                inter2_loc = self.plan[1][i + 1].loc
         for intersection in self.world.infrastructure.intersections:
             if inter2_loc == intersection.loc:
                 inter2_id = intersection.intersection_id
@@ -294,9 +293,8 @@ class Vehicle():
             if inter1_id == intersection.intersection_id:
                 # for i in range (4):
                 #     try:
-                         inter1_roads = intersection.roads
+                inter1_roads = intersection.roads
                 #     except TypeError:
-
 
             if inter2_id == intersection.intersection_id:
                 inter2_roads = intersection.roads
@@ -366,7 +364,7 @@ class Vehicle():
         ends_coord_2 = []
         # case turning to position 0 and 2
         if straight == 0:
-            if lane_side == 0 or lane_side == 2:
+            if lane_side in (0, 2):
                 road_id_1 = inter1_roads[1]
                 road_id_2 = inter1_roads[3]
                 print("in lane_side 0 or 2, straight 0", road_id_1, road_id_2)
@@ -405,16 +403,16 @@ class Vehicle():
                         angle_2 = math.radians(abs(degree_2 - 180))
                 print("degree_1 and degree_2", (degree_1), (degree_2))
                 print("angle_1 and angle_2 ", angle_1, angle_2)
-                if (degree_1 != 0 and degree_1 != 180) and (degree_2 != 0 and degree_2 != 180):
+                if degree_1 not in (0, 180) and degree_2 not in (0, 180):
                     if (angle_1 < angle_2) and angle_1 > 0:
                         ori_lane_width = 12 / math.sin(angle_1)
                     if (angle_1 >= angle_2) and angle_2 > 0:
                         ori_lane_width = 12 / math.sin(angle_2)
-                if (degree_1 == 0 or degree_1 == 180) and (degree_2 == 0 or degree_2 == 180):
+                if degree_1 in (0, 180) and degree_2 in (0, 180):
                     ori_lane_width = 12
-                if (degree_1 == 0 or degree_1 == 180) and (degree_2 != 0 and degree_2 != 180):
+                if degree_1 in (0, 180) and degree_2 not in (0, 180):
                     ori_lane_width = 12 / math.sin(angle_2)
-                if (degree_1 != 0 and degree_1 != 180) and (degree_2 == 0 or degree_2 == 180):
+                if degree_1 not in (0, 180) and degree_2 in (0, 180):
                     ori_lane_width = 12 / math.sin(angle_1)
                 # calculate turning lane width
                 if yle != 0:
@@ -445,8 +443,8 @@ class Vehicle():
                 if ori_lane_side == 3:
                     turning_point[0].append(inter1_loc[0] - turn_lane_width)
                     turning_point[0].append(inter1_loc[0] - ori_lane_width / 2)
-            # case turning to pisition 1 and 3
-            if lane_side == 1 or lane_side == 3:
+            # case turning to position 1 and 3
+            if lane_side in (1, 3):
                 road_id_1 = inter1_roads[0]
                 road_id_2 = inter1_roads[2]
                 print("in lane_side 1 or 3, straight 1", road_id_1, road_id_2)
@@ -515,7 +513,7 @@ class Vehicle():
                         turning_point[1].append(inter1_loc[0] - turn_lane_width / 2)
                         turning_point[1].append(inter1_loc[1] + ori_lane_width)
                 if ori_lane_side == 0:
-                    turning_point[0].append(inter1_loc[0] - ori_lane_width /2)
+                    turning_point[0].append(inter1_loc[0] - ori_lane_width / 2)
                     turning_point[0].append(inter1_loc[1] + turn_lane_width)
                 if ori_lane_side == 2:
                     turning_point[0].append(inter1_loc[0] + ori_lane_width / 2)
@@ -538,11 +536,11 @@ class Vehicle():
                     v_road_mid.append((ends_coord_v[1][0] + ends_coord_v[1][1]) / 2)
                     degree_v_road = abs(self.get_side_road(v_road_id).lane_direction(v_road_mid))
                     angle_v_rd = math.radians(abs(degree_v_road - 90))
-                    if degree_v_road != 0 and degree_v_road != 90:
+                    if degree_v_road not in (0, 90):
                         v_road_width = 12 / math.sin(angle_v_rd)
                     else:
                         v_road_width = 12
-            if lane_side == 0 or lane_side == 2:
+            if lane_side in (0, 2):
                 road_id_1 = inter1_roads[1].road_id
                 road_id_2 = inter1_roads[3].road_id
                 print("in lane_side 0 or 2, straight 1", road_id_1, road_id_2)
@@ -562,7 +560,7 @@ class Vehicle():
                     if road_id_2 == road_xx.road_id:
                         for r in range(2):
                             try:
-                                ends_coord_2.append((road.ends[r][0],road.ends[r][1]))
+                                ends_coord_2.append((road.ends[r][0], road.ends[r][1]))
                             except TypeError:
                                 ends_coord_2.append(road.ends[r].loc)
                         print("straight 1, rd 2: lane_side 0 or 2", ends_coord_2)
@@ -581,16 +579,16 @@ class Vehicle():
                         angle_2 = math.radians(abs(degree_2 - 180))
                 print("degree_1 and degree_2", (degree_1), (degree_2))
                 print("angle_1 and angle_2 ", angle_1, angle_2)
-                if (degree_1 != 0 and degree_1 != 180) and (degree_2 != 0 and degree_2 != 180):
+                if degree_1 not in (0, 180) and degree_2 not in (0, 180):
                     if (angle_1 < angle_2) and angle_1 > 0:
                         two_road_width = 12 / math.sin(angle_1)
                     if (angle_1 >= angle_2) and angle_2 > 0:
                         two_road_width = 12 / math.sin(angle_2)
-                if (degree_1 == 0 or degree_1 == 180) and (degree_2 == 0 or degree_2 == 180):
+                if degree_1 in (0, 180) and degree_2 in (0, 180):
                     two_road_width = 12
-                if (degree_1 == 0 or degree_1 == 180) and (degree_2 != 0 and degree_2 != 180):
+                if degree_1 in (0, 180) and degree_2 not in (0, 180):
                     two_road_width = 12 / math.sin(angle_2)
-                if (degree_1 != 0 and degree_1 != 180) and (degree_2 == 0 or degree_2 == 180):
+                if degree_1 not in (0, 180) and degree_2 in (0, 180):
                     two_road_width = 12 / math.sin(angle_1)
                 # calculate turning lane width
                 if yle != 0:
@@ -598,16 +596,16 @@ class Vehicle():
                 if yle == 0:
                     turn_lane_width = 12
                 if lane_side == 0:
-                    turning_point[0].appen(inter1_loc[0] + v_road_width /2)
-                    turning_point[0].appen(inter1_loc[1] - two_road_width)
-                    turning_point[1].appen(inter1_loc[0] + turn_lane_width / 2)
-                    turning_point[1].appen(inter1_loc[1] + two_road_width)
+                    turning_point[0].append(inter1_loc[0] + v_road_width / 2)
+                    turning_point[0].append(inter1_loc[1] - two_road_width)
+                    turning_point[1].append(inter1_loc[0] + turn_lane_width / 2)
+                    turning_point[1].append(inter1_loc[1] + two_road_width)
                 if lane_side == 2:
-                    turning_point[0].appen(inter1_loc[0] - v_road_width /2)
-                    turning_point[0].appen(inter1_loc[0] + two_road_width)
-                    turning_point[1].appen(inter1_loc[1] - turn_lane_width / 2)
-                    turning_point[1].appen(inter1_loc[1] - two_road_width)
-            if lane_side == 1 or lane_side == 3:
+                    turning_point[0].append(inter1_loc[0] - v_road_width / 2)
+                    turning_point[0].append(inter1_loc[0] + two_road_width)
+                    turning_point[1].append(inter1_loc[1] - turn_lane_width / 2)
+                    turning_point[1].append(inter1_loc[1] - two_road_width)
+            if lane_side in (1, 3):
                 road_id_1 = inter1_roads[0].road_id
                 road_id_2 = inter1_roads[2].road_id
                 print("in lane_side 1 or 3, straight 1", road_id_1, road_id_2)
@@ -673,6 +671,7 @@ class Vehicle():
                     turning_point[1].append(inter1_loc[1] + turn_lane_width / 2)
                 print(inter1_loc, two_road_width, v_road_width, turn_lane_width)
         return turning_point
+
 
 class CAV(Vehicle):
     """Connected autonomous vehicles
@@ -774,7 +773,7 @@ class CAV(Vehicle):
                 else:
                     self.accel = self.decide_accel()
                     self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-         
+
         if not self.during_turn:
             for count, r in enumerate(self.world.infrastructure.closest_intersection(self.loc).roads):
                 if r is None:
@@ -782,7 +781,7 @@ class CAV(Vehicle):
                 if self.get_road().road_id == r.road_id:
                     self.curr_road = count
             index = self.curr_road
-        points = [[(-6, 12), (6, 12)],[(12, 6), (12, -6)],[(6, -12),(-6, -12)],[(-12, -6),(-12, 6)]]
+        points = [[(-6, 12), (6, 12)], [(12, 6), (12, -6)], [(6, -12), (-6, -12)], [(-12, -6), (-12, 6)]]
         if self.during_turn:
             if self.dist_to(points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10:
                 self.loc = points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc
@@ -799,30 +798,31 @@ class CAV(Vehicle):
                 self.during_turn = False
 
         if self.dist_to(self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)) < 10:
-#                if light is green
             if self.can_go(self.turn_dir()):
+                # if light is green
                 self.turn = 1
                 if self.turn_dir != 1 and self.dist_to(points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10 and not self.during_turn:
-                        self.loc = points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc
-                        self.during_turn = True
-                        if self.turn_dir() == 0:
-                            new_direct = self.veloc[1] + 45
-                            if new_direct > 180:
-                                new_direct -= 360
-                            self.veloc[1] = new_direct
-                        if self.turn_dir() == 2:
-                            new_direct = self.veloc[1] - 45
-                        if new_direct < -180:
-                            new_direct += 360
+                    self.loc = points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc
+                    self.during_turn = True
+                    if self.turn_dir() == 0:
+                        new_direct = self.veloc[1] + 45
+                        if new_direct > 180:
+                            new_direct -= 360
                         self.veloc[1] = new_direct
-#                if light is red
+                    if self.turn_dir() == 2:
+                        new_direct = self.veloc[1] - 45
+                    if new_direct < -180:
+                        new_direct += 360
+                    self.veloc[1] = new_direct
             else:
+                # if light is red
                 if not self.following:
                     self.veloc[0] = 0
                     self.accel = 0
                     self.loc = self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)
 
         self.update_coords()
+
 
 class HV(Vehicle):
     """Human-driven vehicles
@@ -899,11 +899,10 @@ class HV(Vehicle):
             dest = self.world.infrastructure.closest_intersection(self.plan[0])
             self.plan[1] = self.dijkstras(source, dest)
 
-        
         self.veloc[1] = self.get_road().lane_direction(self.loc)
         self.accel = self.decide_accel()
         self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-        
+
         if self.following:
             if self.dist_to(self.in_front.loc) < 30:
                 if self.in_front.veloc[0] == 0:
@@ -912,7 +911,7 @@ class HV(Vehicle):
                 else:
                     self.accel = self.decide_accel()
                     self.veloc[0] = self.veloc[0] + self.accel * (528 / 3600)
-        
+
         if not self.during_turn:
             for count, r in enumerate(self.world.infrastructure.closest_intersection(self.loc).roads):
                 if r is None:
@@ -920,7 +919,7 @@ class HV(Vehicle):
                 if self.get_road().road_id == r.road_id:
                     self.curr_road = count
             index = self.curr_road
-        points = [[(-6, 12), (6, 12)],[(12, 6), (12, -6)],[(6, -12),(-6, -12)],[(-12, -6),(-12, 6)]]
+        points = [[(-6, 12), (6, 12)], [(12, 6), (12, -6)], [(6, -12), (-6, -12)], [(-12, -6), (-12, 6)]]
         if self.during_turn:
             if self.dist_to(points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10:
                 self.loc = points[(self.curr_road + self.turn + 1) % 4][1] + self.world.infrastructure.closest_intersection(self.loc).loc
@@ -937,8 +936,8 @@ class HV(Vehicle):
             self.during_turn = False
 
         if self.dist_to(self.world.infrastructure.closest_intersection(self.loc).calc_stop_line(index)) < 10:
-            #                if light is green
             if self.can_go(self.turn_dir()):
+                # if light is green
                 self.turn = 1
                 if self.turn_dir != 1 and self.dist_to(points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc) < 10 and not self.during_turn:
                     self.loc = points[index][0] + self.world.infrastructure.closest_intersection(self.loc).loc
@@ -953,8 +952,8 @@ class HV(Vehicle):
                         if new_direct < -180:
                             new_direct += 360
                     self.veloc[1] = new_direct
-        #                if light is red
             else:
+                # if light is red
                 if not self.following:
                     self.veloc[0] = 0
                     self.accel = 0
