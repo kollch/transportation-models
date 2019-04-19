@@ -4,9 +4,7 @@ import ssl
 import json
 import websockets
 import random
-import matplotlib
-matplotlib.use('agg')
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
