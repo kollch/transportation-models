@@ -188,7 +188,10 @@ class Vehicle():
         safe_dist_follow = d_gap + t_gap + b_gap
         # coefficient if car following
         if self.in_front is not None:
-            follow_coeff = (safe_dist_follow / self.dist_to(self.in_front.loc)) ** 2
+            try:
+                follow_coeff = (safe_dist_follow / self.dist_to(self.in_front.loc)) ** 2
+            except ZeroDivisionError:
+                follow_coeff = 0
         else:
             follow_coeff = 0
 

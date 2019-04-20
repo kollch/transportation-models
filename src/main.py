@@ -147,6 +147,12 @@ class InvisibleHand():
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
+                if vehicle.loc[0] < 0 or vehicle.loc[0] > 1600 or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600:
+                    if vehicle.autonomous:
+                        self.cavs.remove(vehicle)
+                    else:
+                        self.hvs.remove(vehicle)
+                    break
                 vehicle.decide_move()
                 if len(vehicle.plan[1]) < 2:
                     if vehicle.autonomous:
