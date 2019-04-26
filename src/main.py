@@ -167,10 +167,6 @@ class InvisibleHand():
             await self.gui.send_frame(frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        print("vehicles going up:")
-        for i in self.cavs:
-            if i.veloc[1] == 90:
-                print(i.vehicle_id)
         print("Finished sending frames")
 
     def cavs_in_range(self, location, length):
