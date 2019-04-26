@@ -143,10 +143,20 @@ class InvisibleHand():
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-
+        
         velocities = []
+        accelerations = []
+        auto_velocities = []
+        human_velocities = []
+        auto_accelerations = []
+        human_accelerations = []
         for i in range(100):
             velocities.append([])
+            accelerations.append([])
+            auto_velocities.append([])
+            human_velocities.append([])
+            auto_accelerations.append([])
+            human_accelerations.append([])
         x = []
         for frame in range(num_frames):
             x.append(frame)
@@ -158,6 +168,16 @@ class InvisibleHand():
             #push the actual vehicle velocity, balancing out the y axis lengths to match the x axis.
             for vlist in velocities:
                 vlist.append(None)
+            for alist in accelerations:
+                alist.append(None)
+            for auto_vlist in auto_velocities:
+                auto_vlist.append(None)
+            for auto_alist in auto_accelerations:
+                auto_alist.append(None)
+            for human_vlist in human_velocities:
+                human_vlist.append(None)
+            for human_alist in human_accelerations:
+                human_alist.append(None)
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
@@ -167,10 +187,59 @@ class InvisibleHand():
                         self.cavs.remove(vehicle)
                     else:
                         self.hvs.remove(vehicle)
-                velocities[vehicle.vehicle_id] = velocities[vehicle.vehicle_id][:-1]
-                velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
+                if vehicle.autonomous:
+                    auto_velocities[vehicle.vehicle_id] = auto_velocities[vehicle.vehicle_id][:-1]
+                    auto_accelerations[vehicle.vehicle_id] = auto_accelerations[vehicle.vehicle_id][:-1]
+                    auto_velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
+                    auto_accelerations[vehicle.vehicle_id].append(vehicle.accel)
+                else:
+                    human_velocities[vehicle.vehicle_id] = human_velocities[vehicle.vehicle_id][:-1]
+                    human_accelerations[vehicle.vehicle_id] = human_accelerations[vehicle.vehicle_id][:-1]
+                    human_velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
+                    human_accelerations[vehicle.vehicle_id].append(vehicle.accel)
 
+                velocities[vehicle.vehicle_id] = velocities[vehicle.vehicle_id][:-1]
+                accelerations[vehicle.vehicle_id] = accelerations[vehicle.vehicle_id][:-1]
+                velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
+                accelerations[vehicle.vehicle_id].append(vehicle.accel)
+
+                plt.subplot(2, 3, 1)
+                plt.title("Vehicle Velocities")
                 plt.plot(x, velocities[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("velocity")
+                
+                plt.subplot(2, 3, 4)
+                plt.title("Vehicle Accelerations")
+                plt.plot(x, accelerations[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("acceleration")
+
+                plt.subplot(2, 3, 2)
+                plt.title("CAV Velocities")
+                plt.plot(x, auto_velocities[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("velocity")
+
+                plt.subplot(2, 3, 5)
+                plt.title("CAV Accelerations")
+                plt.plot(x, auto_accelerations[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("acceleration")
+                
+                plt.subplot(2, 3, 3)
+                plt.title("HV Velocities")
+                plt.plot(x, human_velocities[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("velocity")
+                
+                plt.subplot(2, 3, 6)
+                plt.title("HV Accelerations")
+                plt.plot(x, human_accelerations[vehicle.vehicle_id])
+                plt.xlabel("frame number")
+                plt.ylabel("acceleration")
+
+
             # Vehicle locations should have been changed now.
             # Build a new frame of JSON.
             frame = self.data_to_json()
