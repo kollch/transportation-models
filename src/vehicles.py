@@ -40,6 +40,7 @@ class Vehicle():
         return convert(result, 'rad', 'deg')
 
     def at_dest(self):
+        """Determines if the vehicle is at its destination"""
         dest = self.plan[0]
         loc = self.loc
         # 9 is a safe value in case of overshooting at 60 mph
@@ -222,7 +223,8 @@ class Vehicle():
         return next_inter.roads_list[index][self.turn]
 
     def update_speed(self):
-        self.veloc[0] = self.veloc[0] + self.accel * 3 / 44
+        """Updates speed depending on acceleration"""
+        self.veloc[0] = self.veloc[0] + convert(self.accel, 'ft/s^2', 'mph/f')
         # Vehicle stopped
         if self.veloc[0] < 0:
             self.veloc[0] = 0
@@ -231,7 +233,7 @@ class Vehicle():
         """Updates location coordinates depending on passed time and
         direction
         """
-        movement = self.veloc[0] * 528 / 3600
+        movement = convert(self.veloc[0], 'mph', 'ft/f')
         direction = convert(self.veloc[1], 'deg', 'rad')
         d_x = movement * math.cos(direction)
         d_y = movement * math.sin(direction)
@@ -356,7 +358,6 @@ class CAV(Vehicle):
             self.update_speed()
             self.update_coords()
             return
-        road_index = next_inter.index(self.road)
         stop_line = next_inter.turn_point(self, self.road, 'input')
         exit_road = self.turn_to_road()
         turn_exit = next_inter.turn_point(self, exit_road, 'output')
@@ -373,7 +374,8 @@ class CAV(Vehicle):
             # This is the key difference between CAVs and HVs
             self.plan[1] = self.dijkstras(next_inter, dest)
             self.turn = self.get_turn()
-            turn_exit = next_inter.turn_point(self, self.turn_to_road(), 'output')
+            road_turn = self.turn_to_road()
+            turn_exit = next_inter.turn_point(self, road_turn, 'output')
 
             if next_inter.is_green(self):
                 self.loc = stop_line
@@ -471,7 +473,6 @@ class HV(Vehicle):
             self.update_speed()
             self.update_coords()
             return
-        road_index = next_inter.index(self.road)
         stop_line = next_inter.turn_point(self, self.road, 'input')
         exit_road = self.turn_to_road()
         turn_exit = next_inter.turn_point(self, exit_road, 'output')
@@ -513,6 +514,7 @@ def idm_accel(v_mph, v_0_mph, d_v_mph=None, s_ft=None):
     a = 0.73
     # Complexity
     delta = 4
+
     def s_optim(v, d_v):
         """Desired gap"""
         # Minimum spacing
@@ -535,6 +537,7 @@ def idm_accel(v_mph, v_0_mph, d_v_mph=None, s_ft=None):
     result = a * (1 - (v / v_0) ** delta - (s_optim(v, d_v) / s) ** 2)
     return convert(result, 'm/s^2', 'ft/s^2')
 
+
 def convert(val, from_unit, to_unit):
     """Convert from one unit to another"""
     if val is None:
@@ -553,6 +556,11 @@ def convert(val, from_unit, to_unit):
         return val * 2.237
     if from_unit == 'm/s^2' and to_unit == 'ft/s^2':
         return val * 3.281
+    # To frames
+    if from_unit == 'ft/s^2' and to_unit == 'mph/f':
+        return val * 3 / 44
+    if from_unit == 'mph' and to_unit == 'ft/f':
+        return val * 11 / 75
     # Angles
     if from_unit == 'deg' and to_unit == 'rad':
         return math.radians(val)

@@ -137,12 +137,11 @@ class InvisibleHand():
             })
         return data
 
-    async def build_frames(self, num_frames=500):
+    async def build_frames(self):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        #for frame in range(num_frames):
         while True:
             self.current_frame += 1
             self.sort_new_vehicles()
