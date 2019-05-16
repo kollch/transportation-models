@@ -3,7 +3,6 @@ import asyncio
 import ssl
 import json
 import websockets
-import random
 import matplotlib.pyplot as plt
 plt.style.use('ggplot')
 from vehicles import CAV, HV
@@ -78,11 +77,12 @@ class InvisibleHand():
                 break
             vehicle_obj = self.new_vehicles.pop(0)
             vehicle = vehicle_obj["vehicle"]
-            for road in self.infrastructure.roads:
-                if road.has_point(vehicle.loc):
-                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
-                    road.vehicles_on.append(vehicle)
-                    break
+            road = self.infrastructure.road_at(vehicle.loc)
+            if road is None:
+                raise RuntimeError("Vehicle not initialized on a road")
+            vehicle.veloc[1] = road.lane_direction(vehicle.loc)
+            road.vehicles_on.append(vehicle)
+            vehicle.road = road
             if vehicle.autonomous:
                 self.cavs.append(vehicle)
                 continue
@@ -138,12 +138,11 @@ class InvisibleHand():
             })
         return data
 
-    async def build_frames(self, num_frames=300):
+    async def build_frames(self):
         """Run simulation for certain number of frames;
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        
         velocities = []
         accelerations = []
         auto_velocities = []
@@ -158,14 +157,19 @@ class InvisibleHand():
             auto_accelerations.append([])
             human_accelerations.append([])
         x = []
-        for frame in range(num_frames):
-            x.append(frame)
+        while True:
+            x.append(self.current_frame)
             self.current_frame += 1
             self.sort_new_vehicles()
-            #print(len(self.cavs + self.hvs))
-            #this is to keep the y and x axis the same length. every iteration, add a 'None' as the default value,
-            #and for the vehicle loop, if the vehicle id is present in the frame, it will delete the last 0 and
-            #push the actual vehicle velocity, balancing out the y axis lengths to match the x axis.
+            # If there are no more vehicles
+            if not self.new_vehicles and not self.cavs and not self.hvs:
+                break
+            # This is to keep the y and x axis the same length. Every
+            # iteration, add a 'None' as the default value, and for the
+            # vehicle loop, if the vehicle id is present in the frame,
+            # it will delete the last 0 and push the actual vehicle
+            # velocity, balancing out the y axis lengths to match the
+            # x axis.
             for vlist in velocities:
                 vlist.append(None)
             for alist in accelerations:
@@ -181,8 +185,15 @@ class InvisibleHand():
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
+                if (vehicle.loc[0] < 0 or vehicle.loc[0] > 1600
+                        or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600):
+                    if vehicle.autonomous:
+                        self.cavs.remove(vehicle)
+                    else:
+                        self.hvs.remove(vehicle)
+                    break
                 vehicle.decide_move()
-                if len(vehicle.plan[1]) < 2:
+                if vehicle.at_dest():
                     if vehicle.autonomous:
                         self.cavs.remove(vehicle)
                     else:
@@ -244,14 +255,10 @@ class InvisibleHand():
             # Build a new frame of JSON.
             frame = self.data_to_json()
             # Send frame
-            #print("Sending frame #" + str(self.current_frame))
             await self.gui.send_frame(frame)
+            print("Completed frame", self.current_frame)
         # Specify end of frames
         await self.gui.send_frame(None)
-        #print("vehicles going up:" )
-        for i in self.cavs:
-            if i.veloc[1] == 90:
-                print(i.vehicle_id)
         print("Finished sending frames")
         plt.show()
 
