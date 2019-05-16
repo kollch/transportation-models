@@ -12,13 +12,13 @@ class Infrastructure():
         """Returns the intersection that is closest to the given
         location
         """
-        min_distance = 100000
-        nearest = 0
+        min_distance = None
+        nearest = None
         for intersection in self.intersections:
             loc = intersection.loc
             distance = math.hypot(loc[0] - pos[0], loc[1] - pos[1])
 
-            if min_distance > distance:
+            if min_distance is None or min_distance > distance:
                 nearest = intersection
                 min_distance = distance
         return nearest
@@ -137,9 +137,6 @@ class Intersection():
                 [True, False, False]
             ]
         self.counter += 1
-        for i in range(4):
-            if self.roads[i] is None:
-                self.roads_list[i] = [None, None, None]
 
     def is_green(self, vehicle):
         """Check if light is green for vehicle; essentially an alias
@@ -223,7 +220,7 @@ class Road():
         singular = False
         result = None
         for end in self.ends:
-            if isinstance(end, Intersection):
+            if hasattr(end, 'roads'):
                 result = end
             else:
                 singular = True
