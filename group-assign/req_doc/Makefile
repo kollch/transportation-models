@@ -1,5 +1,14 @@
 all:
 	lualatex 43_requirementsdocumentdraft2.tex
 	rm 43_requirementsdocumentdraft2.log 43_requirementsdocumentdraft2.aux
+	lualatex 43_requirementsdocumentdraft3.tex
+	rm 43_requirementsdocumentdraft3.log 43_requirementsdocumentdraft3.aux
+draft2:
+	lualatex 43_requirementsdocumentdraft2.tex
+	rm 43_requirementsdocumentdraft2.log 43_requirementsdocumentdraft2.aux
+draft3:
+	lualatex 43_requirementsdocumentdraft3.tex
+	rm 43_requirementsdocumentdraft3.log 43_requirementsdocumentdraft3.aux
 clean:
 	rm 43_requirementsdocumentdraft2.toc 43_requirementsdocumentdraft2.pdf
+	rm 43_requirementsdocumentdraft3.toc 43_requirementsdocumentdraft3.pdf

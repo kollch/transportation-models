@@ -1,0 +1,289 @@
+\documentclass[onecolumn, draftclsnofoot,10pt, compsoc]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{setspace}
+
+\usepackage{geometry}
+\geometry{textheight=9.5in, textwidth=7in}
+
+% 1. Fill in these details
+\def \CapstoneTeamName{Transportation Modeling}
+\def \CapstoneTeamNumber{43}
+\def \GroupMemberOne{Eytan Brodsky}
+\def \GroupMemberTwo{Liang Du}
+\def \GroupMemberThree{Samantha Estrada}
+\def \GroupMemberFour{Shengjun Gu}
+\def \GroupMemberFive{Charles Koll}
+\def \CapstoneProjectName{Autonomous vehicle routing in congested transportation network.}
+\def \CapstoneSponsorCompany{Oregon State University}
+\def \CapstoneSponsorPerson{Haizhong Wang}
+
+% 2. Uncomment the appropriate line below so that the document type works
+\def \DocType{Design Document: Draft 2
+              %Progress Report
+}
+
+\newcommand{\NameSigPair}[1]{\par
+\makebox[2.75in][r]{#1} \hfil 	\makebox[3.25in]{\makebox[2.25in]{\hrulefill} \hfill		\makebox[.75in]{\hrulefill}}
+\par\vspace{-12pt} \textit{\tiny\noindent
+\makebox[2.75in]{} \hfil		\makebox[3.25in]{\makebox[2.25in][r]{Signature} \hfill	\makebox[.75in][r]{Date}}}}
+% 3. If the document is not to be signed, uncomment the RENEWcommand below
+%\renewcommand{\NameSigPair}[1]{#1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{titlepage}
+    \pagenumbering{gobble}
+    \begin{singlespace}
+        %\includegraphics[height=4cm]{coe_v_spot1}
+        \hfill
+        % 4. If you have a logo, use this includegraphics command to put it on the coversheet.
+        %\includegraphics[height=4cm]{CompanyLogo}
+        \par\vspace{.2in}
+        \centering
+        \scshape{
+            \huge CS Capstone \DocType \par
+            {\large\today}\par
+            \vspace{.5in}
+            \textbf{\Huge\CapstoneProjectName}\par
+            \vfill
+            {\large Prepared for}\par
+            \Huge \CapstoneSponsorCompany\par
+            \vspace{5pt}
+            {\Large\NameSigPair{\CapstoneSponsorPerson}\par}
+            {\large Prepared by }\par
+            Group\CapstoneTeamNumber\par
+            % 5. comment out the line below this one if you do not wish to name your team
+            \CapstoneTeamName\par
+            \vspace{5pt}
+            {\Large
+                \NameSigPair{\GroupMemberOne}\par
+                \NameSigPair{\GroupMemberTwo}\par
+                \NameSigPair{\GroupMemberThree}\par
+		\NameSigPair{\GroupMemberFour}\par
+		\NameSigPair{\GroupMemberFive}\par
+            }
+            \vspace{20pt}
+        }
+        \begin{abstract}
+        % 6. Fill in your abstract
+                The purpose of this document is to make design choices for building a connected autonomous vehicle model and provide a structure of a CAV simulation.
+                This document discusses details of functionalities of the CAV model in each component and shows design choice reasons for each component in the design rationale and ways to complete each component in the design viewpoint.
+        \end{abstract}
+    \end{singlespace}
+\end{titlepage}
+\newpage
+\pagenumbering{arabic}
+\tableofcontents
+% 7. uncomment this (if applicable). Consider adding a page break.
+%\listoffigures
+%\listoftables
+\clearpage
+
+% 8. now you write!
+\begin{table}[h]
+\caption{Updates Since Draft 1}
+\begin{tabular}{|p{1in}|p{2.5in}|p{2.5in}|}
+\hline
+Section                                         & Original  & New \\ \hline
+Purpose                                         & simulate effect CAVs have on congestion & simulate effect CAVs have on overall transportation network \\ \hline
+Testing                                         & road testing will include both one way and two way modeling; simulation playback will replay a saved video by the user & remove one way modeling; add that traffic light transition time is currently set at every 10 frames; simulation playback will simply replay last run simulation \\ \hline
+Infrastructure                                  & one way and two way roads; each vehicle has a different reaction time; CAV algorithm uses connectivity to route & remove; CAV uses altered algorithm that recalculates every time it approaches new intersection \\ \hline
+GUI Design Viewpoint                            & user may be able to pause simulation to gather additional information & remove gather additional information \\ \hline
+Vehicle Decisions and Modeling Design Viewpoint & functionality for CAVs to use connectivity of other CAVs; each vehicle will have a set of nearby vehicles whose optimal routes it will consider when formulating its own optimal route & functionality for vehicles to use speed, direction, and acceleration to decide its own for car following; each vehicle will have a set of nearby vehicles \\ \hline
+Vehicle Viewpoint                               & vehicle connection range & each autonomous vehicle will reroute itself at every intersection, while each human vehicle will only route itself once at the beginning to determine its optimal path. Both HVs and CAVs determine their speeds based on the cars directly in front of them. \\ \hline
+Vehicle Viewpoint                               & the vehicle will be modelled as a point on a graph, where the graph is a simplified version of the map. Each vehicle will have associated with it a speed, starting location, destination, and type (autonomous or not autonomous) & the vehicle will be modelled as a point on a graph, where the graph is a simplified version of the map. Each vehicle will have associated with it a speed, starting location, destination, entry time and type (autonomous or not autonomous) \\ \hline
+Vehicle Viewpoint                               & vehicle communication & remove \\ \hline
+Vehicle Viewpoint                               & to track performance, each vehicle will have metrics such as time on the road, distance travelled, time spent not moving, time spent significantly below the speed limit, etc. to test the effectiveness of this network of autonomous vehicles & to track performance, each vehicle will have a velocity metric to test the effectiveness of this network of autonomous vehicles \\ \hline
+Design Rationale                                & DSP with regards to connecting vehicles & remove \\ \hline
+Design Rationale                                & examples include starting, location, type and speed (average, most common, etc.) & examples include starting, location, type, entry time and speed (average, most common, etc.) \\ \hline
+Testing                                         & both one-way lane and two-way lane hybrid modeling & remove \\ \hline
+Testing                                         & for example, if the user sets the parameter beyond the limit value, the program will report an error "setting parameter is not accepted" & remove \\ \hline
+\end{tabular}
+\end{table}
+
+\newpage
+
+\section{Introduction}
+\subsection{Purpose}
+The purpose of this project is to provide numerical data by simulating the effect autonomous vehicles will have on a transportation network.
+By creating models of these connected autonomous vehicles (CAV), we intend to study the way these models react and coexist with other models representing human driven vehicles.
+\subsection{Scope}
+With this project, we hope to deliver a working simulation of autonomous vehicle models onto a transportation network, rendered onto a GUI for the user to see.
+Additionally, we aim to create relevant and insightful data of autonomous vehicle trajectory and how overall addition of these vehicles affects the transportation infrastructure.
+\subsection{Context}
+The vehicle is evolving into a mobile platform that can communicate and connect with others.
+Communication technology upgrades ceaselessly and progresses rapidly.
+With the continuous upgrading of urban scale and road planning, the research on autonomous vehicles reflects their social value.
+Easing congestion and road safety have become particularly important.
+The vehicle navigation system and other electronic navigation products have been unable to meet the needs of modern society.
+The development of autonomous vehicles is extremely urgent.
+The concept is to integrate relevant sensing technology, communication technology, and autonomous control technology into the vehicle, so that each vehicle can choose the optimal path to its destination freely.
+From the perspective of society, safety and convenience are important concerns of autonomous vehicles.
+\section{References}
+\begin{itemize}
+\item Ying Liu, Lei Liu and Wei-Peng Chen. 2017. Intelligent Traffic Light Control Using Distributed Multi-agent Q Learning. arXiv:1711.10941v1 [cs.SY]
+\item Rick Zhang, Federico Rossi and Marco Pavone. 2016. Routing Autonomous Vehicles in Congested Transportation Networks: Structural Properties and Coordination Algorithms. arXiv:1603.0093v2 [cs.MA]
+\item Alireza Mostafizi, Mohammad Rayeedul Kalam Siam and Haizhong Wang, Ph.D. 2018.  Autonomous Vehicle Routing Optimization in a Competitive Environment: A Reinforcement Learning Application.
+\end{itemize}
+\section{Infrastructure}
+\subsection{Design Viewpoint}
+Infrastructure components help CAVs (Connected autonomous vehicles) operate in a simulation with less abstractions from the real world.
+They restrict how vehicles travel.
+Users can also easily collect data from infrastructures.
+There are three main infrastructure components in the simulation: intersections, roads, and vehicles.
+
+Intersections are set up to connect roads together.
+For each intersection, traffic lights turn “green” (allow vehicles to pass) and turn “red” (don’t allow vehicles to pass) alternatingly.
+
+Roads connect intersections together and let vehicles drive on them.
+Road settings make all vehicles clarify where they can drive on a map.
+They are also convenient to collect data of each vehicle on the map; a user can easily know each vehicle’s location.
+
+There are two types of vehicles in the CAV model.
+One is the HV (human driven vehicle) and another is the CAV (connected autonomous vehicle).
+Human driven vehicles are used to compare with CAVs.
+Both types of vehicles have location and decision moves.
+Location describes each vehicle’s position through the x and y axes (although one could use the z axis to represent height).
+It is easy for the user to track a given vehicle.
+For connected autonomous vehicles, the move decision is based on an algorithm which calculates its route every time it approaches a new intersection.
+For human-driven vehicles, the decision move action is based on the route that has been set up at the beginning.
+\subsection{Design Rationale}
+The CAV simulation needs to simulate the real environment, but not all infrastructures in the real world should be built into the simulation because some infrastructure components do not influence vehicles’ driving (buildings, persons, etc.).
+
+The infrastructure portion of the simulation provides basic rules for vehicles driving.
+Intersections can show vehicles’ behaviors when they intersect.
+Since roads are the carriers of vehicles, the infrastructure decides vehicles’ driving direction.
+Connected autonomous vehicles are the main research object, and the performance of connected autonomous vehicles in a simulated traffic network determine its ways of communicating and the algorithm for selecting a route.
+To judge connected autonomous vehicles’ performance driven on the road, human driven vehicles are used as a judging criterion.
+One of the advantages of just simulating these three infrastructure components is making traffic network easier to operate and analyze.
+\section{Graphical User Interface}
+\subsection{Design Viewpoint}
+The graphical user interface (GUI) will consist of a website page that has a section for setting parameters of the simulation and a section for viewing the actions of the simulation.
+To use the GUI, the user will start by choosing parameters that they want the simulation to use.
+After doing so, they will then press a button that will start the simulation.
+When the simulation completes its computations, the GUI will then display the actions that the simulation took when it ran.
+The user will be able to pause and resume the display.
+When they decide to run another simulation, they can adjust the parameters and press the button that starts the simulation.
+
+The graphical user interface will interact with the simulation backend in the following ways.
+Upon startup, the GUI will establish a websocket connection with the simulation backend.
+Once the user has chosen the parameters and pressed the button, the GUI will send the parameter information via the websocket connection to the simulation backend.
+The backend will then run the simulation with the data it has been given.
+Upon completion of calculating a single frame of the simulation, the backend will send the updated points of every entity to the GUI, which will store this information.
+The backend will continue this process for every frame of the simulation.
+Once it completes the simulation, it will send a termination frame to the GUI, which will specify that the simulation has been completed.
+When the GUI receives this frame, it will alert the user.
+Using the data gathered, the GUI will render it to the screen, displaying the actions like a video.
+It will use WebGL to render the data to the screen.
+\subsection{Design Rationale}
+The graphical user interface will use websockets to connect to the simulation backend because it needs to keep a constant connection and pass large amounts of data.
+The constant connection is required because of the large amounts of data.
+If the backend were to pass all of its simulation data to the frontend at a single time, that could potentially take several seconds or even minutes, depending on the stability of the connection.
+Sending to the frontend during the computations of the simulation allows for that time to occur during another period of waiting.
+
+The GUI renders the simulation asynchronously to the computations of the simulation.
+This provides several advantages.
+If the simulation takes a long time to run (possibly hours), this can occur without need of the GUI to maintain a connection.
+It only needs to retain a connection for each frame to be sent.
+If each frame takes minutes to compute, the sending time of the data from the frame is relatively small.
+Another advantage is that the visual aspect of the simulation can appear to run at the same pace as reality.
+That allows for many frames per second, appearing more smooth and like a video.
+If each frame took several seconds to compute and it were rendered immediately following, it would be hard to understand the actions of various entities.
+
+WebGL will be used to render the simulation for its capabilities in using the GPU (graphical processing unit) to quickly compute large numbers of entities at once.
+Without WebGL, it could be very difficult if not impossible to render all of the entities enough times each second.
+A possible solution could be to prerender the entire simulation and display it as a video, but that has some drawbacks.
+On of these is that the user could not be able to interact with the video to gather additional information.
+WebGL provides this functionality, while allowing for enough frames per second that the simulation will appear to move smoothly.
+\section{Vehicle Decisions and Modeling}
+\subsection{Design Viewpoint}
+Vehicle decisions such as routing will be calculated using Dijkstra’s Shortest Path algorithm (DSP), minimizing distance between the two nodes each vehicle will be concerned with: the origin and destination.
+Put on a grid network, the DSP will go further to include nodes representing intersections, calculating its minimum distance to its destination from each.
+Further, each vehicle will make use of other vehicles near it, using the information regarding those vehicles' speed, location, and acceleration to adjust its own for safe car following.
+
+The vehicle will be modelled as a point on a graph, where the graph is a simplified version of the map.
+Each vehicle will have associated with it a speed, starting location, destination, and type (autonomous or not autonomous).
+Each vehicle will also have a route, which is a set of edges on the graph that the vehicle considers at the time as “optimal”.
+For purposes of communicating with other nearby vehicles in the case of implementing a more sophisticated routing method, each vehicle will have a set of nearby vehicles whose speed and direction it will consider if they are close enough to follow it, which it will use to decide its own speed and acceleration.
+To track performance, each vehicle will have metrics such as time on the road, distance travelled, time spent not moving, time spent significantly below the speed limit, etc. to test the effectiveness of this network of autonomous vehicles.
+\subsection{Design Rationale}
+Using Dijkstra’s Shortest Path algorithm achieves our main goal of implementing a routing method that each vehicle can rely on to bring them to their destination autonomously.
+While straightforward and simple, DSP offers us an algorithm that minimizes a cost (either time or distance).
+By including both speed limit of a given road with the distance a vehicle is at from its next goal intersection, we create a more realistic cost based on time.
+A vehicle also takes into account its decision before it changes its vehicle attributes to match what it has decided, in order to make sure an action is valid.
+
+The initial model for vehicles will be simple, consisting of basic metrics and parameters that can be specified and viewed by the user.
+Examples include starting, location, type, entry time and speed (average, most common, etc.).
+As the project progresses, we will consider adding more features and more attributes to the model to provide a more complete understanding of interactions between autonomous vehicles.
+\section{Testing}
+For testing our project program we need to find all possible errors.
+Based on this program, we will build a city model and add vehicles for them.
+There is a backend program that needs to be tested and a frontend GUI that also needs to be tested.
+
+For the backend program test, we need to find all possible function errors.
+In this program, we have road modeling, vehicle modeling, crossroad modeling, and signal light modeling.
+We are required to test whether the whole model meets our design requirements.
+
+Firstly, for the road test, we want to check whether all the roads meet the requirements of the design.
+The lane must have an obvious lane number and lane direction.
+After modeling is complete, if there is no obvious modeling mark for the road, the program will prompt "the number or direction of the road is not marked".
+
+For the crossroad test, it requires connecting the corresponding lanes.
+An error will be reported if only one lane is connected to an intersection.
+Traffic lights in the corresponding direction will be set at the intersection.
+If there are no lights at an intersection, the system will report an error such as “the intersection does not set correctly” or “there is no signal light set at the intersection”.
+
+Traffic lights require regular changes in the law of real-time transformation, such as every 30 seconds to change the color of the lights.
+When we are modeling, we will check whether the traffic lights have the following characteristics: timing of transition time and two colors (red and green).
+For purposes of our model, we have set our traffic light transition time at every 10 frames.
+
+Finally, vehicle modeling requires that vehicles be labeled as human or autonomous vehicles.
+Each has an independent ID.
+If the vehicle is not marked as a Human Vehicle or an Autonomous Vehicle, the system will report an error "the vehicle (id) is not marked".
+
+Next, we will check all the possible errors in the GUI.
+In the GUI we will create a city model containing many roads and traffic lights, on which users can set parameters freely, such as the number of vehicles.
+The user will be able to see the program running time.
+The user will be free to see how the model is running, such as displaying the path of the vehicle.
+There are six parts we need to test.
+They are Communication, Missing Command, Syntactic, Error Handling, Calculation, and Control Flow.
+
+Firstly, for Communication errors since we will provide users with a complete user interface, it requires that all menus, options, and buttons must be able to let users immediately understand its function.
+For example, menus, vehicle number settings, start, pause, terminate programs, and so on must be clear.
+Users can see if there are any errors on the GUI.
+
+Next, for testing Command errors we will add test code for each command.
+When there is a button which does not respond after the user clicks it on the GUI, the user will see the program report an error "the button has no corresponding function".
+After the program is edited, we will test it ourselves several times to ensure that each option has its corresponding function.
+For example, the start option will start running the program, and the stop option will stop the program immediately.
+
+Thirdly, for Syntactic Error, all words visible on the GUI must be spelled correctly.
+It can be visually checked from the GUI.
+
+Fourthly, we need to check Error Handling.
+On the GUI, all errors must be described clearly.
+Simply showing "error" on the GUI is not allowed.
+All errors must be clearly stated whether they are internal or user errors.
+For example, if the user sets the parameter beyond the limit value, the program will report an error "setting parameter is not accepted".
+
+Fifthly, we need to check the program Calculation.
+We cannot test it on the backend program.
+Using the GUI to check calculations is more efficient for our job.
+Computing problems require that we have clear logic, correct formulas, correct data types (including units) for each item of data, and correct function calls.
+On the GUI, the number of vehicles required to be displayed corresponds to the number of user settings.
+For this reason, we can check whether the number of vehicles conforms to the set parameters by formula or vehicle ID.
+Each data type must be identified, such as time, vehicle speed, and distance length.
+For example, for time calculation we can first set the change of the vehicle within 1 minute, but control the speed of GUI operation to estimate the change after 1 hour and then compare the actual change with the estimation method.
+If the situation is similar, the calculation results are consistent with the real situation.
+
+Finally, we will check the Control Flow.
+The results of the software's control flow must conform to its description.
+For example, the start button will start running the program, the pause button will pause the program, and the playback button will play back the last run simulation.
+This test can be verified by practice during the use of the GUI.
+\section{Conclusion}
+Using the design decisions detailed in this document, we aim to complete a series of simulations from which we can derive significant and meaningful data.
+The simulations will compare the impacts of CAV vehicles on a traditional network infrastructure with human driven vehicles.
+Additionally, we have considered the presentation of this data, resulting in our decision to utilize a GUI where we may show graphs and render the simulation as a video.
+We intend for this information to be easily available to the user through a simple yet informative GUI and sufficiently detailed for purposes such as research and general traffic simulation.
+\end{document}
