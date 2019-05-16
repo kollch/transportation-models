@@ -76,11 +76,12 @@ class InvisibleHand():
                 break
             vehicle_obj = self.new_vehicles.pop(0)
             vehicle = vehicle_obj["vehicle"]
-            for road in self.infrastructure.roads:
-                if road.has_point(vehicle.loc):
-                    vehicle.veloc[1] = road.lane_direction(vehicle.loc)
-                    road.vehicles_on.append(vehicle)
-                    break
+            road = self.infrastructure.road_at(vehicle.loc)
+            if road is None:
+                raise RuntimeError("Vehicle not initialized on a road")
+            vehicle.veloc[1] = road.lane_direction(vehicle.loc)
+            road.vehicles_on.append(vehicle)
+            vehicle.road = road
             if vehicle.autonomous:
                 self.cavs.append(vehicle)
                 continue
@@ -141,20 +142,25 @@ class InvisibleHand():
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        for frame in range(num_frames):
+        #for frame in range(num_frames):
+        while True:
             self.current_frame += 1
             self.sort_new_vehicles()
+            # If there are no more vehicles
+            if not self.new_vehicles and not self.cavs and not self.hvs:
+                break
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
-                if vehicle.loc[0] < 0 or vehicle.loc[0] > 1600 or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600:
+                if (vehicle.loc[0] < 0 or vehicle.loc[0] > 1600
+                        or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600):
                     if vehicle.autonomous:
                         self.cavs.remove(vehicle)
                     else:
                         self.hvs.remove(vehicle)
                     break
                 vehicle.decide_move()
-                if len(vehicle.plan[1]) < 2:
+                if vehicle.at_dest():
                     if vehicle.autonomous:
                         self.cavs.remove(vehicle)
                     else:
@@ -165,6 +171,7 @@ class InvisibleHand():
             frame = self.data_to_json()
             # Send frame
             await self.gui.send_frame(frame)
+            print("Completed frame", self.current_frame)
         # Specify end of frames
         await self.gui.send_frame(None)
         print("Finished sending frames")
