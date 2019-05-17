@@ -18,6 +18,7 @@ def get_roads(data):
                 break
     return roads
 
+
 def coords(data, road):
     """Get coordinates of the endpoints of the given road"""
     ends = []
@@ -31,6 +32,7 @@ def coords(data, road):
                     ends.append((inter_coords['x'], inter_coords['y']))
                     break
     return (ends[0], ends[1])
+
 
 def io_coords(data):
     """Get coordinate points for the starting location of vehicles"""
@@ -62,6 +64,7 @@ def io_coords(data):
             inputs.append((end[0] + offset[0], end[1] + offset[1]))
             outputs.append((end[0] - offset[0], end[1] - offset[1]))
     return (inputs, outputs)
+
 
 def main(argv):
     """The main function of the program."""

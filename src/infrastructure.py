@@ -7,19 +7,18 @@ class Infrastructure():
     def __init__(self, intersections, roads):
         self.intersections = intersections
         self.roads = roads
-    
 
     def closest_intersection(self, pos):
         """Returns the intersection that is closest to the given
         location
         """
-        min_distance = 100000
-        nearest = 0
+        min_distance = None
+        nearest = None
         for intersection in self.intersections:
             loc = intersection.loc
             distance = math.hypot(loc[0] - pos[0], loc[1] - pos[1])
 
-            if min_distance > distance:
+            if min_distance is None or min_distance > distance:
                 nearest = intersection
                 min_distance = distance
         return nearest
@@ -43,6 +42,22 @@ class Infrastructure():
             vehicles += len(road.vehicles_on)
         return total / vehicles
 
+    def road_at(self, loc):
+        """Find the road at the given location;
+        return None if there aren't any
+        """
+        for road in self.roads:
+            if road.has_point(loc):
+                return road
+        return None
+
+    def road_from_id(self, rid):
+        """Get road from passed in road id"""
+        for road in self.roads:
+            if rid == road.road_id:
+                return road
+        return None
+
 
 class Intersection():
     """May need connecting capabilities"""
@@ -56,6 +71,14 @@ class Intersection():
         self.vehicles_passed = 0
         self.counter = 0
         self.roads_list = [[], [], [], []]
+
+    def __str__(self):
+        return ("{Inter " + str(self.intersection_id)
+                + "\n  Loc: " + str(self.loc)
+                + "\nRoads: " + str(self.roads)) + "\n}"
+
+    def __repr__(self):
+        return "Inter-" + str(self.intersection_id)
 
     def adjacent(self):
         """Gets intersections adjacent to the current one;
@@ -72,76 +95,88 @@ class Intersection():
                     results.append((end, road))
         return results
 
+    def index(self, road):
+        """Returns the index of a given road"""
+        for i, curr_road in enumerate(self.roads):
+            if curr_road.road_id == road.road_id:
+                return i
+        raise ValueError("Road not connected to intersection")
+
     def road_open(self):
         """Create the list of road vehicles allowed to move on that direction.
         The corresponding value is: turn left, go straight, turn right.
-        Each 10 frame, the intersection light will change.
+        Every 'delay' seconds, the intersection light will change.
         """
-        self.counter += 1
-        if self.counter % 40 >= 1 and self.counter % 40 <= 10:
+        delay = 10
+        if self.counter % (delay * 40) < delay * 10:
             self.roads_list = [
                 [False, True, True],
                 [False, False, False],
                 [False, True, True],
                 [False, False, False]
             ]
-        elif self.counter % 40 >= 11 and self.counter % 40 <= 20:
+        elif self.counter % (delay * 40) < delay * 20:
             self.roads_list = [
                 [False, False, False],
                 [False, True, True],
                 [False, False, False],
                 [False, True, True]
             ]
-        elif self.counter % 40 >= 21 and self.counter % 40 <= 30:
+        elif self.counter % (delay * 40) < delay * 30:
             self.roads_list = [
                 [True, False, False],
                 [False, False, True],
                 [True, False, False],
                 [False, False, True]
             ]
-        elif self.counter % 40 >= 31 and self.counter % 40 <= 40:
+        else:
             self.roads_list = [
-                [False, True, True],
-                [False, False, False],
-                [False, True, True],
-                [False, False, False]
+                [False, False, True],
+                [True, False, False],
+                [False, False, True],
+                [True, False, False]
             ]
-        for i in range(4):
-            if self.roads[i] is None:
-                self.roads_list[i] = [None, None, None]
+        self.counter += 1
 
-    def calc_stop_line(self, index):
-        #if approaching from top
+    def is_green(self, vehicle):
+        """Check if light is green for vehicle; essentially an alias
+        for Vehicle method can_go()
+        """
+        if vehicle.can_go():
+            return True
+        return False
+
+    def turn_point(self, vehicle, road, io):
+        """Find the endpoint location for a given road
+
+        Param 'io' must be "input" or "output"
+        """
+        lane_width = 12
+
+        min_offset = lane_width / 2
+        if io == 'output':
+            min_offset = -min_offset
+        elif io != 'input':
+            raise ValueError
+
+        max_offset = lane_width + vehicle.size[0] / 2
+        index = self.index(road)
         stop_line = None
         if index == 0:
-            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
-        #if approaching from right
-        if index == 1:
-            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
-        #if approaching from bottom
-        if index == 2:
-            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
-        #if approaching from left
-        if index == 3:
-            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
+            # If approaching from top
+            stop_line = (self.loc[0] - min_offset, self.loc[1] + max_offset)
+        elif index == 1:
+            # If approaching from right
+            stop_line = (self.loc[0] + max_offset, self.loc[1] + min_offset)
+        elif index == 2:
+            # If approaching from bottom
+            stop_line = (self.loc[0] + min_offset, self.loc[1] - max_offset)
+        elif index == 3:
+            # If approaching from left
+            stop_line = (self.loc[0] - max_offset, self.loc[1] - min_offset)
+        else:
+            raise ValueError
         return stop_line
-
-    def turning_point(self, turn, index):
-        #if approaching from top
-        stop_line = None
-        if index == 0:
-            stop_line = (self.loc[0] - 6, self.loc[1] + 22)
-        #if approaching from right
-        if index == 1:
-            stop_line = (self.loc[0] + 22, self.loc[1] + 6)
-            #if approaching from bottom
-        if index == 2:
-            stop_line = (self.loc[0] + 6, self.loc[1] - 22)
-        #if approaching from left
-        if index == 3:
-            stop_line = (self.loc[0] - 22, self.loc[1] - 6)
-        return stop_line
-
 
 
 class Road():
@@ -161,6 +196,15 @@ class Road():
         self.length = self.distance()
         self.vehicles_on = []
 
+    def __str__(self):
+        return ("{Road " + str(self.road_id)
+                + "\n  Loc: (" + self.ends[0].__repr__()
+                + ", " + self.ends[1].__repr__()
+                + ")\nSpeed: " + str(self.speed)) + "\n}"
+
+    def __repr__(self):
+        return "Road-" + str(self.road_id)
+
     def coords(self):
         """Get coordinates of the endpoints of the given road"""
         ends = []
@@ -170,6 +214,49 @@ class Road():
             except AttributeError:
                 ends.append(self.ends[i])
         return (ends[0], ends[1])
+
+    def get_next_inter(self):
+        """Return the only intersection connecting to this road"""
+        singular = False
+        result = None
+        for end in self.ends:
+            if hasattr(end, 'roads'):
+                result = end
+            else:
+                singular = True
+        if not singular or result is None:
+            err = "Road does not have a singular connecting intersection"
+            raise RuntimeError(err)
+        return result
+
+    def on_path(self, vehicle):
+        """Determines if road is on route of vehicle"""
+        if vehicle.road.road_id == self.road_id:
+            return True
+        if not vehicle.plan[1]:
+            return False
+        index = None
+        inter_ids = [p.intersection_id for p in vehicle.plan[1]]
+        for i, end in enumerate(self.ends):
+            try:
+                inter_id = end.intersection_id
+            except AttributeError:
+                inter_id = self.ends[(i + 1) % 2].intersection_id
+                dest = vehicle.plan[0]
+                # 9 is a safe value in case of overshooting at 60 mph
+                if (inter_id == inter_ids[-1]
+                        and abs(dest[0] - end[0]) < 9
+                        and abs(dest[1] - end[1]) < 9):
+                    return True
+                return False
+            if inter_id not in inter_ids:
+                return False
+            new_index = inter_ids.index(inter_id)
+            if index is None:
+                index = new_index
+            elif abs(new_index - index) == 1:
+                return True
+        return False
 
     def has_point(self, loc):
         """Check if a point is on the road"""
