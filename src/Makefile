@@ -29,7 +29,6 @@ fedora:
 	python -m webbrowser -t "./index.html" && \
 	python ./main.py
 offline:
-	python3 -m venv transportation-models-env
 	source transportation-models-env/bin/activate && \
 	python -m webbrowser -t "./index.html" && \
 	python ./main.py
