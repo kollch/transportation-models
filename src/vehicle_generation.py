@@ -11,7 +11,7 @@ def get_roads(data):
     roads = []
     for road in data['roads']:
         for end in road['ends']:
-            if type(end) != int:
+            if not isinstance(end, int):
                 # The road hits an edge, so add to results and move on to the
                 # next road
                 roads.append(road['ends'])

@@ -80,7 +80,7 @@ const build = () => {
         /* Pass data to and from backend */
         const frames = [];
         // Just set this temporarily for our demo for Expo
-        const totalFrames = 1471;
+        const totalFrames = 1500;
 
         // Hide the build button
         document.getElementById("build").style.display = "none";
