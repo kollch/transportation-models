@@ -4,9 +4,9 @@ import ssl
 import json
 import websockets
 import matplotlib.pyplot as plt
-plt.style.use('ggplot')
 from vehicles import CAV, HV
 from infrastructure import Infrastructure, Intersection, Road
+plt.style.use('ggplot')
 
 SECURE = False
 
@@ -143,113 +143,39 @@ class InvisibleHand():
         when ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
-        velocities = []
-        accelerations = []
-        auto_velocities = []
-        human_velocities = []
-        auto_accelerations = []
-        human_accelerations = []
-        for i in range(100):
-            velocities.append([])
-            accelerations.append([])
-            auto_velocities.append([])
-            human_velocities.append([])
-            auto_accelerations.append([])
-            human_accelerations.append([])
-        x = []
+        velocs = [{}, {}, {}]
+        accels = [{}, {}, {}]
         while True:
-            x.append(self.current_frame)
             self.current_frame += 1
             self.sort_new_vehicles()
             # If there are no more vehicles
             if not self.new_vehicles and not self.cavs and not self.hvs:
                 break
-            # This is to keep the y and x axis the same length. Every
-            # iteration, add a 'None' as the default value, and for the
-            # vehicle loop, if the vehicle id is present in the frame,
-            # it will delete the last 0 and push the actual vehicle
-            # velocity, balancing out the y axis lengths to match the
-            # x axis.
-            for vlist in velocities:
-                vlist.append(None)
-            for alist in accelerations:
-                alist.append(None)
-            for auto_vlist in auto_velocities:
-                auto_vlist.append(None)
-            for auto_alist in auto_accelerations:
-                auto_alist.append(None)
-            for human_vlist in human_velocities:
-                human_vlist.append(None)
-            for human_alist in human_accelerations:
-                human_alist.append(None)
             for intersection in self.infrastructure.intersections:
                 intersection.road_open()
             for vehicle in self.cavs + self.hvs:
                 if (vehicle.loc[0] < 0 or vehicle.loc[0] > 1600
-                        or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600):
+                        or vehicle.loc[1] < 0 or vehicle.loc[1] > 1600
+                        or vehicle.at_dest()):
                     if vehicle.autonomous:
                         self.cavs.remove(vehicle)
                     else:
                         self.hvs.remove(vehicle)
-                    break
+                    continue
                 vehicle.decide_move()
-                if vehicle.at_dest():
+                if vehicle.vehicle_id in velocs[0]:
+                    velocs[0][vehicle.vehicle_id].append(vehicle.veloc[0])
+                    accels[0][vehicle.vehicle_id].append(vehicle.accel)
                     if vehicle.autonomous:
-                        self.cavs.remove(vehicle)
+                        velocs[1][vehicle.vehicle_id].append(vehicle.veloc[0])
+                        accels[1][vehicle.vehicle_id].append(vehicle.accel)
                     else:
-                        self.hvs.remove(vehicle)
-                if vehicle.autonomous:
-                    auto_velocities[vehicle.vehicle_id] = auto_velocities[vehicle.vehicle_id][:-1]
-                    auto_accelerations[vehicle.vehicle_id] = auto_accelerations[vehicle.vehicle_id][:-1]
-                    auto_velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
-                    auto_accelerations[vehicle.vehicle_id].append(vehicle.accel)
+                        velocs[2][vehicle.vehicle_id].append(vehicle.veloc[0])
+                        accels[2][vehicle.vehicle_id].append(vehicle.accel)
                 else:
-                    human_velocities[vehicle.vehicle_id] = human_velocities[vehicle.vehicle_id][:-1]
-                    human_accelerations[vehicle.vehicle_id] = human_accelerations[vehicle.vehicle_id][:-1]
-                    human_velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
-                    human_accelerations[vehicle.vehicle_id].append(vehicle.accel)
-
-                velocities[vehicle.vehicle_id] = velocities[vehicle.vehicle_id][:-1]
-                accelerations[vehicle.vehicle_id] = accelerations[vehicle.vehicle_id][:-1]
-                velocities[vehicle.vehicle_id].append(vehicle.veloc[0])
-                accelerations[vehicle.vehicle_id].append(vehicle.accel)
-
-                plt.subplot(2, 3, 1)
-                plt.title("Vehicle Velocities")
-                plt.plot(x, velocities[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("velocity")
-                
-                plt.subplot(2, 3, 4)
-                plt.title("Vehicle Accelerations")
-                plt.plot(x, accelerations[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("acceleration")
-
-                plt.subplot(2, 3, 2)
-                plt.title("CAV Velocities")
-                plt.plot(x, auto_velocities[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("velocity")
-
-                plt.subplot(2, 3, 5)
-                plt.title("CAV Accelerations")
-                plt.plot(x, auto_accelerations[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("acceleration")
-                
-                plt.subplot(2, 3, 3)
-                plt.title("HV Velocities")
-                plt.plot(x, human_velocities[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("velocity")
-                
-                plt.subplot(2, 3, 6)
-                plt.title("HV Accelerations")
-                plt.plot(x, human_accelerations[vehicle.vehicle_id])
-                plt.xlabel("frame number")
-                plt.ylabel("acceleration")
-
+                    for i in range(3):
+                        velocs[i][vehicle.vehicle_id] = [self.current_frame]
+                        accels[i][vehicle.vehicle_id] = [self.current_frame]
 
             # Vehicle locations should have been changed now.
             # Build a new frame of JSON.
@@ -260,6 +186,26 @@ class InvisibleHand():
         # Specify end of frames
         await self.gui.send_frame(None)
         print("Finished sending frames")
+        def plotting(categ, num, title, x_label=None, y_label=None):
+            plt.subplot(2, 3, num)
+            for val in categ.values():
+                time = [x * 0.1 for x in range(val[0], val[0] + len(val) - 1)]
+                plt.plot(time, val[1:])
+            plt.title(title)
+            if x_label is not None:
+                plt.xlabel(x_label)
+            if y_label is not None:
+                plt.ylabel(y_label)
+        plotting(velocs[0], 1, "Vehicle Velocity over Time",
+                 y_label="velocity (mph)")
+        plotting(velocs[1], 2, "CAV Velocity over Time")
+        plotting(velocs[2], 3, "HV Velocity over Time")
+        plotting(accels[0], 4, "Vehicle Acceleration over Time",
+                 "time (s)", "acceleration (ft/s^2)")
+        plotting(accels[1], 5, "CAV Acceleration over Time",
+                 "time (s)")
+        plotting(accels[2], 6, "HV Acceleration over Time",
+                 "time (s)")
         plt.show()
 
     def cavs_in_range(self, location, length):
