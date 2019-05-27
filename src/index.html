@@ -12,14 +12,21 @@
 <body>
 
 <canvas id="glCanvas"></canvas>
+<div id="progressBar">
+  <div id="barProgress">
+    <div id="loading"></div>
+  </div>
+</div>
 <div id="controls">
   <div id="parameters">
     <div class="group">
-      <label for="infrInput" class="subitem">Infrastructure</label>
+      <label for="infrInput" class="subitem labelTitle">Infrastructure</label>
+      <label id="infrUpload" for="infrInput" class="subitem upload">Upload...</label>
       <input type="file" id="infrInput" class="subitem" onchange="enableBuild()">
     </div>
     <div class="group">
-      <label for="vehicleInput" class="subitem">Vehicles</label>
+      <label for="vehicleInput" class="subitem labelTitle">Vehicles</label>
+      <label id="vehicleUpload" for="vehicleInput" class="subitem upload">Upload...</label>
       <input type="file" id="vehicleInput" class="subitem" onchange="enableBuild()">
     </div>
   </div>
