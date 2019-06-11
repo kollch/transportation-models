@@ -3,7 +3,7 @@ import math
 
 
 class Infrastructure():
-    """Holds all of the intersections and roads"""
+    """Holds all of the intersections and roads."""
     def __init__(self, intersections, roads):
         self.intersections = intersections
         self.roads = roads
@@ -60,7 +60,7 @@ class Infrastructure():
 
 
 class Intersection():
-    """May need connecting capabilities"""
+    """Connects roads together and has traffic signals."""
     # roads_blocked = []
     # roads_open = []
     def __init__(self, intersection_id, roads, location):
@@ -180,7 +180,7 @@ class Intersection():
 
 
 class Road():
-    """Connect intersections together and vehicles drive on them"""
+    """Connect intersections together and vehicles drive on them."""
     def __init__(self, road_id, size, speed=60):
         """Parameters:
         road_id: Road ID

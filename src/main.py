@@ -12,11 +12,9 @@ SECURE = False
 
 
 class InvisibleHand():
-    """Runs everything like the clock and spawning of vehicles;
-    presumably connects to the GUI.
-    """
+    """Runs everything like the clock and spawning of vehicles."""
     def __init__(self, connection):
-        """Allow class to pass to GUI via Connection class"""
+        """Allow class to pass to GUI via Connection class."""
         self.gui = connection
         self.infrastructure = None
         self.new_vehicles = []
@@ -26,7 +24,7 @@ class InvisibleHand():
         self.current_frame = 0
 
     def init_intersections(self):
-        """Initialize intersections"""
+        """Initialize intersections."""
         return [
             Intersection(item['id'],
                          item['connects_roads'],
@@ -35,7 +33,7 @@ class InvisibleHand():
         ]
 
     def init_roads(self, intersections):
-        """Initialize roads"""
+        """Initialize roads."""
         roads = []
         for item in self.gui.infrastructure['roads']:
             ends = [item['ends'][0], item['ends'][1]]
@@ -53,7 +51,7 @@ class InvisibleHand():
         return roads
 
     def init_vehicles(self):
-        """Initialize vehicles"""
+        """Initialize vehicles."""
         for item in self.gui.vehicles:
             if item['type'] == 0:
                 vehicle = HV(self)
@@ -89,7 +87,8 @@ class InvisibleHand():
             self.hvs.append(vehicle)
 
     def set_parameters(self):
-        """Set parameters pulled from GUI, aka initializing simulation
+        """Set parameters pulled from GUI, aka initializing simulation.
+
         Parameters: num_frames, vehicle positions, infrastructure setup
         """
         intersections = self.init_intersections()
@@ -139,8 +138,9 @@ class InvisibleHand():
         return data
 
     async def build_frames(self):
-        """Run simulation for certain number of frames;
-        when ready to send a frame,
+        """Run simulation for certain number of frames.
+
+        When ready to send a frame,
         call "await self.gui.send_frame(json)".
         """
         velocs = [{}, {}, {}]
@@ -210,7 +210,7 @@ class InvisibleHand():
 
     def cavs_in_range(self, location, length):
         """Gives list of CAVs within distance of length (in feet) of
-        location
+        location.
         """
         return [
             vehicle
@@ -220,8 +220,9 @@ class InvisibleHand():
 
 
 class Connection():
-    """Handles a connection with the GUI"""
+    """Handles a connection with the GUI."""
     def __init__(self, websocket, path):
+        """Set up basic parameters."""
         self.websocket = websocket
         self.path = path
         self.addr = websocket.remote_address
@@ -229,7 +230,7 @@ class Connection():
         self.vehicles = None
 
     async def get_parameters(self, data_type):
-        """Get infrastructure parameters from the frontend"""
+        """Get infrastructure parameters from the frontend."""
         payload_str = await self.websocket.recv()
         # Now convert the payload string to a json object
         payload = json.loads(payload_str)
@@ -242,13 +243,13 @@ class Connection():
             raise ValueError("Parameter type unknown")
 
     async def send_frame(self, json_data):
-        """Send frame from json data to GUI"""
+        """Send frame from json data to GUI."""
         data = json.dumps(json_data)
         await self.websocket.send(data)
 
 
 async def main(websocket, path):
-    """Start the program with a connected frontend"""
+    """Start the program with a connected frontend."""
     connect = Connection(websocket, path)
     await connect.get_parameters("infrastructure")
     await connect.get_parameters("vehicles")

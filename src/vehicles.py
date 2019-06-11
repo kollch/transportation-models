@@ -4,10 +4,12 @@ import math
 
 
 class Vehicle():
-    """Includes CAVs and HVs"""
+    """Includes CAVs and HVs."""
     def __init__(self, world, attribs=(None, 20, 8, 0),
                  speed=(60, 0), locs=(None, None)):
-        """Almost all parameters are grouped into sets of tuples:
+        """Set given vehicle parameters.
+
+        Almost all parameters are grouped into sets of tuples:
         world:   InvisibleHand class.
                  Needed for things like cavs_in_range()
         attribs: (Vehicle ID, Vehicle length, Vehicle width, direction)
@@ -32,7 +34,7 @@ class Vehicle():
         self.next_road = None
 
     def angle(self, p):
-        """Compute angle from vehicle to location or object"""
+        """Compute angle from vehicle to location or object."""
         try:
             result = math.atan2(p.loc[1] - self.loc[1], p.loc[0] - self.loc[0])
         except AttributeError:
@@ -40,7 +42,7 @@ class Vehicle():
         return convert(result, 'rad', 'deg')
 
     def at_dest(self):
-        """Determines if the vehicle is at its destination"""
+        """Determines if the vehicle is at its destination."""
         dest = self.plan[0]
         loc = self.loc
         # 9 is a safe value in case of overshooting at 60 mph
@@ -49,12 +51,12 @@ class Vehicle():
         return False
 
     def decide_move(self):
-        """Determines move. Required to be implemented in CAV and HV"""
+        """Determines move; required to be implemented in CAV and HV."""
         raise NotImplementedError
 
     def at_inter(self):
         """Determines if vehicle is at an intersection;
-        based on proximity to center of intersection
+        based on proximity to center of intersection.
 
         12 is the width of a lane
         """
@@ -67,7 +69,7 @@ class Vehicle():
         return False
 
     def get_road(self):
-        """Returns road vehicle is currently on"""
+        """Returns road vehicle is currently on."""
         for road in self.world.infrastructure.roads:
             if self in road.vehicles_on:
                 return road
@@ -75,14 +77,14 @@ class Vehicle():
 
     def dist_to(self, p):
         """Returns the distance between the vehicle and a given
-        location"""
+        location."""
         try:
             return math.hypot(p.loc[0] - self.loc[0], p.loc[1] - self.loc[1])
         except AttributeError:
             return math.hypot(p[0] - self.loc[0], p[1] - self.loc[1])
 
     def can_see(self, cavs, hvs):
-        """Returns a list of everything that the vehicle can see"""
+        """Returns a list of everything that the vehicle can see."""
         in_vision = []
         for vehicle in sorted(cavs + hvs, key=lambda v: self.dist_to(v.loc)):
             if vehicle is self:
@@ -101,7 +103,7 @@ class Vehicle():
 
             def is_visible(angle, angle_end_val=None):
                 """Returns true if vehicle is visible, false
-                otherwise"""
+                otherwise."""
                 for item in in_vision:
                     if angle_end_val is None:
                         low = item[1][0]
@@ -124,8 +126,7 @@ class Vehicle():
 
     def angle_edges(self, vehicle):
         """Returns the outermost seen angles of the vehicle from
-        the given vehicle
-        """
+        the given vehicle."""
         direction = convert(self.veloc[1], 'deg', 'rad')
         lsin = self.size[0] / 2 * math.sin(direction)
         lcos = self.size[0] / 2 * math.cos(direction)
@@ -146,7 +147,7 @@ class Vehicle():
     def point_no_return(self):
         """Point of no return when approaching an intersection;
         don't have to worry about yellow lights because the model
-        supports instant deceleration
+        supports instant deceleration.
 
         Returns distance to intersection in feet
         """
@@ -157,7 +158,7 @@ class Vehicle():
 
     def get_next_inter(self):
         """Get next intersection the vehicle is approaching;
-        return None if there aren't any
+        return None if there aren't any.
         """
         if not self.plan[1]:
             # No intersections remaining
@@ -168,7 +169,7 @@ class Vehicle():
         return next_inter
 
     def get_following(self):
-        """Find the vehicle or intersection in front, None otherwise"""
+        """Find the vehicle or intersection in front, None otherwise."""
         visible = self.can_see(self.world.cavs, self.world.hvs)
         visible.sort(key=lambda v: abs(self.veloc[1] - self.angle(v)))
         if (visible
@@ -191,8 +192,7 @@ class Vehicle():
 
     def decide_accel(self):
         """Decides acceleration based on car following or approach to
-        intersections
-        """
+        intersections."""
         v = self.veloc[0]
         a_1 = self.following
         if a_1 is None:
@@ -216,14 +216,13 @@ class Vehicle():
 
     def can_go(self):
         """Returns True if turn is allowed by intersection,
-        False if not.
-        """
+        False if not."""
         next_inter = self.get_next_inter()
         index = [r.road_id for r in next_inter.roads].index(self.road.road_id)
         return next_inter.roads_list[index][self.turn]
 
     def update_speed(self):
-        """Updates speed depending on acceleration"""
+        """Updates speed depending on acceleration."""
         self.veloc[0] = self.veloc[0] + convert(self.accel, 'ft/s^2', 'mph/f')
         # Vehicle stopped
         if self.veloc[0] < 0:
@@ -231,8 +230,7 @@ class Vehicle():
 
     def update_coords(self):
         """Updates location coordinates depending on passed time and
-        direction
-        """
+        direction."""
         movement = convert(self.veloc[0], 'mph', 'ft/f')
         direction = convert(self.veloc[1], 'deg', 'rad')
         d_x = movement * math.cos(direction)
@@ -240,7 +238,7 @@ class Vehicle():
         self.loc = (round(d_x + self.loc[0]), round(d_y + self.loc[1]))
 
     def get_turn(self):
-        """Returns 0 for left turn, 1 for straight, 2 for right turn"""
+        """Returns 0 for left turn, 1 for straight, 2 for right turn."""
         if not self.plan[1]:
             return 1
         road_ids = [r.road_id for r in self.plan[1][0].roads]
@@ -253,7 +251,7 @@ class Vehicle():
         raise RuntimeError("Cannot find a road after intersection")
 
     def turn_to_road(self):
-        """Returns the road we will turn onto"""
+        """Returns the road we will turn onto."""
         if not self.plan[1]:
             return None
         for road in self.plan[1][0].roads:
@@ -263,13 +261,12 @@ class Vehicle():
 
 
 class CAV(Vehicle):
-    """Connected autonomous vehicles
-    Connect, decide action, move
-    """
+    """Connected autonomous vehicles."""
     autonomous = True
     react_factor = 0
 
     def __str__(self):
+        """String representation of a CAV."""
         return ("{CAV " + str(self.vehicle_id)
                 + "\n   Loc: " + str(self.loc)
                 + "\n  Dest: " + str(self.plan[0])
@@ -278,31 +275,33 @@ class CAV(Vehicle):
                 + "\n Speed: " + str(self.veloc[0]) + "\n}")
 
     def __repr__(self):
+        """Shortened string representation of a CAV."""
         return "CAV-" + str(self.vehicle_id)
 
     def connect(self):
-        """Gets info from CAVs within range"""
+        """Gets info from CAVs within range."""
         return [
             v.give_info()
             for v in self.world.cavs_in_range(self.loc, 3000)
         ]
 
     def give_info(self):
-        """Returns info regarding vehicle location and speed"""
+        """Returns info regarding vehicle location and speed."""
         return [self.loc, self.veloc[0], self.accel]
 
     def react_time(self):
         """Randomly-generated time it will take to react - for CAVs
         this should be instantaneous because the timesteps in this
         program should account for the small amount of reaction time
-        CAVs have
+        CAVs have.
         """
         return 0 * self.react_factor
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
-        https://gist.github.com/econchick/4666413
-        Returns list of intersections from source to destination
+        https://gist.github.com/econchick/4666413.
+
+        Returns list of intersections from source to destination.
         Clone of dijkstras() in HV until we use a different algorithm
         """
         visited = {source: 0}
@@ -340,7 +339,7 @@ class CAV(Vehicle):
         return solution
 
     def decide_move(self):
-        """Uses available information and determines move"""
+        """Uses available information and determines move."""
         dest_road = self.world.infrastructure.road_at(self.plan[0])
         dest = dest_road.get_next_inter()
         # Not on the last road and time to initialize plans
@@ -386,13 +385,12 @@ class CAV(Vehicle):
 
 
 class HV(Vehicle):
-    """Human-driven vehicles
-    Decide action, move
-    """
+    """Human-driven vehicles."""
     autonomous = False
     react_factor = 1
 
     def __str__(self):
+        """String representation of a human-driven vehicle."""
         return ("{HV " + str(self.vehicle_id)
                 + "\n   Loc: " + str(self.loc)
                 + "\n  Dest: " + str(self.plan[0])
@@ -401,10 +399,11 @@ class HV(Vehicle):
                 + "\n Speed: " + str(self.veloc[0]) + "\n}")
 
     def __repr__(self):
+        """Shortened string representation of a human-driven vehicle."""
         return "HV-" + str(self.vehicle_id)
 
     def react_time(self):
-        """Randomly-generated time it will take to react"""
+        """Randomly-generated time it will take to react."""
         mean = 0.5
         std_dev = 1
         r_time = random.gauss(mean, std_dev)
@@ -416,7 +415,8 @@ class HV(Vehicle):
 
     def dijkstras(self, source, dest):
         """Mostly pulled from
-        https://gist.github.com/econchick/4666413
+        https://gist.github.com/econchick/4666413.
+
         Returns list of intersections from source to destination
         """
         visited = {source: 0}
@@ -455,7 +455,7 @@ class HV(Vehicle):
         return solution
 
     def decide_move(self):
-        """Uses available information and determines move"""
+        """Uses available information and determines move."""
         dest_road = self.world.infrastructure.road_at(self.plan[0])
         dest = dest_road.get_next_inter()
         # Not on the last road and time to initialize plans
@@ -497,6 +497,7 @@ class HV(Vehicle):
 
 def idm_accel(v_mph, v_0_mph, d_v_mph=None, s_ft=None):
     """IDM car following model.
+
     Params: v_mph   - velocity (mph)
             v_0_mph - desired velocity (mph)
             d_v_mph - approaching rate (mph)
@@ -539,7 +540,7 @@ def idm_accel(v_mph, v_0_mph, d_v_mph=None, s_ft=None):
 
 
 def convert(val, from_unit, to_unit):
-    """Convert from one unit to another"""
+    """Convert from one unit to another."""
     if val is None:
         return val
     # From imperial to metric

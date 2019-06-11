@@ -7,7 +7,7 @@ import random
 
 
 def get_roads(data):
-    """Find roads which connect with the edge of the canvas"""
+    """Find roads which connect with the edge of the canvas."""
     roads = []
     for road in data['roads']:
         for end in road['ends']:
@@ -20,7 +20,7 @@ def get_roads(data):
 
 
 def coords(data, road):
-    """Get coordinates of the endpoints of the given road"""
+    """Get coordinates of the endpoints of the given road."""
     ends = []
     for i in range(2):
         try:
@@ -35,7 +35,7 @@ def coords(data, road):
 
 
 def io_coords(data):
-    """Get coordinate points for the starting location of vehicles"""
+    """Get coordinate points for the starting location of vehicles."""
     inputs = []
     outputs = []
     roads = get_roads(data)
