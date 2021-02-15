@@ -11,12 +11,36 @@ const enableBuild = () => {
   const infrBtn = document.getElementById("infrInput");
   const vehicleBtn = document.getElementById("vehicleInput");
   const buildBtn = document.getElementById("build");
+  const infrUpload = document.getElementById("infrUpload");
+  const vehicleUpload = document.getElementById("vehicleUpload");
+  if (infrBtn.files.length === 1) {
+    infrUpload.innerHTML = infrBtn.files[0].name
+  }
+  if (vehicleBtn.files.length === 1) {
+    vehicleUpload.innerHTML = vehicleBtn.files[0].name
+  }
   // If not ready to build
   if (infrBtn.files.length !== 1 || vehicleBtn.files.length !== 1) {
     buildBtn.disabled = true;
     return;
   }
   buildBtn.disabled = false;
+};
+
+const updateProgress = (bar, width) => {
+  if (width >= 90) {
+    bar.style.width = "90vmin";
+  } else {
+    bar.style.width = width + "vmin";
+  }
+  console.log("New width: " + bar.style.width);
+};
+
+const removeBar = () => {
+  const bar = document.getElementById("progressBar");
+  const canvas = document.getElementById("glCanvas");
+  bar.style.display = "none";
+  canvas.style.display = "block";
 };
 
 const build = () => {
@@ -55,14 +79,26 @@ const build = () => {
         // Ready to start sending
         /* Pass data to and from backend */
         const frames = [];
+        // Just set this temporarily for our demo for Expo
+        const totalFrames = 1500;
 
         // Hide the build button
         document.getElementById("build").style.display = "none";
 
+        // Initialize progress bar width to 0
+        const bar = document.getElementById("barProgress");
+        document.getElementById("progressBar").style.border = "1px solid black";
+        document.getElementById("loading").innerHTML = "Loading...";
+        bar.style.width = "0";
+        let barWidth = 0;
+
         socket.onmessage = e => {
           const frame = JSON.parse(e.data);
+          barWidth += 90 / totalFrames;
+          updateProgress(bar, barWidth);
           // If all simulation frames have been received
           if (frame === null && infrastructure !== null) {
+            removeBar();
             main(frames, infrastructure);
           } else {
             frames.push(frame);
@@ -222,7 +258,7 @@ const main = (frames, infrastructure) => {
   const pauseBtn = document.getElementById("pause");
   const replayBtn = document.getElementById("replay");
 
-  var paused = false;
+  var paused = true;
   var time = 0;
   var numFrames = frames.length;
   // Duplicate last frame so that interpolation always has two frames to use
@@ -276,7 +312,7 @@ const main = (frames, infrastructure) => {
     then = performance.now();
     requestAnimationFrame(render);
   }
-  playBtn.disabled = true;
+  pauseBtn.disabled = true;
   playBtn.style.display = "initial";
   pauseBtn.style.display = "initial";
   replayBtn.style.display = "initial";

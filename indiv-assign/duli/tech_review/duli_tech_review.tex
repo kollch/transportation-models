@@ -1,0 +1,78 @@
+\documentclass[draftclsnofoot,onecolumn]{IEEEtran}
+\usepackage[margin=0.75in]{geometry}
+
+\title{Autonomous vehicle routing in congested transportation network}
+\author{Liang Du Group 43}
+\IEEEspecialpapernotice{CS 461 Fall 2018, Role: Researcher}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract}
+This project offers a practical solution to the inclusion of autonomous vehicles into transportation network models and discusses how they will not only create optimal paths but coexist with human-driven vehicles. By pairing connected autonomous vehicles (CAVs) with a Q-learning algorithm, vehicle autonomy and the overall infrastructure of transportation may be restructured positively to include multiple intelligent agents. Additionally, this project will explore the impact of CAVs relative to transportation congestion, using a Python-based framework and vehicle models to create data on how CAVs behave on a transportation network. This project will define the problem that autonomous vehicles present in the infrastructure we have already built and lived in, as well as consider how navigation among other intelligent vehicles will be handled. To achieve the final simulation framework of an autonomous vehicle transportation network, first, we need to do some literature review which will provide some ideas and help determine using which tool and algorithm to build the simulation. Then it is necessary for our team to make a plan to create a simulation scenario. And the final step is finishing the complete simulation framework which also includes testing and debugging.
+
+\pagebreak
+
+\maketitle
+
+\section{What your team is trying to accomplish}
+Some basic performance metrics to be used will include a document about developing algorithms, building methods regarding routing and re-balancing issues, and creating a new routing network to test if our algorithm is suitable for autonomous and manned vehicles to identify each other. We will use those algorithms and methods to build a basic simulation of 3 various types of vehicles (HV, AV, and CAV) in a routing transportation network. Based on those methods, the simulation of vehicles and routing transportation network will be built by some software and it will need to be fit for basic rules that enforce physics in the real world (for example, it is impossible for vehicles to pass through each other or instantly go from a stopped position to their final speed). In addition, after finishing the simulation of vehicles and routing transportation network, the basic simulation framework should have enough features to be able to test the given models, show that some models were developed and tested, and show that the information was collected and documented.
+
+\section{Literature review - Intelligent Traffic Light Control Using Distributed Multi-agent Q Learning [1]}
+ Description: For current technology (Internet-of-Things), traffic light can recognize motorized vehicles and automatic turn red light to green light in the way of existing motorized vehicles. However, traffic light cannot recognize non-motorized vehicles, like a bicycle. In this literature, it describes a method to make traffic light inroad to be more effective, which not only consider single crossroad’s vehicles, but combining whole traffic system crossroad’s vehicles, and each crossroad can communicate with each other.
+ \newline
+Tech option 1.1: Collecting crossroad’s vehicles information from the camera into the database
+To detect queue length not only for the vehicle but pedestrian in every intersection, it needs to use some cameras.  Then collecting that information and storing them into the database. A single crossroad will have its own database. Each single crossroad database will communicate with each other through the internet of Things. This tech is the first steps to build a traffic light system.
+ \newline
+Tech option 1.2: Building the computation module (Q Learning) and use it to control traffic light
+Q learning as one of machine learning algorithm has already used for designing traffic light system because Q leaning can make a decision by model-free online fashion. That traffic information will be collected by “tech option 1.1”. In every crossroad, the local camera will only collect local data (vehicle queue length), and through those data, the traffic system can only calculate local optimize path. In order to achieve the global optimization, computation module (Q Learning) will not only used in the local database but will use in the global database. Through global computation module to determine every crossroad’s traffic light (which traffic light should be green, and which should be red) so that achieve average traffic efficiency to be optimal.
+\newline
+Tech option 1.3: Using Urban MObility (SUMO) to simulate microscopic traffic condition, and there is an API designed in SUMO, which is used to evaluate performance via online interaction to adjust the status of the traffic light.
+In the literature, they used to map data from open-street Map, and based on the map of Sunnyvale, CA. Through software Urban Mobility (SUMO), it computed total queue length in the whole traffic system depending on a different method of controlling traffic lights. In this performance evaluation, through Q learning algorithm to control traffic lights in the whole system got minimal total queue length. However, only testing the total length of the whole queue length is not enough to show the Q learning method is better than other methods. Therefore, this literature compared other statistics to show the Q learning method is better than others. The other testing statistic is about the total waiting time of vehicles. The result in the literature shows that the Q learning method spend minimal waiting time and MARL method followed. In order to better comparing each data in every method, it used a bar chart to build statistics. As the final result, they conclude Q learning method which appear in this literature is the optimal solution for controlling traffic light so that minimal traffic congestion.
+
+
+\section{Literature review - Developing CAV Capacity Modification Factors [2]}
+Description: Connected and automated vehicles have an important influence on mobility, safety, and the environment in future transportation systems. As a leading disruptive technology, CAV is expected to shift traditional traffic composition, usher in new operational models, change traffic stream characteristics, and reshape the ways state DOTs and associated agencies plan, design and evaluate roadways (Hendrickson and Samaras, 2017). But, most of the current existing transportation facilities cannot “accept” connected and automated vehicle in right way, like current traffic light cannot recognize whether a vehicle is human-vehicle or CAV. In this literature, it described some methods to build a transportation module that allowing Human connected vehicle and connected automated vehicle.
+\newline
+Tech option 2.1: According to this paper, Dr. Wang and his team have developed an agent-based modeling and simulation platform to evaluate the mobility and safety impacts of connected and automated vehicles.
+This agent-based modeling and simulation platform is based on a software – SimDrive, for this software, it can simulate different levels of the autonomous vehicle. SimDrive software is based on JavaScript programming and it allows the research team to easily modify the autonomous vehicle behavior for testing. Based on this technology, experiments could be conducted to determine human comfort and acceptance of different speed in a different level of CAV. Because there exists some autonomous vehicle performance case which is unacceptable, SimDrive software belongs to predictive capacity modeling.
+For our project, we also can also use that software to build our testing module. And it can help us collect data in many different situations and through data to analyze autonomous vehicles’ influence for the human.
+\newline
+Tech option 2.2: the Building base capacity function for microscopic simulation and analytical modeling.
+This paper uses microscopic simulation to collect data, then using those data to build the bar chart. Through analyzing bar chart, the team got the result about capacity change under different penetration rates, platooning intensities, and traffic throughputs with different numbers of managed connected and autonomous vehicle lanes under different traffic volumes. The tech provides a good analyzing way for our project. When we have some methods to optimize autonomous vehicles path chosen, we can firstly build a module and collect data from module to analyze. And using a bar chart to make data more intuitive.
+\newline
+Tech option 2.3: The agent-based modeling and simulation (ABMS) system, which is a tool to simulate real-traffic situations. Compare to field experiments, the ABMS system has a lower cost.
+ABMS system also can simulate human-involved systems because it can simulate drivers’ actions based on complex reasoning. ABSM system will make a decision according to around environment and programmers’ pre-set for ABSM system. In addition, the agent-based modeling and simulation system is flexibility, which means it can balance capturing the coordination of individual objectives in agents’ tasks. In the current stage, the agent-based modeling and simulation system is known as one of the best ways to simulate the connected environment.
+For our project, the agent-based modeling and simulation system is a good choice to build an environment module, because it can help us to build many different environment modules. And due to those environment modules are closed to real-environment, the data from those modules is more reliably. What’s more, it also can help us to analyze autonomous vehicles’ chosen in the different environment.
+
+\section{Python Based Modeling Framework - Mesa}
+Description: Mesa is a python-based modeling framework. It uses some ways to help users to build their agent-based models, like through “spatial grids”. To make users more intuitive to operate their models, Mesa provides a browser-based interface to visualize them. In addition, there are some data analyzing tool designed in Mesa to help users collect and analyze data more convenient.
+\newline
+Tech option 3.1: Mesa is a good software for a modular framework for building, analyzing and visualizing agent-based models. The agent-based model is a programming behavior which is through computer simulation involving many different entities’ actions and “communicates” with each other. Mesa is modular, which means modeling, analysis, and visualization components are separated but needed to work together. Those modules are separated into 3 categories:
+The first category is modeling, which is about building modules by themselves, agent classes and a model that is a scheduler to determine some sequences for the agent’s actions and space for them to move around on. The second category is analyzing. It is a useful tool to collect data which are generated from models. To adjust collect different data from models, users just need to change the parameter value. And the final category is visualization, it uses a server based on the JavaScript interface to create and launch an interactive model visualization.
+\newline
+Tech option 3.2: Pandora is another useful tool to build our simulation framework.
+Pandora is a modeling framework which aims to create, execute and analyze agent-based models in an efficient computing environment. It has been used to execute the large-scale agent-based simulation. Pandora also can deal with thousands of complex actions. The users can choose to develop their code in Python (for fast prototyping) or C++ (complex models). Interfaces of both versions are identical and share the same C++ base code (assuring compatibility and efficiency).
+The framework created by Pandora has full GIS support to cope with spatial coordinate-related simulations. The library also allows the researcher to design experiments which can change simulation through change their parameters. It can be built by using C++ or Python.
+Compared to Mesa software, Pandora can use for C++ or Python programming language, it has better compatibility. Pandora can help users to build their models and provide data, but it doesn’t contain analyzing tool like Mesa. So, it must ask users to use other tools to analyze data from Pandora.
+\newline
+Tech option 3.3: After building a module for the transportation system of the autonomous vehicle, we need to use some tools to deal with data from modules. Numpy and pandas will deal with this.
+Numpy and pandas are one of Python's package, they provide data processing method. Users can import data from their modules and through Numpy and pandas to analyze their data. One of the important advantages of Numpy and pandas is they can spend less time to handle big data than other ways in Python. Therefore, Numpy and pandas will give more testing result in short time, which is helpful for users to analyze their data.
+
+
+\section{Conclusion}
+There are two literature review and one tech review in this paper. In the first literature review, it shows some technologies to improve traffic light's intelligent. The second literature review discussed some software which is used to simulate traffic network, and that software is also can be used in our project's simulation. And in the last part of tech review, it introduced Mesa software to build our project simulation and analyzing. Mesa also was compared with other simulation software like Pandora.
+
+\section{Reference}
+
+ [1] Ying Liu, Lei Liu, and Wei-Peng Chen. 2017. Intelligent Traffic Light Control Using Distributed Multi-agent Q Learning. arXiv:1711.10941v1 [cs.SY]
+\newline
+ [2] Haizhong Wang and Xiaopeng Li etc. 2018. CAV Capacity Modification Factors. RFP: 730-33122-18
+\newline
+ [3] “Introductory Tutorial.” Mesa: Agent-Based Modeling in Python 3+ - Mesa .1 Documentation, mesa.readthedocs.io
+
+\end{document}
